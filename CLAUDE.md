@@ -45,6 +45,10 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
   and so on) in docs or descriptions until it has been tested.
 - Plain English, short sentences, in docs, commits and replies.
 - The version lives only in `package.json`.
+- If a commit changes something a player can notice, add a line under
+  `## Unreleased` in `CHANGELOG.md` in the same commit. Write it for players,
+  with the same rules as release notes. Skip internal changes (refactors,
+  tests, docs, CI).
 - Display name is "Trainer Compare"; code, folder and file names are
   `TrainerCompare` (no space). Slash command `/tc`. The old name
   (TrainerUpgrades) must not appear anywhere.

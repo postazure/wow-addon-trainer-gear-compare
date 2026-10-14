@@ -192,8 +192,8 @@ headings vanish.
 
 Before tagging, go through [docs/CURSEFORGE.md](docs/CURSEFORGE.md): the
 release testing checklist, the assets checklist (screenshots, description,
-icons), and the one-time automation setup. Changes go in
-[CHANGELOG.md](CHANGELOG.md).
+icons), and the one-time automation setup. Player-facing changes go under
+`## Unreleased` in [CHANGELOG.md](CHANGELOG.md) as they're made.
 
 ```sh
 npm run package     # build, test, then release/TrainerCompare-<version>.zip

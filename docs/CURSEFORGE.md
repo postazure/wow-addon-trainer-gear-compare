@@ -15,7 +15,8 @@ clean.
 
 - [ ] Bump `"version"` in `package.json`. That is the only place the version
       lives; the build writes it into the TOC, and `/tc` reads it from there.
-- [ ] Add a section for the version to `CHANGELOG.md`, written for players.
+- [ ] Move the `## Unreleased` lines in `CHANGELOG.md` into a section for
+      the version, written for players. Leave `## Unreleased` empty above it.
 - [ ] Check the TOC's `## Interface:` line matches the live client. In game,
       `/run print((select(4, GetBuildInfo())))` prints the number. If the
       client moved on, add the new number (comma-separated).

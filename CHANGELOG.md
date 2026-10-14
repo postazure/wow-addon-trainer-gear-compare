@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 0.6.0
 
 First public release, for WoW Forever 1.60.1.

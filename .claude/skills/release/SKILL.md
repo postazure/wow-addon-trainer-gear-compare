@@ -13,7 +13,8 @@ with the owner approving each step that matters.
 The pieces:
 
 - The version lives only in `package.json`.
-- `CHANGELOG.md` keeps a `## <version>` section for every release.
+- `CHANGELOG.md` keeps a `## <version>` section for every release. Changes
+  pile up under `## Unreleased` between releases, added as they're made.
 - The tag `v<version>` is **annotated**, and its message is the release
   notes. The workflow reads them with `scripts/tag-notes.mjs` and uses them
   for the GitHub release and CurseForge.
@@ -41,10 +42,12 @@ LAST=$(git describe --tags --abbrev=0 2>/dev/null)   # empty before the first re
 git log --oneline ${LAST:+$LAST..}HEAD
 ```
 
-Read the commits, and the diff where a message is unclear. Read the top of
-`CHANGELOG.md`. If `package.json`'s version has no tag yet and the CHANGELOG
-already has its section (the first release was set up this way), offer to
-release that version with that section as the starting draft.
+Start from the `## Unreleased` section of `CHANGELOG.md`. Then read the
+commits, and the diff where a message is unclear, to find anything a player
+would notice that the section missed. If `package.json`'s version has no tag
+yet and the CHANGELOG already has its section (the first release was set up
+this way), offer to release that version, with that section plus anything
+under `## Unreleased` as the starting draft.
 
 ## 3. Pick the version with the owner
 
@@ -80,8 +83,9 @@ text is used as is in both the CHANGELOG and the tag.
 npm version <version> --no-git-tag-version   # package.json and package-lock.json
 ```
 
-Put the approved notes under `## <version>` at the top of `CHANGELOG.md`
-(below `# Changelog`). Replace the section if it's already there. Then:
+In `CHANGELOG.md`, put the approved notes under `## <version>`, right below
+an empty `## Unreleased`. That empties `## Unreleased` for the next release.
+Replace the `## <version>` section if it's already there. Then:
 
 ```sh
 npm run package    # tests, then release/TrainerCompare-<version>.zip
