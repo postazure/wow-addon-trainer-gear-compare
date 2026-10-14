@@ -1,9 +1,6 @@
 import { debug } from "./log";
 
 export interface ItemData {
-  link: string;
-  itemID: number;
-  name: string;
   itemLevel: number;
   minLevel: number;
   subType: string;
@@ -14,7 +11,7 @@ export interface ItemData {
   stats: Record<string, number>;
 }
 
-export type ItemLookup =
+type ItemLookup =
   | { state: "ready"; item: ItemData }
   | { state: "pending" }
   | { state: "missing" };
@@ -56,9 +53,6 @@ export function lookupItem(link: string): ItemLookup {
   }
 
   const item: ItemData = {
-    link,
-    itemID,
-    name,
     itemLevel: detailedLevel !== undefined && detailedLevel > 0 ? detailedLevel : baseLevel ?? 0,
     minLevel: minLevel ?? 0,
     subType: subType ?? "",

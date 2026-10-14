@@ -92,7 +92,7 @@ export function decorate(button: Frame, elementData: unknown): void {
 }
 
 /** Re-check every row the trainer list is showing. */
-export function refreshVisible(): void {
+function refreshVisible(): void {
   const box = ClassTrainerFrame?.ScrollBox;
   if (!box || !box.ForEachFrame || !ClassTrainerFrame?.IsShown()) return;
   box.ForEachFrame((frame, data) => {

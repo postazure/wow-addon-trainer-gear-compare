@@ -2,21 +2,24 @@
 
 Trainer Compare: a WoW Forever addon. At a profession trainer it shows how a
 recipe's gear compares to what the player wears. TypeScript, compiled to one
-Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
+Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
+`docs/DEVELOPMENT.md`; behavior: `docs/HOW-IT-WORKS.md`.
 
 ## Commands
 
-- `npm test`: build, then run both mock-client suites. Run before every commit.
+- `npm test`: build, then run both mock-client suites and the release-script
+  tests. Run before every commit.
 - `npm run typecheck`: types only.
 - `npm run package`: test, then `release/TrainerCompare-<version>.zip`.
 - Releases follow `docs/CURSEFORGE.md` (testing and assets checklists).
 
 ## Releases
 
-- A release is an annotated `v<version>` tag on `main` (no release branch),
-  made with the release skill (`/release`, `.claude/skills/release/`). Only
-  make a release tag through that skill, and push only when the owner says
-  yes.
+- A release is an annotated `v<version>` tag on `main`, made with the
+  release skill (`/release`, `.claude/skills/release/`). The version bump
+  and changelog go through a release PR like any change; the tag goes on
+  `main` after it merges. Only make a release tag through that skill, and
+  push it only when the owner says yes.
 - The tag's message is the release notes. No AI runs in the workflows: they
   publish the tag's notes as they are (`scripts/tag-notes.mjs`).
 - Tag with `git tag -a -F <file> --cleanup=verbatim`. Without it, git drops
@@ -36,8 +39,9 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
 
 ## How we work
 
-- Commit straight to `main` and push after each change. No PRs, no feature
-  branches.
+- Every change goes through a pull request to `main`. Work on a branch,
+  push it, and open the PR. The owner reviews and merges. Never push to
+  `main` directly.
 - The owner tests in game; I can't. Every summary says what was tested here
   (mock client) and what still needs an in-game check. Never say something
   works in game until the owner confirms it.
@@ -82,8 +86,8 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
 ## Don't assume the WoW API
 
 WoW Forever is Classic data on a modern, retail-style engine. Classic and
-retail docs are both wrong in places. What we learned (more in README
-"Probe findings"):
+retail docs are both wrong in places. What we learned (more in
+`docs/PROBE-FINDINGS.md`):
 
 - `GetTrainerServiceInfo` returns name, **type**, icon, ?, "", category
   (Classic puts the type 3rd).

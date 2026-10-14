@@ -1,6 +1,6 @@
 import { settings } from "./db";
 
-export const PREFIX = "|cff33ff99Trainer Compare|r ";
+const PREFIX = "|cff33ff99Trainer Compare|r ";
 
 /**
  * Prints only when debug is on. It's off by default; to turn it on, type

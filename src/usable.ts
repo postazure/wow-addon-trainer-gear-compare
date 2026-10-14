@@ -60,9 +60,9 @@ const RELIC_CLASS = bySubclass([
 /** Every class knows Cloth, so it tells us whether IsPlayerSpell works for proficiencies. */
 const CLOTH_SPELL = ARMOR_PROFICIENCY[1].spell;
 
-export type MainStat = "STR" | "AGI" | "INT" | "SPI";
+type MainStat = "STR" | "AGI" | "INT" | "SPI";
 
-export const MAIN_STAT_KEYS: Record<MainStat, string> = {
+const MAIN_STAT_KEYS: Record<MainStat, string> = {
   STR: "ITEM_MOD_STRENGTH_SHORT",
   AGI: "ITEM_MOD_AGILITY_SHORT",
   INT: "ITEM_MOD_INTELLECT_SHORT",
@@ -82,7 +82,7 @@ const CLASS_MAIN_STATS: Record<string, MainStat[]> = {
   WARLOCK: ["INT", "SPI"],
 };
 
-export function playerClass(): string {
+function playerClass(): string {
   return UnitClass("player")[1];
 }
 

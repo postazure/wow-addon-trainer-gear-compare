@@ -5,7 +5,8 @@ A release has four parts, in this order:
 1. [Prepare](#1-prepare): version, changelog, zip.
 2. [Release testing checklist](#2-release-testing-checklist): test the zip in game.
 3. [Assets checklist](#3-assets-checklist): make sure screenshots, text and icons match this version.
-4. [Release](#4-release): tag `main`; CI builds, writes notes, and publishes.
+4. [Release](#4-release): release PR, then tag `main`; CI checks, builds, and
+   publishes the tag's notes.
 
 Don't upload until 2 and 3 are fully ticked. Copy the checklists into the
 release's notes (or a GitHub issue) and tick them there, so this file stays
@@ -106,7 +107,8 @@ it looks different from the current version.
       the addon does now: features, commands, and the "What it doesn't do"
       list. Paste it into the project description.
 - [ ] The one-line summary below is still true.
-- [ ] `README.md` feature list and commands match.
+- [ ] `README.md` feature list and `docs/HOW-IT-WORKS.md` match what
+      the addon does.
 - [ ] `CHANGELOG.md` has this version's section.
 
 **Icons**
@@ -123,7 +125,7 @@ it looks different from the current version.
 
 ## 4. Release
 
-Releases are cut by tagging `main`. There is no release branch. The tag is
+Releases are cut by tagging `main` after a release PR merges. The tag is
 **annotated**, and its message is the release notes. The workflow publishes
 those notes as they are; no AI runs in it.
 
@@ -135,8 +137,9 @@ those notes as they are; no AI runs in it.
      CurseForge **Beta** file),
   4. bumps `package.json`, writes the `CHANGELOG.md` section, runs
      `npm run package`, and asks you to confirm sections 2 and 3 are done,
-  5. commits "Release v<version>" and makes the annotated tag,
-  6. pushes `main` and the tag only when you say yes.
+  5. opens a "Release v<version>" PR for you to merge,
+  6. after the merge, makes the annotated tag on `main`, and pushes it only
+     when you say yes.
 - [ ] Watch **Actions → Release**. Its jobs run in order:
   1. **Build and test**: checks the tag is annotated with notes and agrees
      with `package.json` and `CHANGELOG.md`, then builds, tests and zips.
