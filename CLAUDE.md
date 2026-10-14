@@ -41,7 +41,8 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
 
 - Every change goes through a pull request to `main`. Work on a branch,
   push it, and open the PR. The owner reviews and merges. Never push to
-  `main` directly.
+  `main` directly. The Test workflow runs `npm test` on every PR; it must
+  be green before merging.
 - The owner tests in game; I can't. Every summary says what was tested here
   (mock client) and what still needs an in-game check. Never say something
   works in game until the owner confirms it.
