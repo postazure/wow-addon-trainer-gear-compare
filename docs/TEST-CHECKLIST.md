@@ -25,25 +25,20 @@ Open a trainer that teaches gear (Blacksmithing, Leatherworking, Tailoring).
 If rows say `no index`, paste the `/tc dump` output back. It shows the row
 data keys, which is what I need to fix it.
 
-## 3. Markers
+## 3. Rows
 
-- [ ] A weapon type you haven't learned shows a **red X** on its icon.
-- [ ] Armor you can't wear (for example plate before you learn it) shows a
-      red X.
-- [ ] Gear above your level shows a red X.
-- [ ] Gear you can use shows **no marker**, whether it's better or worse.
-- [ ] Enchants and other non-gear recipes show no marker.
-- [ ] The X is easy to see and doesn't cover anything important.
-      (Position is a guess. Tell me if it's off.)
+- [ ] Recipe rows look like Blizzard's: no icons or marks added.
 
 ## 4. Scrolling and categories
 
-- [ ] Scroll the list. Markers stay on the right rows and don't smear onto
-      other rows.
+With "Only show usable gear" on:
+
+- [ ] Scroll the list. The right rows stay faded, and fading doesn't smear
+      onto other rows.
 - [ ] Collapse and expand a category, if the UI has them. Category rows
-      never get a marker.
-- [ ] Change Blizzard's filter dropdown (available / unavailable). Markers
-      update and match.
+      are never faded.
+- [ ] Change Blizzard's filter dropdown (available / unavailable). Fading
+      updates and matches.
 
 ## 5. Compare and tooltips
 
@@ -88,20 +83,21 @@ data keys, which is what I need to fix it.
 ## 7. Late data
 
 - [ ] Clear the cache (delete `<WoW Forever>/_<flavor>_/Cache`), log in,
-      and open a trainer straight away. Rows may show no marker for a
-      moment, then fill in. No row ever shows a wrong marker first.
+      and open a trainer straight away. Tooltips may say "Loading item
+      data..." for a moment, then fill in. With the filter on, no row is
+      ever faded by mistake while loading.
 
 ## 8. Gear changes
 
-- [ ] With the trainer open, swap your main hand weapon. Weapon markers
-      update.
+- [ ] With the trainer open, swap your main hand weapon. Weapon tooltips
+      now compare against the new one.
 - [ ] Equip a two-hander. One-hand weapons and off hands now compare
       against it.
 
 ## 9. Scoring
 
 - [ ] `/tc scoring` shows `itemLevel` and lists the options.
-- [ ] `/tc scoring statWeights`: markers update, and tooltips add a
+- [ ] `/tc scoring statWeights`: tooltips add a
       "Score X vs Y (stat weights)" line.
 - [ ] `/tc scoring itemLevel` switches back.
 

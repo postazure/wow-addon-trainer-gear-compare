@@ -4,7 +4,6 @@ Shows, in the profession trainer window, how each recipe's item compares to
 your equipped gear, and whether you can use it. Facts only: it doesn't
 claim anything is an "upgrade".
 
-- **Red X** on the recipe icon: gear you can't use. Nothing else is marked.
 - **Compare**: hover a recipe and hold Shift (or turn on "Always compare
   items") to see Blizzard's normal compare: your equipped item(s) on the
   left, the recipe on the right. Works for gear you can't use, too.
@@ -49,7 +48,7 @@ Settings are saved per account in `TrainerCompareDB`.
 
 1. The trainer gives the crafted item through `GetTrainerServiceItemLink`.
    No link means no item (enchants and similar): skipped quietly.
-2. **Can you use it?** Gear gets a red X (and is faded by the filter) if:
+2. **Can you use it?** With the filter on, gear is faded if:
    - the level requirement isn't met,
    - the armor type or weapon skill isn't known (checked with
      `IsPlayerSpell` and Classic proficiency spell ids),
@@ -81,11 +80,9 @@ add it to `SCORERS`.
 - **The filter lives in the Settings dropdown** (menu tag
   `MENU_TRAINER_FILTER`, added with `Menu.ModifyMenu`). If a client has no
   `Menu` API, a "Usable" checkbox appears left of the Train button instead.
-- **The red X position is a best guess** (top-left corner of the recipe
-  icon).
 - **Rows are matched to recipes through the ScrollBox row data**
   (`skillIndex`, `index`, and so on). If a row's visible name does not match
-  the recipe, it gets no marker. That way it fails safe and never shows a
+  the recipe, it is never faded. That way it fails safe and never shows a
   wrong result. `/tc dump` shows what each row resolved to.
 - **The compare is started by hand.** Blizzard's compare only starts for
   item tooltips, and the trainer tooltip is a spell tooltip. So
@@ -111,7 +108,7 @@ add it to `SCORERS`.
 ```
 addon/TrainerCompare.toc      TOC, copied into the build output
 src/main.ts                   Events and slash commands
-src/trainerUI.ts              Hooks, markers, Settings menu entry, compare tooltips
+src/trainerUI.ts              Hooks, usable filter, Settings menu entry, compare tooltips
 src/compare.ts                Usable check, what it replaces, slot rules (cached)
 src/items.ts                  Item data cache; handles late-loading items
 src/usable.ts                 Level, proficiency, main-stat checks

@@ -311,13 +311,8 @@ function check(cond, msg)
 end
 function passCount() return passed end
 
--- Marker state for a row: "unusable" (red X) or "none".
-function marker(row)
-  for _, t in ipairs(row.button.textures) do
-    if t.shown and t.texture == "Interface\\RaidFrame\\ReadyCheck-NotReady" then return "unusable" end
-  end
-  return "none"
-end
+-- Row state under the usable filter: "faded" or "shown".
+function rowState(row) return row.button.alpha < 1 and "faded" or "shown" end
 
 function report(suite)
   io.write(suite .. ": " .. passCount() .. " checks passed\n")

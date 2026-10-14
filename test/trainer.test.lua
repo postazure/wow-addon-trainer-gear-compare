@@ -46,21 +46,29 @@ SlashCmdList.TRAINERCOMPARE("filter")
 flush()
 check(TrainerCompareDB.onlyUsable == false and axe.button.alpha == 1, "/tc filter turns it off")
 
--- Markers: facts only. A red X on gear you can't use; nothing else is marked.
-check(marker(mace) == "none", "usable gear: no marker")
-check(marker(bracers) == "none", "usable gear with a lower item level: no marker")
-check(marker(maul) == "none", "usable two-hander: no marker")
-check(marker(ring) == "none", "usable ring: no marker")
-check(marker(axe) == "unusable", "X: Paladin can't use axes")
-check(marker(sword) == "unusable", "X: Paladin has not learned swords")
-check(marker(spiritGloves) == "unusable", "X: spirit-only gloves on a Paladin")
-check(marker(highHelm) == "unusable", "X: level 20 helm at level 17")
-check(marker(belt) == "none", "no marker while belt data loads")
+-- Rows: no marks of any kind. With the filter on, only gear you can't use fades.
+local anyTexture = false
+for _, r in ipairs(rows) do if #r.button.textures > 0 then anyTexture = true end end
+check(not anyTexture, "nothing is drawn on recipe rows")
+
+SlashCmdList.TRAINERCOMPARE("filter") -- on
+flush()
+check(rowState(mace) == "shown", "usable gear shown")
+check(rowState(bracers) == "shown", "usable gear with a lower item level shown")
+check(rowState(maul) == "shown", "usable two-hander shown")
+check(rowState(ring) == "shown", "usable ring shown")
+check(rowState(axe) == "faded", "faded: Paladin can't use axes")
+check(rowState(sword) == "faded", "faded: Paladin has not learned swords")
+check(rowState(spiritGloves) == "faded", "faded: spirit-only gloves on a Paladin")
+check(rowState(highHelm) == "faded", "faded: level 20 helm at level 17")
+check(rowState(belt) == "shown", "not faded while belt data loads")
 check(requested[2851], "belt data requested")
-check(marker(enchant) == "none", "enchant has no item: no marker")
-check(marker(shirt) == "none", "shirts are not gear here: no marker")
-check(marker(category) == "none", "category row gets no marker")
-check(marker(mismatch) == "none", "row with a mismatched label gets no marker")
+check(rowState(enchant) == "shown", "enchant shown")
+check(rowState(shirt) == "shown", "shirt shown")
+check(rowState(category) == "shown", "category row shown")
+check(rowState(mismatch) == "shown", "row with a mismatched label is never faded")
+SlashCmdList.TRAINERCOMPARE("filter") -- off
+flush()
 
 -- Late item data ------------------------------------------------------------
 hover(4)
@@ -222,14 +230,15 @@ SlashCmdList.TRAINERCOMPARE("scoring itemlevel")
 
 -- Proficiency fallback --------------------------------------------------------
 -- If IsPlayerSpell can't see Cloth, proficiency spells don't work: don't hide gear.
+SlashCmdList.TRAINERCOMPARE("filter") -- on
 knownSpells[9078] = nil
 fire("SPELLS_CHANGED")
 flush()
-check(marker(axe) == "none", "proficiency check skipped when spells are unreliable")
+check(rowState(axe) == "shown", "proficiency check skipped when spells are unreliable")
 knownSpells[9078] = true
 fire("SPELLS_CHANGED")
 flush()
-check(marker(axe) == "unusable", "proficiency check back once Cloth is known")
+check(rowState(axe) == "faded", "proficiency check back once Cloth is known")
 
 -- Nothing failed so far (debug has been on the whole time).
 for _, l in ipairs(output) do
@@ -245,7 +254,7 @@ GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
 flush()
 GetTrainerServiceInfo = realInfo
-check(marker(axe) == "unusable", "marker kept when a later refresh fails")
+check(rowState(axe) == "faded", "fading kept when a later refresh fails")
 local sawFailure = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then sawFailure = true end end
 check(sawFailure, "failures reported with debug on")

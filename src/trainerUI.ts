@@ -6,11 +6,7 @@ import { tooltipLines } from "./tooltip";
 const DIM_ALPHA = 0.35;
 const OWNER = {}; // callback registry owner token
 
-/** Red X on rows for gear the player can't use. */
-const UNUSABLE_TEXTURE = "Interface\\RaidFrame\\ReadyCheck-NotReady";
-
-// Our own tables, keyed by Blizzard's row buttons. We never write fields on them.
-const markers = new Map<Frame, Texture>();
+// Rows we faded, keyed by Blizzard's row buttons. We never write fields on them.
 const dimmed = new Set<Frame>();
 
 let installed = false;
@@ -70,30 +66,12 @@ function rowLabel(button: Frame): string | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// Markers and dimming
+// Usable filter
 // ---------------------------------------------------------------------------
 
-function markerFor(button: Frame): Texture {
-  const hit = markers.get(button);
-  if (hit) return hit;
-
-  const icon = field(button, "icon") ?? field(button, "Icon");
-  const anchor = typeof icon === "object" ? (icon as Region) : button;
-
-  const cross = button.CreateTexture(undefined, "OVERLAY");
-  cross.SetTexture(UNUSABLE_TEXTURE);
-  cross.SetSize(14, 14);
-  cross.SetPoint("TOPLEFT", anchor, "TOPLEFT", -3, 3);
-  markers.set(button, cross);
-  return cross;
-}
-
-/** Facts only: mark gear you can't use. Nothing else gets a marker. */
-function showVerdict(button: Frame, ev: Evaluation | undefined): void {
+/** Rows get no marks. With the filter on, gear you can't use is faded. */
+function applyFilter(button: Frame, ev: Evaluation | undefined): void {
   const unusable = ev?.reason !== undefined;
-  if (unusable) markerFor(button).Show();
-  else markers.get(button)?.Hide();
-
   // Fade only what we know: gear you can't use. Non-gear and loading rows stay.
   const dim = settings().onlyUsable && unusable;
   if (dim) {
@@ -108,20 +86,20 @@ function showVerdict(button: Frame, ev: Evaluation | undefined): void {
 /** Evaluate one service row. ev is undefined for category rows. */
 function decorate(button: Frame, elementData: unknown): void {
   const index = resolveIndex(button, elementData);
-  if (index === undefined) return showVerdict(button, undefined);
+  if (index === undefined) return applyFilter(button, undefined);
 
   const [name, kind] = GetTrainerServiceInfo(index);
-  if (name === undefined || kind === "header") return showVerdict(button, undefined);
+  if (name === undefined || kind === "header") return applyFilter(button, undefined);
 
-  // Safety net: never mark a row with another recipe's result.
+  // Safety net: never fade a row because of another recipe's result.
   const label = rowLabel(button);
   if (label !== undefined && !label.includes(name)) {
     debug(`row ${index} shows "${label}" but service is "${name}"; skipped`);
-    return showVerdict(button, undefined);
+    return applyFilter(button, undefined);
   }
 
   const link = GetTrainerServiceItemLink(index);
-  showVerdict(button, link !== undefined ? evaluate(link) : { verdict: "none" });
+  applyFilter(button, link !== undefined ? evaluate(link) : { verdict: "none" });
 }
 
 // ---------------------------------------------------------------------------
@@ -447,10 +425,10 @@ export function installTrainerHooks(): void {
     counters.initRow++;
     safe("init row", () => decorate(button, elementData));
   });
-  // Category rows reuse buttons; clear our marker on them.
+  // Category rows reuse buttons; undo any fading on them.
   hookGlobal("ClassTrainerFrame_InitCategoryButton", (button: Frame) => {
     counters.initCategory++;
-    safe("init category", () => showVerdict(button, undefined));
+    safe("init category", () => applyFilter(button, undefined));
   });
   hookGlobal("ClassTrainerFrame_Update", () => scheduleRefresh());
 
