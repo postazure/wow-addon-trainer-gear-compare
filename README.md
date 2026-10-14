@@ -127,9 +127,10 @@ scripts/                      Post-build (TOC version, Lua 5.1 check), deploy, p
 dist/TrainerCompare/          Build output. This folder is the addon.
 release/                      Zips from npm run package (not committed)
 docs/                         In-game checklist, CurseForge guide and description
-assets/                       Icon source (SVG) and CurseForge logo (PNG)
+assets/                       Icon source (SVG), CurseForge logo, screenshots
 addon/icon.tga                In-game addon list icon (from assets/icon.svg)
 CHANGELOG.md, LICENSE         Release notes; MIT license
+CLAUDE.md                     Working rules and lessons for Claude sessions
 ```
 
 ```sh
@@ -171,9 +172,10 @@ npm run package     # build, test, then release/TrainerCompare-<version>.zip
 
 The zip holds one `TrainerCompare/` folder: the TOC, the Lua, the icon,
 and the license. After changing `assets/icon.svg`, run
-`scripts/render-icon.sh` to rebuild the logo and the in-game icon. Upload it on CurseForge by hand for now. Steps, the upload
-settings, and a ready-to-paste project description are in
-[docs/CURSEFORGE.md](docs/CURSEFORGE.md). Changes go in
+`scripts/render-icon.sh` to rebuild the logo and the in-game icon. Upload it on CurseForge by hand for now.
+[docs/CURSEFORGE.md](docs/CURSEFORGE.md) has the whole release: prepare, a
+release testing checklist, an assets checklist (screenshots, description,
+icons), and the upload settings. Changes go in
 [CHANGELOG.md](CHANGELOG.md).
 
 ### TODO: automatic uploads
