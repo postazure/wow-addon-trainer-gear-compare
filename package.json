@@ -1,8 +1,8 @@
 {
   "name": "trainer-compare",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
-  "description": "WoW Forever addon: marks trainer recipes that would be gear upgrades.",
+  "description": "Trainer Compare: a WoW Forever addon that compares trainer recipe gear to what you wear.",
   "type": "module",
   "scripts": {
     "build": "tstl -p tsconfig.json && node scripts/postbuild.mjs",

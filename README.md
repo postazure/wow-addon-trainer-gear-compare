@@ -25,11 +25,7 @@ actually returns. See [Probe findings](#probe-findings).
 2. Copy `dist/TrainerCompare` into `<WoW Forever>/Interface/AddOns/`.
    Or set `WOW_ADDONS_DIR` and run `npm run deploy`.
 3. If the addon list says "Out of date", tick **Load out of date AddOns**.
-4. **Upgrading from TrainerUpgrades?** Delete `Interface/AddOns/TrainerUpgrades`.
-   The addon was renamed, and both loaded at once would double every compare
-   (it warns in chat if it finds the old one). Settings start fresh, because
-   WoW keeps saved settings per addon folder.
-5. Run the [in-game test checklist](docs/TEST-CHECKLIST.md).
+4. Run the [in-game test checklist](docs/TEST-CHECKLIST.md).
 
 No other addon is needed.
 

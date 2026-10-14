@@ -9,14 +9,8 @@ import { dumpState, installTrainerHooks, refreshHover, rescore, scheduleRefresh,
 import { resetUsableCache } from "./usable";
 
 const ADDON_NAME = "TrainerCompare";
-/** This addon's old name. Both loaded at once would double every compare. */
-const OLD_ADDON_NAME = "TrainerUpgrades";
-
-function warnIfOldAddonLoaded(): void {
-  say(`The old ${OLD_ADDON_NAME} addon is still installed. Delete Interface/AddOns/${OLD_ADDON_NAME}, then /reload.`);
-}
 const TRAINER_UI = "Blizzard_TrainerUI";
-const VERSION = "0.5.0";
+const VERSION = "0.5.1";
 
 /** Gear, level, or known spells changed: results are stale. */
 const STALE_EVENTS = ["PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "SPELLS_CHANGED", "LEARNED_SPELL_IN_TAB"];
@@ -31,9 +25,6 @@ function onEvent(event: string, args: any[]): void {
       debug(`loaded v${VERSION}, client interface ${iface}`);
       // The trainer UI may already be loaded by another addon.
       if (C_AddOns.IsAddOnLoaded(TRAINER_UI)[0]) installTrainerHooks();
-      if (C_AddOns.IsAddOnLoaded(OLD_ADDON_NAME)[0]) warnIfOldAddonLoaded();
-    } else if (name === OLD_ADDON_NAME) {
-      warnIfOldAddonLoaded();
     } else if (name === TRAINER_UI) {
       installTrainerHooks();
     }

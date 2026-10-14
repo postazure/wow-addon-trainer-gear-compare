@@ -4,7 +4,8 @@ import { itemLevelScorer, findScorer, type Scorer } from "./scoring";
 import { PLACEMENT, type Placement, type SlotKey, slotInfo } from "./slots";
 import { isFishingPole, unusableReason } from "./usable";
 
-export type Verdict = "upgrade" | "same" | "none" | "pending";
+/** better / notBetter: by the current scorer (item level by default). Not shown to the player. */
+export type Verdict = "better" | "notBetter" | "none" | "pending";
 
 /** What the new item is compared against. */
 export interface Versus {
@@ -70,7 +71,7 @@ function compute(link: string): Evaluation {
 
   const newScore = scorer.score(item);
   const better = versus.score === undefined || newScore > versus.score;
-  return { verdict: better ? "upgrade" : "same", item, scorer, newScore, versus };
+  return { verdict: better ? "better" : "notBetter", item, scorer, newScore, versus };
 }
 
 type Equipped =

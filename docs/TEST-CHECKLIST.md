@@ -9,8 +9,6 @@ hand, wrists, waist and both ring slots.
 
 ## 1. Load
 
-- [ ] The old `Interface/AddOns/TrainerUpgrades` folder is gone. If it's
-      still there, chat warns about it on login.
 - [ ] No Lua error on login or `/reload`.
 - [ ] `/tc` prints the version and the command list.
 - [ ] `/tc debug` prints "debug on". `/reload` keeps it on.

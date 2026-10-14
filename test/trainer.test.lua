@@ -6,13 +6,11 @@ check(TrainerCompareDB.scoring == "itemLevel", "scoring defaults to itemLevel")
 check(TrainerCompareDB.onlyUsable == false, "filter defaults off")
 check(TrainerCompareDB.tooltipLines == nil, "removed settings drop out of the saved file")
 
--- Old name ----------------------------------------------------------------
-output = {}
-fire("ADDON_LOADED", "TrainerUpgrades")
-local warned = false
-for _, l in ipairs(output) do if l:find("old TrainerUpgrades addon", 1, true) then warned = true end end
-check(warned, "warns when the old TrainerUpgrades addon is also loaded")
+-- Name ----------------------------------------------------------------------
 check(SLASH_TRAINERCOMPARE1 == "/tc", "slash command is /tc")
+output = {}
+SlashCmdList.TRAINERCOMPARE("")
+check(output[1]:find("|cff33ff99Trainer Compare|r", 1, true) == 1, "chat prefix reads Trainer Compare")
 
 -- Settings dropdown -----------------------------------------------------------
 check(menuCallbacks["MENU_TRAINER_FILTER"] ~= nil, "added to the trainer's Settings dropdown")
