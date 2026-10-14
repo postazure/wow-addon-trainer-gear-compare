@@ -332,7 +332,11 @@ local function collect(index)
   local c = { index = index }
   c.info = try(_G.GetTrainerServiceInfo, index)
   c.name = c.info.ok and c.info[1] or nil
-  c.kind = c.info.ok and c.info[3] or nil
+  -- Classic puts the service type 3rd; WoW Forever puts it 2nd.
+  local TYPES = { available = true, unavailable = true, used = true, header = true }
+  if c.info.ok then
+    c.kind = TYPES[c.info[2]] and c.info[2] or c.info[3]
+  end
   if c.kind == "header" then return c end
 
   c.itemLink = try(_G.GetTrainerServiceItemLink, index)

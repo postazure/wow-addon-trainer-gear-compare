@@ -1,0 +1,214 @@
+-- Minimal WoW Forever mock. Shapes and return orders come from the probe.
+unpack = unpack or table.unpack
+
+output = {}
+function print(...)
+  local parts = {}
+  for i = 1, select("#", ...) do parts[#parts + 1] = tostring((select(i, ...))) end
+  output[#output + 1] = table.concat(parts, " ")
+end
+function date() return "now" end
+
+-- Localized strings the addon reads from _G.
+ITEM_MOD_STRENGTH_SHORT = "Strength"
+ITEM_MOD_AGILITY_SHORT = "Agility"
+ITEM_MOD_INTELLECT_SHORT = "Intellect"
+ITEM_MOD_SPIRIT_SHORT = "Spirit"
+ITEM_MOD_STAMINA_SHORT = "Stamina"
+ITEM_MOD_DAMAGE_PER_SECOND_SHORT = "Damage Per Second"
+MAINHANDSLOT = "Main Hand"
+SECONDARYHANDSLOT = "Off Hand"
+FINGER0SLOT = "Finger"
+FINGER1SLOT = "Finger"
+WAISTSLOT = "Waist"
+WRISTSLOT = "Wrist"
+HANDSSLOT = "Hands"
+
+-- Timers run when the test calls flush().
+local timers = {}
+C_Timer = { After = function(s, fn) timers[#timers + 1] = fn end }
+function flush()
+  while #timers > 0 do
+    local t = timers
+    timers = {}
+    for _, fn in ipairs(t) do fn() end
+  end
+end
+
+SlashCmdList = {}
+function hooksecurefunc(a, b, c)
+  if type(a) == "table" then
+    local orig = a[b]
+    a[b] = function(...) local r = { orig(...) }; c(...); return unpack(r) end
+  else
+    local orig = _G[a]
+    _G[a] = function(...) local r = { orig(...) }; b(...); return unpack(r) end
+  end
+end
+
+-- Widgets ------------------------------------------------------------------
+
+local function newRegion()
+  local r = { shown = true, alpha = 1 }
+  function r:Show() self.shown = true end
+  function r:Hide() self.shown = false end
+  function r:IsShown() return self.shown end
+  function r:SetPoint() end
+  function r:SetSize() end
+  function r:SetAlpha(a) self.alpha = a end
+  function r:GetAlpha() return self.alpha end
+  function r:SetTexture(p) self.texture = p end
+  function r:SetColorTexture() self.texture = "color" end
+  function r:SetVertexColor() end
+  function r:SetTexCoord() end
+  function r:SetText(t) self.text = t end
+  function r:GetText() return self.text end
+  return r
+end
+
+handlers = {}
+function CreateFrame(kind, name, parent)
+  local f = newRegion()
+  f.kind = kind
+  f.scripts = {}
+  function f:RegisterEvent() end
+  function f:SetScript(n, fn) self.scripts[n] = fn; if kind == "Frame" and n == "OnEvent" then handlers.OnEvent = fn end end
+  f.textures = {}
+  function f:CreateTexture() local t = newRegion(); self.textures[#self.textures + 1] = t; return t end
+  function f:CreateFontString() return newRegion() end
+  function f:GetID() return 0 end
+  function f:SetChecked(v) self.checked = v end
+  function f:GetChecked() return self.checked end
+  if name then _G[name] = f end
+  return f
+end
+UIParent = CreateFrame("Frame")
+
+GameTooltip = CreateFrame("Frame")
+GameTooltip.lines = {}
+function GameTooltip:SetOwner() self.lines = {} end
+function GameTooltip:SetText(t) self.lines = { t } end
+function GameTooltip:AddLine(t) self.lines[#self.lines + 1] = t end
+function GameTooltip:SetTrainerService(i) self.lines = { "service " .. i } end
+function tooltipHas(text)
+  for _, l in ipairs(GameTooltip.lines) do if l:find(text, 1, true) then return true end end
+  return false
+end
+
+-- Items -------------------------------------------------------------------
+-- itemID -> { name, ilvl, minLevel, subType, equipLoc, classID, subclassID, stats, cached }
+items = {}
+local function idOf(item)
+  if type(item) == "number" then return item end
+  return tonumber(item:match("item:(%d+)"))
+end
+local function itemLink(id, name)
+  return "|cnIQ1:|Hitem:" .. id .. "::::::::17:1486:::1:3524::::::|h[" .. name .. "]|h|r"
+end
+function addItem(id, def)
+  def.link = itemLink(id, def.name)
+  if def.cached == nil then def.cached = true end
+  items[id] = def
+  return def.link
+end
+requested = {}
+C_Item = {
+  GetItemInfoInstant = function(item)
+    local d = items[idOf(item)]
+    if not d then return nil end
+    return idOf(item), "Type", d.subType, d.equipLoc, 1, d.classID, d.subclassID
+  end,
+  GetItemInfo = function(item)
+    local d = items[idOf(item)]
+    if not d or not d.cached then return nil end
+    return d.name, d.link, 1, d.ilvl, d.minLevel, "Type", d.subType, 1, d.equipLoc, 1, 1, d.classID, d.subclassID
+  end,
+  GetDetailedItemLevelInfo = function(item)
+    local d = items[idOf(item)]
+    return d and d.cached and d.ilvl or nil
+  end,
+  GetItemStats = function(link)
+    local d = items[idOf(link)]
+    local copy = {}
+    for k, v in pairs(d and d.stats or {}) do copy[k] = v end
+    return copy
+  end,
+  RequestLoadItemDataByID = function(id) requested[id] = true end,
+}
+
+-- Player ------------------------------------------------------------------
+playerClass = "PALADIN"
+playerLevel = 17
+knownSpells = { [9078] = true, [9077] = true, [8737] = true, [9116] = true, [198] = true, [199] = true }
+equippedLinks = {}
+function UnitClass() return "Paladin", playerClass, 2 end
+function UnitLevel() return playerLevel end
+function IsPlayerSpell(id) return knownSpells[id] == true end
+function GetInventoryItemLink(unit, slot) return equippedLinks[slot] end
+local SLOT_IDS = { HEADSLOT = 1, NECKSLOT = 2, SHOULDERSLOT = 3, CHESTSLOT = 5, WAISTSLOT = 6, LEGSSLOT = 7,
+  FEETSLOT = 8, WRISTSLOT = 9, HANDSSLOT = 10, FINGER0SLOT = 11, FINGER1SLOT = 12, TRINKET0SLOT = 13,
+  TRINKET1SLOT = 14, BACKSLOT = 15, MAINHANDSLOT = 16, SECONDARYHANDSLOT = 17, RANGEDSLOT = 18 }
+function GetInventorySlotInfo(name) return SLOT_IDS[name] end
+function GetBuildInfo() return "1.60.1", "70374", "Oct 12 2026", 16001 end
+
+-- Trainer -----------------------------------------------------------------
+-- services[i] = { name, type, link or nil, category }
+services = {}
+function GetNumTrainerServices() return #services end
+function GetTrainerServiceInfo(i)
+  local s = services[i]
+  if not s then return nil end
+  return s.name, s.type, 133476, 0, "", s.category  -- Forever order, from the probe
+end
+function GetTrainerServiceItemLink(i) return services[i] and services[i].link end
+
+local trainerLoaded = false
+C_AddOns = { IsAddOnLoaded = function(name) return name == "Blizzard_TrainerUI" and trainerLoaded, true end }
+
+-- Rows: list of { button, data }. Mirrors a ScrollBox with ForEachFrame.
+rows = {}
+function makeRow(data, label)
+  local b = CreateFrame("Button")
+  b.name = newRegion()
+  b.name.text = label
+  b.icon = newRegion()
+  return { button = b, data = data }
+end
+
+function loadTrainerUI()
+  ClassTrainerFrame = CreateFrame("Frame", "ClassTrainerFrame")
+  ClassTrainerFrame.ScrollBox = CreateFrame("Frame")
+  function ClassTrainerFrame.ScrollBox:ForEachFrame(fn)
+    for _, r in ipairs(rows) do fn(r.button, r.data) end
+  end
+  function ClassTrainerFrame.ScrollBox:RegisterCallback() end
+  function ClassTrainerFrame_InitServiceButton(button, data) end
+  function ClassTrainerFrame_InitCategoryButton(button, data) end
+  -- Like Blizzard: lay out each row through the global init functions.
+  function ClassTrainerFrame_Update()
+    for _, r in ipairs(rows) do
+      if r.data.categoryName then ClassTrainerFrame_InitCategoryButton(r.button, r.data)
+      else ClassTrainerFrame_InitServiceButton(r.button, r.data) end
+    end
+  end
+  trainerLoaded = true
+end
+
+function fire(event, ...) handlers.OnEvent(nil, event, ...) end
+
+-- Assertions --------------------------------------------------------------
+local passed = 0
+function check(cond, msg)
+  if not cond then error("FAIL: " .. msg, 2) end
+  passed = passed + 1
+end
+function passCount() return passed end
+
+-- Marker state for a row: "upgrade", "same", or "none".
+function marker(row)
+  for _, t in ipairs(row.button.textures) do
+    if t.shown and t.texture == "Interface\\Buttons\\UI-MicroStream-Green" then return "upgrade" end
+    if t.shown and t.texture == "color" then return "same" end
+  end
+  return "none"
+end
