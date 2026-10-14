@@ -326,7 +326,6 @@ function addToSettingsMenu(): boolean {
   modify(FILTER_MENU_TAG, (_owner, root) => {
     safe("settings menu", () => {
       root.CreateDivider();
-      root.CreateTitle("TrainerUpgrades");
       root.CreateCheckbox(
         "Only show usable gear",
         () => settings().onlyUsable,

@@ -10,9 +10,12 @@ check(TrainerUpgradesDB.tooltipLines == nil, "removed settings drop out of the s
 check(menuCallbacks["MENU_TRAINER_FILTER"] ~= nil, "added to the trainer's Settings dropdown")
 check(TrainerUpgradesUsableFilter == nil, "no separate checkbox when the menu works")
 local entry
-for _, item in ipairs(openMenu("MENU_TRAINER_FILTER")) do
+local menuItems = openMenu("MENU_TRAINER_FILTER")
+for _, item in ipairs(menuItems) do
   if item.kind == "checkbox" then entry = item end
+  check(item.kind ~= "title", "no header in the Settings dropdown")
 end
+check(menuItems[1].kind == "divider" and #menuItems == 2, "just a divider and the toggle")
 check(entry ~= nil and entry.text == "Only show usable gear", "menu has the usable-gear toggle")
 check(entry.isSelected() == false, "menu toggle starts off")
 entry.setSelected()

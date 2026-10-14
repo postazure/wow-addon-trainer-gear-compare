@@ -75,8 +75,8 @@ data keys, which is what I need to fix it.
 
 ## 6. Filter
 
-- [ ] Open the trainer's **Settings** dropdown. At the bottom: a divider,
-      "TrainerUpgrades", and an **"Only show usable gear"** checkbox.
+- [ ] Open the trainer's **Settings** dropdown. At the bottom: a divider
+      and an **"Only show usable gear"** checkbox. No header.
 - [ ] There's no separate checkbox in the trainer window.
 - [ ] Ticking it fades gear you can't use (wrong armor, unlearned weapon,
       level too high). Gear you can use stays bright.

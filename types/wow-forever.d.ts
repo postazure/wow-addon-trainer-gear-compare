@@ -265,7 +265,6 @@ interface Region {
 /** Modern menu builder passed to Menu.ModifyMenu callbacks. */
 interface MenuDescription {
   CreateDivider(): unknown;
-  CreateTitle(text: string): unknown;
   CreateCheckbox(text: string, isSelected: (data?: unknown) => boolean, setSelected: (data?: unknown) => void, data?: unknown): unknown;
 }
 
