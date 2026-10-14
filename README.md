@@ -123,7 +123,8 @@ src/db.ts, src/log.ts         Settings; debug log and safe() wrapper
 types/wow-forever.d.ts        Hand-written WoW API types
 test/                         Mock client, fixtures, main + fallback suites
 probe/TrainerCompareProbe/    Debug addon (plain Lua) that found the API
-scripts/                      Post-build (TOC version, Lua 5.1 check), deploy, package
+scripts/                      Post-build, package, deploy, icon, and release scripts
+.github/workflows/            Release (tag) and CurseForge upload workflows
 dist/TrainerCompare/          Build output. This folder is the addon.
 release/                      Zips from npm run package (not committed)
 docs/                         In-game checklist, CurseForge guide and description
@@ -135,7 +136,7 @@ CLAUDE.md                     Working rules and lessons for Claude sessions
 
 ```sh
 npm run build       # TypeScript -> one Lua 5.1 file in dist/TrainerCompare
-npm test            # build, then 130+ checks in two mock clients (main + fallback)
+npm test            # build, 150+ checks in two mock clients, and the release-script tests
 npm run typecheck
 npm run watch       # rebuild on save (does not copy the TOC)
 npm run package     # build, test, zip for CurseForge
@@ -163,34 +164,38 @@ Notes:
 
 ## Releasing
 
-The version lives only in `package.json`; the build writes it into the TOC,
-and `/tc` reads it from there.
+Releases are cut by tagging `main`: `git tag v0.6.0 && git push origin v0.6.0`.
+The tag must match `"version"` in `package.json`, which is the only place the
+version lives (the build writes it into the TOC, and `/tc` reads it from there).
+
+The tag starts the **Release** workflow (`.github/workflows/release.yml`):
+
+1. **Build and test**: `scripts/check-release.mjs` checks the tag,
+   `package.json` and `CHANGELOG.md` agree; then `npm run package`.
+2. **Write release notes**: `scripts/release-notes.mjs` has Claude
+   (`claude-opus-5-5`) write player-facing notes from the version's
+   `CHANGELOG.md` section and the commits since the last tag. With no API key,
+   or if the API fails, it uses the `CHANGELOG.md` section. It never fails the
+   release.
+3. **GitHub release** with the zip and the notes.
+4. **CurseForge**: `.github/workflows/curseforge.yml` uploads the release's zip
+   and notes with `scripts/curseforge-upload.mjs`, tagged with the Forever game
+   versions from the zip's own TOC. It's a separate workflow, so it can be run
+   by hand for any existing release, and it's skipped until its secret and
+   variable are set.
+
+Before tagging, go through [docs/CURSEFORGE.md](docs/CURSEFORGE.md): the
+release testing checklist, the assets checklist (screenshots, description,
+icons), and the one-time automation setup. Changes go in
+[CHANGELOG.md](CHANGELOG.md).
 
 ```sh
 npm run package     # build, test, then release/TrainerCompare-<version>.zip
 ```
 
-The zip holds one `TrainerCompare/` folder: the TOC, the Lua, the icon,
-and the license. After changing `assets/icon.svg`, run
-`scripts/render-icon.sh` to rebuild the logo and the in-game icon. Upload it on CurseForge by hand for now.
-[docs/CURSEFORGE.md](docs/CURSEFORGE.md) has the whole release: prepare, a
-release testing checklist, an assets checklist (screenshots, description,
-icons), and the upload settings. Changes go in
-[CHANGELOG.md](CHANGELOG.md).
-
-### TODO: automatic uploads
-
-Set up a GitHub Action that runs on a version tag (`v*`):
-
-- [ ] Create the CurseForge project and add `## X-Curse-Project-ID` to the TOC.
-- [ ] Create a CurseForge API token; add it as the repo secret `CURSEFORGE_TOKEN`.
-- [ ] Workflow: checkout, `npm ci`, `npm run package`.
-- [ ] Look up the Forever game version id from `GET /api/game/versions`
-      (name `1.60.1`, Forever type).
-- [ ] Upload with `POST /api/projects/<id>/upload-file` (header `X-Api-Token`;
-      form fields `file` and `metadata` with `changelog`, `releaseType`,
-      `gameVersions`, `displayName`). Changelog from `CHANGELOG.md`.
-- [ ] Also attach the zip to a GitHub release.
+The zip holds one `TrainerCompare/` folder: the TOC, the Lua, the icon, and the
+license. After changing `assets/icon.svg`, run `scripts/render-icon.sh` to
+rebuild the logo and the in-game icon.
 
 ## License
 

@@ -1,0 +1,108 @@
+# Release: push a version tag on main (git tag v0.6.0 && git push origin v0.6.0).
+#
+# Jobs run in order and each can be re-run on its own from the Actions page:
+#   build           check tag/version/changelog agree, build, test, zip
+#   notes           Claude writes the release notes (falls back to CHANGELOG.md)
+#   github-release  create or update the GitHub release with the zip and notes
+#   curseforge      upload to CurseForge (skipped until it is set up)
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and release again, like v0.6.0
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check the tag, package.json and CHANGELOG.md agree
+        run: node scripts/check-release.mjs "$TAG"
+      - name: Type-check, build, test and zip
+        run: npm run package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: addon-zip
+          path: release/*.zip
+          if-no-files-found: error
+
+  notes:
+    name: Write release notes
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0 # history and tags, for the commits since the last release
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Write notes with Claude (falls back to the CHANGELOG section)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/release-notes.mjs --tag "$TAG" --out release-notes.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes.md
+          if-no-files-found: error
+
+  github-release:
+    name: GitHub release
+    needs: [build, notes]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: addon-zip
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${TAG#v}"
+          prerelease=""
+          case "$version" in *-alpha*|*-beta*|*-rc*) prerelease="--prerelease" ;; esac
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" ./*.zip --clobber --repo "$GITHUB_REPOSITORY"
+            gh release edit "$TAG" --notes-file release-notes.md --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" ./*.zip --verify-tag $prerelease \
+              --title "Trainer Compare $version" --notes-file release-notes.md --repo "$GITHUB_REPOSITORY"
+          fi
+
+  curseforge:
+    name: CurseForge
+    needs: github-release
+    uses: ./.github/workflows/curseforge.yml
+    with:
+      tag: ${{ github.event.inputs.tag || github.ref_name }}
+    secrets: inherit

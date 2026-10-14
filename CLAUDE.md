@@ -11,6 +11,22 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
 - `npm run package`: test, then `release/TrainerCompare-<version>.zip`.
 - Releases follow `docs/CURSEFORGE.md` (testing and assets checklists).
 
+## Releases
+
+- A release is a `v<version>` tag on `main` (no release branch). The owner
+  pushes the tag; never create or push release tags yourself unless asked.
+- The tag must match `package.json`, and `CHANGELOG.md` needs a
+  `## <version>` section written for players. `scripts/check-release.mjs`
+  enforces both before anything is published.
+- `.github/workflows/release.yml`: build and test, Claude-written notes
+  (`scripts/release-notes.mjs`, falls back to the CHANGELOG section and must
+  never fail the release), then the GitHub release.
+- `.github/workflows/curseforge.yml` is separate on purpose: it reads the zip
+  and notes from the GitHub release, can be re-run by hand for any tag, and
+  skips (not fails) while `CURSEFORGE_TOKEN` / `CURSEFORGE_PROJECT_ID` are
+  unset.
+- Lint workflow changes with `actionlint` before pushing.
+
 ## How we work
 
 - Commit straight to `main` and push after each change. No PRs, no feature

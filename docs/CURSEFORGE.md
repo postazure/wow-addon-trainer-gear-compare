@@ -5,7 +5,7 @@ A release has four parts, in this order:
 1. [Prepare](#1-prepare): version, changelog, zip.
 2. [Release testing checklist](#2-release-testing-checklist): test the zip in game.
 3. [Assets checklist](#3-assets-checklist): make sure screenshots, text and icons match this version.
-4. [Upload](#4-upload).
+4. [Release](#4-release): tag `main`; CI builds, writes notes, and publishes.
 
 Don't upload until 2 and 3 are fully ticked. Copy the checklists into the
 release's notes (or a GitHub issue) and tick them there, so this file stays
@@ -118,19 +118,59 @@ it looks different from the current version.
 - [ ] Categories are still right (Professions, Tooltip).
 - [ ] Source link points to the public GitHub repo.
 
-## 4. Upload
+## 4. Release
 
-- [ ] Commit, then tag: `git tag v<version> && git push origin v<version>`.
-- [ ] On the project page, **Upload File**:
-  - File: `release/TrainerCompare-<version>.zip`.
-  - Display name: `Trainer Compare <version>`.
-  - Release type: **Release** (Beta if the testing checklist found things
-    you chose to ship anyway).
-  - Game version: **Forever** with the version(s) in the TOC's Interface
-    line (1.60.1 today).
-  - Changelog: that version's section from `CHANGELOG.md`.
-- [ ] After moderation, install it from the CurseForge app on a clean
-      AddOns folder, log in, and check `/tc` shows the new version.
+Releases are cut by tagging `main`. There is no release branch.
+
+- [ ] Everything for the release is committed and pushed to `main`.
+- [ ] Tag that commit and push the tag:
+      `git tag v<version> && git push origin v<version>`.
+      The tag must match `package.json` (for example `v0.6.0`). A tag like
+      `v1.0.0-beta.1` makes a pre-release and a CurseForge **Beta** file.
+- [ ] Watch **Actions → Release**. Its jobs run in order:
+  1. **Build and test**: checks the tag, `package.json` and `CHANGELOG.md`
+     agree, then builds, tests and zips. Nothing is published if this fails.
+  2. **Write release notes**: Claude turns this version's `CHANGELOG.md`
+     section (plus the commits since the last tag) into player-facing notes.
+     Without the `ANTHROPIC_API_KEY` secret, or if the API fails, it uses the
+     `CHANGELOG.md` section as is. It never fails the release.
+  3. **GitHub release**: creates the release with the zip and the notes, or
+     updates it if it already exists.
+  4. **CurseForge**: uploads the zip with the same notes, tagged with the
+     Forever game versions from the TOC's Interface line. Skipped (not
+     failed) until CurseForge is set up; see below.
+- [ ] Read the notes on the GitHub release. If they need a change, edit the
+      release on GitHub, then re-run the CurseForge upload (it uses the
+      release's notes).
+- [ ] After CurseForge moderation, install it from the CurseForge app on a
+      clean AddOns folder, log in, and check `/tc` shows the new version.
+
+**If a job fails:** fix the cause, then use **Re-run failed jobs** on the
+run. To build a tag again from scratch, run **Actions → Release → Run
+workflow** with the tag. To retry only the CurseForge upload for any existing
+release, run **Actions → Upload to CurseForge → Run workflow** with the tag.
+
+**Before the automation is set up** (or if CurseForge is down), upload by
+hand: download the zip from the GitHub release, then on the project page
+**Upload File** with display name `Trainer Compare <version>`, release type
+**Release**, game version **Forever** (the versions in the TOC's Interface
+line, 1.60.1 today), and the release's notes as the changelog.
+
+## Automation setup (once)
+
+In the GitHub repo, **Settings → Secrets and variables → Actions**:
+
+| Name | Kind | What it's for | Without it |
+| --- | --- | --- | --- |
+| `ANTHROPIC_API_KEY` | Secret | Claude writes the release notes | Notes are the `CHANGELOG.md` section |
+| `CURSEFORGE_TOKEN` | Secret | Upload to CurseForge (from CurseForge → API Tokens) | CurseForge job is skipped |
+| `CURSEFORGE_PROJECT_ID` | Variable | Which CurseForge project (from the project page) | CurseForge job is skipped |
+
+After adding the CurseForge ones, upload any release that was skipped with
+**Actions → Upload to CurseForge → Run workflow**.
+
+To check an upload without sending it:
+`node scripts/curseforge-upload.mjs --zip release/TrainerCompare-<version>.zip --notes <file> --dry-run`.
 
 ## One-time setup (on curseforge.com)
 
@@ -144,8 +184,8 @@ it looks different from the current version.
 - [ ] Screenshots: everything in `assets/screenshots/` (see the assets checklist).
 - [ ] Source link: this GitHub repo. Blizzard wants add-on code public and
       readable, so make the repo public first.
-- [ ] Copy the project ID from the project page. Later it goes in the TOC as
-      `## X-Curse-Project-ID: <id>` (needed for the GitHub Action).
+- [ ] Copy the project ID from the project page into the `CURSEFORGE_PROJECT_ID`
+      repo variable (see Automation setup).
 
 The first file goes through moderation before it shows up.
 

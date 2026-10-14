@@ -12,11 +12,12 @@
     "build": "tstl -p tsconfig.json && node scripts/postbuild.mjs",
     "watch": "tstl -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node test/run.mjs",
+    "test": "npm run build && node test/run.mjs && node --test test/scripts.test.mjs",
     "deploy": "npm run build && node scripts/deploy.mjs",
     "package": "npm test && node scripts/package.mjs"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "0.129.0",
     "@typescript-to-lua/language-extensions": "1.19.0",
     "fengari": "0.1.4",
     "fflate": "0.8.2",
