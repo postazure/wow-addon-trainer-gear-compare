@@ -31,7 +31,7 @@ types/wow-forever.d.ts        Hand-written WoW API types
 test/                         Mock client, fixtures, main + fallback suites
 probe/TrainerCompareProbe/    Debug addon (plain Lua) that found the API
 scripts/                      Post-build, package, deploy, icon, and release scripts
-.github/workflows/            Release (tag) and CurseForge upload workflows
+.github/workflows/            Test (every PR), release (tag) and CurseForge upload
 dist/TrainerCompare/          Build output. This folder is the addon.
 release/                      Zips from npm run package (not committed)
 docs/                         How it works, development, probe findings,
@@ -46,7 +46,8 @@ CLAUDE.md                     Working rules and lessons for Claude sessions
 ## Commands
 
 Changes go through a pull request to `main`. `npm test` must pass before you
-push.
+push. The **Test** workflow (`.github/workflows/test.yml`) runs it again on
+every PR and on `main`; merge only when it's green.
 
 ```sh
 npm run build       # TypeScript -> one Lua 5.1 file in dist/TrainerCompare
