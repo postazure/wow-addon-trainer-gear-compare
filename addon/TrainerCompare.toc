@@ -1,7 +1,9 @@
 ## Interface: 16000, 16001
 ## Title: Trainer Compare
 ## Notes: Shows how trainer recipe gear compares to what you wear, and whether you can use it.
-## Version: 0.5.1
+## Author: postazure
+## Version: @project-version@
+## X-License: MIT
 ## SavedVariables: TrainerCompareDB
 
 TrainerCompare.lua

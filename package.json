@@ -1,6 +1,6 @@
 {
   "name": "trainer-compare",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "description": "Trainer Compare: a WoW Forever addon that compares trainer recipe gear to what you wear.",
   "type": "module",
@@ -9,13 +9,16 @@
     "watch": "tstl -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node test/run.mjs",
-    "deploy": "npm run build && node scripts/deploy.mjs"
+    "deploy": "npm run build && node scripts/deploy.mjs",
+    "package": "npm test && node scripts/package.mjs"
   },
   "devDependencies": {
     "@typescript-to-lua/language-extensions": "1.19.0",
     "fengari": "0.1.4",
+    "fflate": "0.8.2",
     "luaparse": "0.3.1",
     "typescript": "6.0.2",
     "typescript-to-lua": "1.37.1"
-  }
+  },
+  "license": "MIT"
 }

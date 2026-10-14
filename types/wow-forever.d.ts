@@ -197,7 +197,11 @@ declare const ClassTrainerFrame: TrainerFrame | undefined;
 
 declare namespace C_AddOns {
   function IsAddOnLoaded(name: string): LuaMultiReturn<[boolean, boolean]>;
+  /** Not probed; modern clients have it. Feature-checked. */
+  const GetAddOnMetadata: ((this: void, addon: string, field: string) => string | undefined) | undefined;
 }
+/** Older name for the same thing. Not probed. */
+declare const GetAddOnMetadata: ((addon: string, field: string) => string | undefined) | undefined;
 
 /** Not probed. Retail helper for ScrollBox frame callbacks. */
 declare const ScrollUtil: {

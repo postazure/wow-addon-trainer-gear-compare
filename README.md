@@ -20,6 +20,8 @@ actually returns. See [Probe findings](#probe-findings).
 
 ## Install
 
+From CurseForge, or from source:
+
 1. `npm install && npm run build`
 2. Copy `dist/TrainerCompare` into `<WoW Forever>/Interface/AddOns/`.
    Or set `WOW_ADDONS_DIR` and run `npm run deploy`.
@@ -121,7 +123,11 @@ src/db.ts, src/log.ts         Settings; debug log and safe() wrapper
 types/wow-forever.d.ts        Hand-written WoW API types
 test/                         Mock client, fixtures, main + fallback suites
 probe/TrainerCompareProbe/    Debug addon (plain Lua) that found the API
+scripts/                      Post-build (TOC version, Lua 5.1 check), deploy, package
 dist/TrainerCompare/          Build output. This folder is the addon.
+release/                      Zips from npm run package (not committed)
+docs/                         In-game checklist, CurseForge release guide
+CHANGELOG.md, LICENSE         Release notes; MIT license
 ```
 
 ```sh
@@ -129,6 +135,7 @@ npm run build       # TypeScript -> one Lua 5.1 file in dist/TrainerCompare
 npm test            # build, then 130+ checks in two mock clients (main + fallback)
 npm run typecheck
 npm run watch       # rebuild on save (does not copy the TOC)
+npm run package     # build, test, zip for CurseForge
 ```
 
 Notes:
@@ -146,6 +153,39 @@ Notes:
 - The tests run the built Lua in fengari, with a mock seeded from real probe
   values. They prove the logic, not the look. Use the manual checklist for
   that.
+
+## Releasing
+
+The version lives only in `package.json`; the build writes it into the TOC,
+and `/tc` reads it from there.
+
+```sh
+npm run package     # build, test, then release/TrainerCompare-<version>.zip
+```
+
+The zip holds one `TrainerCompare/` folder: the TOC, the Lua, and the
+license. Upload it on CurseForge by hand for now. Steps, the upload
+settings, and a ready-to-paste project description are in
+[docs/CURSEFORGE.md](docs/CURSEFORGE.md). Changes go in
+[CHANGELOG.md](CHANGELOG.md).
+
+### TODO: automatic uploads
+
+Set up a GitHub Action that runs on a version tag (`v*`):
+
+- [ ] Create the CurseForge project and add `## X-Curse-Project-ID` to the TOC.
+- [ ] Create a CurseForge API token; add it as the repo secret `CURSEFORGE_TOKEN`.
+- [ ] Workflow: checkout, `npm ci`, `npm run package`.
+- [ ] Look up the Forever game version id from `GET /api/game/versions`
+      (name `1.60.1`, Forever type).
+- [ ] Upload with `POST /api/projects/<id>/upload-file` (header `X-Api-Token`;
+      form fields `file` and `metadata` with `changelog`, `releaseType`,
+      `gameVersions`, `displayName`). Changelog from `CHANGELOG.md`.
+- [ ] Also attach the zip to a GitHub release.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ## Probe findings
 

@@ -11,6 +11,7 @@ check(SLASH_TRAINERCOMPARE1 == "/tc", "slash command is /tc")
 output = {}
 SlashCmdList.TRAINERCOMPARE("")
 check(output[1]:find("|cff33ff99Trainer Compare|r", 1, true) == 1, "chat prefix reads Trainer Compare")
+check(output[1]:find("v0.6.0", 1, true) ~= nil, "/tc shows the version from the TOC")
 
 -- Settings dropdown -----------------------------------------------------------
 check(menuCallbacks["MENU_TRAINER_FILTER"] ~= nil, "added to the trainer's Settings dropdown")

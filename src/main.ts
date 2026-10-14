@@ -10,7 +10,12 @@ import { resetUsableCache } from "./usable";
 
 const ADDON_NAME = "TrainerCompare";
 const TRAINER_UI = "Blizzard_TrainerUI";
-const VERSION = "0.5.1";
+/** From the TOC, which the build fills in from package.json. */
+function addonVersion(): string {
+  const read = C_AddOns.GetAddOnMetadata ?? GetAddOnMetadata;
+  const version = read !== undefined ? safe("version", () => read(ADDON_NAME, "Version")) : undefined;
+  return version ?? "?";
+}
 
 /** Gear, level, or known spells changed: results are stale. */
 const STALE_EVENTS = ["PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "SPELLS_CHANGED", "LEARNED_SPELL_IN_TAB"];
@@ -22,7 +27,7 @@ function onEvent(event: string, args: any[]): void {
       const db = loadDB();
       setDebug(db.debug);
       const [, , , iface] = GetBuildInfo();
-      debug(`loaded v${VERSION}, client interface ${iface}`);
+      debug(`loaded v${addonVersion()}, client interface ${iface}`);
       // The trainer UI may already be loaded by another addon.
       if (C_AddOns.IsAddOnLoaded(TRAINER_UI)[0]) installTrainerHooks();
     } else if (name === TRAINER_UI) {
@@ -76,7 +81,7 @@ function onSlash(msg: string): void {
   } else if (cmd === "copy") {
     reopenCopyWindow();
   } else {
-    say(`v${VERSION}`);
+    say(`v${addonVersion()}`);
     say("/tc filter - toggle only show usable gear");
     say(`/tc scoring [${SCORERS.map((s) => s.id).join("|")}] - how gear is scored`);
     say("/tc debug - toggle debug messages");

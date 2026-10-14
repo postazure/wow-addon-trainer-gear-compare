@@ -45,4 +45,10 @@ for _, l in ipairs(output) do
   check(not l:find("failed", 1, true), "no hidden failure: " .. l)
 end
 
+-- No metadata API: the version shows as "?" instead of failing.
+C_AddOns.GetAddOnMetadata = nil
+output = {}
+SlashCmdList.TRAINERCOMPARE("")
+check(output[1]:find("v?", 1, true) ~= nil, "unknown version shows as v?")
+
 report("fallback")

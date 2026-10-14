@@ -269,7 +269,13 @@ end
 function GetTrainerServiceItemLink(i) return services[i] and services[i].link end
 
 local trainerLoaded = false
-C_AddOns = { IsAddOnLoaded = function(name) return name == "Blizzard_TrainerUI" and trainerLoaded, true end }
+addonVersion = "0.6.0"
+C_AddOns = {
+  IsAddOnLoaded = function(name) return name == "Blizzard_TrainerUI" and trainerLoaded, true end,
+  GetAddOnMetadata = function(name, field)
+    if name == "TrainerCompare" and field == "Version" then return addonVersion end
+  end,
+}
 
 -- Rows: list of { button, data }. Mirrors a ScrollBox with ForEachFrame.
 rows = {}
