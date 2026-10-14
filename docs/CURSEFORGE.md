@@ -107,7 +107,8 @@ it looks different from the current version.
       the addon does now: features, commands, and the "What it doesn't do"
       list. Paste it into the project description.
 - [ ] The one-line summary below is still true.
-- [ ] `README.md` feature list and commands match.
+- [ ] `README.md` feature list and `docs/HOW-IT-WORKS.md` match what
+      the addon does.
 - [ ] `CHANGELOG.md` has this version's section.
 
 **Icons**

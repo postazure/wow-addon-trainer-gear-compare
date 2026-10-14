@@ -2,7 +2,8 @@
 
 Trainer Compare: a WoW Forever addon. At a profession trainer it shows how a
 recipe's gear compares to what the player wears. TypeScript, compiled to one
-Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
+Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
+`docs/DEVELOPMENT.md`; behavior: `docs/HOW-IT-WORKS.md`.
 
 ## Commands
 
@@ -85,8 +86,8 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
 ## Don't assume the WoW API
 
 WoW Forever is Classic data on a modern, retail-style engine. Classic and
-retail docs are both wrong in places. What we learned (more in README
-"Probe findings"):
+retail docs are both wrong in places. What we learned (more in
+`docs/PROBE-FINDINGS.md`):
 
 - `GetTrainerServiceInfo` returns name, **type**, icon, ?, "", category
   (Classic puts the type 3rd).
