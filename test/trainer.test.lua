@@ -253,8 +253,21 @@ check(not dumpFailed, "/tu dump has no failures")
 
 -- Menu diagnostic runs, watches, and finishes without errors.
 output = {}
+openMenuTag = "MENU_CLASS_TRAINER_SETTINGS"
 SlashCmdList.TRAINERUPGRADES("menus")
 flush()
+local copy = TrainerUpgradesCopyWindow
+check(copy ~= nil and copy.shown, "/tu menus opens the copy window")
+local copyText = lastEditBox and lastEditBox.text or ""
+check(copyText:find("menu API present", 1, true) ~= nil, "copy window has our report")
+check(copyText:find("MENU_CLASS_TRAINER_SETTINGS", 1, true) ~= nil, "copy window has Blizzard's printed menu tag")
+check(copyText:find("done.", 1, true) ~= nil, "copy window has the whole run")
+check(lastEditBox.highlighted, "copy window text is selected")
+local _, prefixCount = copyText:gsub("TrainerUpgrades|", "")
+check(prefixCount == 0, "our lines are not doubled by the chat capture")
+SlashCmdList.TRAINERUPGRADES("copy")
+check(copy.shown, "/tu copy reopens it")
+
 local sawDone, menuFailed = false, false
 for _, l in ipairs(output) do
   if l:find("done.", 1, true) then sawDone = true end

@@ -1,4 +1,4 @@
-const PREFIX = "|cff33ff99TrainerUpgrades|r ";
+export const PREFIX = "|cff33ff99TrainerUpgrades|r ";
 
 let debugOn = false;
 

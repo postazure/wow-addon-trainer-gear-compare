@@ -1,5 +1,6 @@
 import { currentScorer, invalidate } from "./compare";
 import { loadDB, settings } from "./db";
+import { reopenCopyWindow } from "./copyWindow";
 import { diagnoseMenus } from "./diagnose";
 import { onItemInfoReceived } from "./items";
 import { debug, safe, say, setDebug } from "./log";
@@ -75,6 +76,8 @@ function onSlash(msg: string): void {
     dumpState(say);
   } else if (cmd === "menus") {
     diagnoseMenus(say);
+  } else if (cmd === "copy") {
+    reopenCopyWindow();
   } else {
     say(`v${VERSION}`);
     say("/tu filter - toggle only show upgrades");
@@ -83,6 +86,7 @@ function onSlash(msg: string): void {
     say("/tu debug - toggle debug messages");
     say("/tu dump - show hook status and what each visible row resolved to");
     say("/tu menus - find how the trainer's dropdowns and compare tooltips work");
+    say("/tu copy - reopen the last copy window");
   }
 }
 

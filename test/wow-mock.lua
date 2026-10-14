@@ -2,11 +2,22 @@
 unpack = unpack or table.unpack
 
 output = {}
+DEFAULT_CHAT_FRAME = {}
+function DEFAULT_CHAT_FRAME:AddMessage(text) output[#output + 1] = text end
 function print(...)
   local parts = {}
   for i = 1, select("#", ...) do parts[#parts + 1] = tostring((select(i, ...))) end
-  output[#output + 1] = table.concat(parts, " ")
+  DEFAULT_CHAT_FRAME:AddMessage(table.concat(parts, " "))
 end
+UISpecialFrames = {}
+ChatFontNormal = {}
+BackdropTemplateMixin = {}
+-- Modern menu API: prints open menu tags to chat, like Blizzard's.
+openMenuTag = nil
+Menu = {
+  ModifyMenu = function() end,
+  PrintOpenMenuTags = function() if openMenuTag then print(openMenuTag) end end,
+}
 function date() return "now" end
 
 -- Localized strings the addon reads from _G.
@@ -82,8 +93,13 @@ function CreateFrame(kind, name, parent)
   function f:CreateFontString() return newRegion() end
   function f:GetID() return 0 end
   function f:SetChecked(v) self.checked = v end
+  for _, m in ipairs({ "SetFrameStrata", "SetMovable", "EnableMouse", "RegisterForDrag", "StartMoving",
+    "StopMovingOrSizing", "SetWidth", "SetMultiLine", "SetAutoFocus", "SetFontObject", "SetFocus",
+    "SetScrollChild", "SetBackdrop" }) do f[m] = function() end end
+  function f:HighlightText() self.highlighted = true end
   function f:GetChecked() return self.checked end
   if name then _G[name] = f end
+  if kind == "EditBox" then lastEditBox = f end
   return f
 end
 UIParent = CreateFrame("Frame")

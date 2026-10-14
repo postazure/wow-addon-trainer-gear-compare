@@ -210,3 +210,46 @@ declare const ScrollUtil: {
 declare namespace string {
   function format(fmt: string, ...args: unknown[]): string;
 }
+
+// ---------------------------------------------------------------------------
+// Copy window (EditBox in a ScrollFrame). Standard in every client.
+// ---------------------------------------------------------------------------
+
+interface Frame {
+  SetFrameStrata(strata: string): void;
+  SetMovable(movable: boolean): void;
+  EnableMouse(enable: boolean): void;
+  RegisterForDrag(button: string): void;
+  StartMoving(): void;
+  StopMovingOrSizing(): void;
+  SetWidth(width: number): void;
+}
+
+interface EditBox extends Frame {
+  SetMultiLine(multi: boolean): void;
+  SetAutoFocus(auto: boolean): void;
+  SetFontObject(font: unknown): void;
+  SetText(text: string): void;
+  HighlightText(): void;
+  SetFocus(): void;
+}
+
+interface ScrollFrame extends Frame {
+  SetScrollChild(child: Frame): void;
+}
+
+/** Frames with the BackdropTemplate get SetBackdrop. */
+interface BackdropFrame extends Frame {
+  SetBackdrop?(backdrop: object): void;
+}
+
+declare function CreateFrame(frameType: "Button", name?: string, parent?: Frame, template?: string): Frame;
+declare function CreateFrame(frameType: "EditBox", name?: string, parent?: Frame, template?: string): EditBox;
+declare function CreateFrame(frameType: "ScrollFrame", name?: string, parent?: Frame, template?: string): ScrollFrame;
+
+declare const BackdropTemplateMixin: unknown;
+/** Frame names here close on Escape. */
+declare const UISpecialFrames: string[];
+declare const ChatFontNormal: unknown;
+/** print() writes here. Hooked (post-hook) to capture Blizzard's own output. */
+declare const DEFAULT_CHAT_FRAME: Frame & { AddMessage(text: string, ...rest: unknown[]): void };

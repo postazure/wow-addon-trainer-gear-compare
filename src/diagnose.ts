@@ -1,4 +1,5 @@
-import { safe } from "./log";
+import { showCopyWindow } from "./copyWindow";
+import { PREFIX, safe } from "./log";
 
 /** Resolve "Name" or "Table.Func" from _G. */
 function lookup(path: string): unknown {
@@ -43,11 +44,45 @@ function describe(name: string, widget: unknown): string {
   return `${name} (${type}) methods={${methods.join(",")}}${tag !== undefined ? ` menuTag=${tag}` : ""}`;
 }
 
+// Lines collected for the copy window while /tu menus runs.
+let captured: string[] | undefined;
+let chatHooked = false;
+
+/**
+ * Blizzard's Menu.PrintOpenMenuTags prints straight to chat. A post-hook on
+ * the chat frame catches those lines too. Our own lines are added directly.
+ */
+function startCapture(): void {
+  captured = [];
+  if (chatHooked) return;
+  chatHooked = true;
+  safe("chat capture", () =>
+    hooksecurefunc(DEFAULT_CHAT_FRAME, "AddMessage", (_frame: unknown, text: unknown) => {
+      if (captured && typeof text === "string" && !text.startsWith(PREFIX)) captured.push(text);
+    }));
+}
+
+function finishCapture(): void {
+  const lines = captured ?? [];
+  captured = undefined;
+  showCopyWindow(lines);
+}
+
 /**
  * Find how the trainer's dropdowns are built, then watch while the user
  * opens one. Used to add our filter to the Settings dropdown safely.
+ * Everything printed ends up in a copy window.
  */
-export function diagnoseMenus(say: (msg: string) => void): void {
+export function diagnoseMenus(print: (msg: string) => void): void {
+  startCapture();
+  const say = (msg: string): void => {
+    captured?.push(msg);
+    print(msg);
+  };
+  safe("menus", () => runDiagnosis(say));
+}
+
+function runDiagnosis(say: (msg: string) => void): void {
   const have = MENU_API.filter((p) => typeof lookup(p) === "function");
   const missing = MENU_API.filter((p) => typeof lookup(p) !== "function");
   say(`menu API present: ${have.length > 0 ? have.join(", ") : "none"}`);
@@ -57,6 +92,7 @@ export function diagnoseMenus(say: (msg: string) => void): void {
   const frame = ClassTrainerFrame;
   if (!frame) {
     say("open a trainer first, then run /tu menus again");
+    finishCapture();
     return;
   }
 
@@ -106,5 +142,8 @@ function watchTick(say: (msg: string) => void, seconds: number): void {
     const name = isWidget(open) ? (open as UIObject).GetName() : open;
     say(`${seconds}s: old-style UIDropDownMenu open: ${name}`);
   }
-  if (seconds === 10) say("done. Paste everything from \"menu API present\" down.");
+  if (seconds === 10) {
+    say("done. A copy window is open: press Ctrl+C, then paste it in chat with Claude.");
+    finishCapture();
+  }
 }

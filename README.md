@@ -39,6 +39,7 @@ No other addon is needed.
 | `/tu debug`                 | Toggle debug messages (also shows silent failures)   |
 | `/tu dump`                  | Hook status and what each visible row resolved to    |
 | `/tu menus`                 | Diagnostic: how dropdowns and compare tooltips work  |
+| `/tu copy`                  | Reopen the last `/tu menus` copy window              |
 
 Settings are saved per account in `TrainerUpgradesDB`.
 
@@ -109,6 +110,7 @@ src/scoring.ts                Swappable scoring methods
 src/slots.ts                  Equip slot ids and placement rules
 src/tooltip.ts                Optional tooltip lines (/tu lines)
 src/diagnose.ts               /tu menus diagnostic
+src/copyWindow.ts             Copy window for diagnostic output
 src/db.ts, src/log.ts         Settings; debug log and safe() wrapper
 types/wow-forever.d.ts        Hand-written WoW API types
 test/                         Mock client + scenario tests
