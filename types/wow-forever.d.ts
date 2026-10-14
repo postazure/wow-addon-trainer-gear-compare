@@ -147,6 +147,8 @@ interface FontString extends Region {
 }
 
 interface Frame extends Region {
+  /** All regions (textures, font strings) of this frame. */
+  GetRegions(): LuaMultiReturn<Region[]>;
   RegisterEvent(event: WowEvent): void;
   UnregisterEvent(event: WowEvent): void;
   SetScript(handler: "OnEvent", fn: ((frame: Frame, event: WowEvent, ...args: any[]) => void) | undefined): void;

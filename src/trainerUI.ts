@@ -223,6 +223,47 @@ function nativeCompare(tooltip: GameTooltip, link: string): boolean {
   return shoppingTooltips()[0]?.IsShown() ?? false;
 }
 
+function equippedText(): string {
+  const text = _G["CURRENTLY_EQUIPPED"];
+  return typeof text === "string" ? text : "Currently Equipped";
+}
+
+/** The header's font string: a named field if Blizzard gave it one, else any font string in it. */
+function headerLabel(header: Region): FontString | undefined {
+  for (const key of ["Label", "Text", "label", "text", "HeaderText"]) {
+    const value = field(header, key);
+    if (typeof value === "object" && typeof field(value, "SetText") === "function") return value as FontString;
+  }
+  if (typeof field(header, "GetRegions") === "function") {
+    for (const region of [...(header as Frame).GetRegions()]) {
+      if (region.GetObjectType() === "FontString") return region as FontString;
+    }
+  }
+  return undefined;
+}
+
+let loggedHeader = false;
+
+/**
+ * Show the compare tooltip's "Currently Equipped" header with its text.
+ * Blizzard fills the text in its own compare code, so set it if it's empty.
+ */
+function showEquippedHeader(tip: GameTooltip): void {
+  const header = field(tip, "CompareHeader");
+  if (!isRegion(header)) return;
+  header.Show();
+  const label = headerLabel(header);
+  if (!label) {
+    if (!loggedHeader) {
+      loggedHeader = true;
+      debug(`CompareHeader has no font string; fields: ${Object.keys(header as object).sort().join(",")}`);
+    }
+    return;
+  }
+  const text = label.GetText();
+  if (text === undefined || text === "") label.SetText(equippedText());
+}
+
 /** Fallback: fill the compare tooltips with the equipped items ourselves. */
 function manualCompare(tooltip: GameTooltip, slots: number[]): void {
   const tips = shoppingTooltips();
@@ -230,8 +271,7 @@ function manualCompare(tooltip: GameTooltip, slots: number[]): void {
     const tip = tips[i];
     tip.SetOwner(tooltip, "ANCHOR_NONE");
     tip.SetInventoryItem("player", slots[i]);
-    const header = field(tip, "CompareHeader"); // "Currently Equipped"
-    if (isRegion(header)) header.Show();
+    showEquippedHeader(tip);
     tip.Show();
   }
 }
@@ -272,6 +312,11 @@ function showCompare(tooltip: GameTooltip, index: number): void {
 
   if (safe("native compare", () => nativeCompare(tooltip, link)) === true) {
     compareShown = "native";
+    // Blizzard's compare normally sets this; fill it in if it came up empty.
+    for (const tip of shoppingTooltips()) {
+      const header = field(tip, "CompareHeader");
+      if (tip.IsShown() && isRegion(header) && header.IsShown()) showEquippedHeader(tip);
+    }
   } else {
     for (const tip of shoppingTooltips()) tip.Hide();
     manualCompare(tooltip, slots);
@@ -441,6 +486,15 @@ export function installTrainerHooks(): void {
 /** For /tc dump: what is hooked and what each visible row resolved to. */
 export function dumpState(say: (msg: string) => void): void {
   say(`hooks: ${hookStatus.length > 0 ? hookStatus.join(", ") : "not installed"}`);
+  const tip = shoppingTooltips()[0];
+  const header = tip !== undefined ? field(tip, "CompareHeader") : undefined;
+  if (isRegion(header)) {
+    const label = headerLabel(header);
+    const keys = Object.keys(header as object).filter((k) => typeof k === "string").sort().join(",");
+    say(`compare header: shown=${header.IsShown()} label=${label ? `"${label.GetText() ?? ""}"` : "none"} fields={${keys}}`);
+  } else {
+    say("compare header: none");
+  }
   say(`calls: initRow=${counters.initRow} initCategory=${counters.initCategory} refresh=${counters.refresh} tooltip=${counters.tooltip} compare=${counters.compare}`);
   const box = ClassTrainerFrame?.ScrollBox;
   if (!box?.ForEachFrame || !ClassTrainerFrame?.IsShown()) {

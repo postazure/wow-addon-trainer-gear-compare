@@ -92,6 +92,7 @@ local function newRegion()
   function r:SetTexCoord() end
   function r:SetText(t) self.text = t end
   function r:GetText() return self.text end
+  function r:GetObjectType() return self.objectType or "Texture" end
   return r
 end
 
@@ -136,8 +137,11 @@ for i = 1, 2 do
   function tip:SetOwner() end
   function tip:SetInventoryItem(unit, slot) self.slot = slot end
   function tip:Hide() self.shown = false; self.slot = nil; self.native = nil end
+  -- Like Blizzard's: a header frame with an empty label until compare code fills it.
   tip.CompareHeader = newRegion()
   tip.CompareHeader.shown = false
+  tip.CompareHeader.Label = newRegion()
+  tip.CompareHeader.Label.objectType = "FontString"
 end
 
 -- Native compare. Shows the item's GUID in ShoppingTooltip1, like Blizzard would.
@@ -150,6 +154,7 @@ function TooltipComparisonManager:CompareItem(item, tooltip)
   if not nativeWorks then return end
   ShoppingTooltip1.native = item.guid
   ShoppingTooltip1.shown = true
+  ShoppingTooltip1.CompareHeader.shown = true -- shown, but its text may be left empty
 end
 function TooltipComparisonManager:Clear() compareCleared = compareCleared + 1 end
 C_TooltipInfo = {
