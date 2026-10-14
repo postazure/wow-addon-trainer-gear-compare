@@ -3,19 +3,61 @@
 Shows, in the profession trainer window, whether each recipe's item would be
 an upgrade over your equipped gear.
 
-**Status: step 1 of 2.** This repo has only the API probe for now. The real
-addon will be built from what the probe reports in the WoW Forever client.
+**Status:** the build pipeline works. The trainer features wait on the probe
+output from the WoW Forever client, so they are built from what it really
+returns.
 
 ## Layout
 
 ```
+addon/TrainerUpgrades.toc     TOC, copied into the build output
+src/                          TypeScript source (entry: src/main.ts)
+types/wow-forever.d.ts        Hand-written WoW API types (see below)
+scripts/                      Post-build checks and deploy
+test/smoke.mjs                Runs the built Lua in a mock client
+dist/TrainerUpgrades/         Build output. This folder is the addon.
 probe/TrainerUpgradesProbe/   Debug addon. Plain Lua, no build step.
 ```
 
-The real addon will add `src/` (TypeScript), a build config, and a build
-output folder `dist/TrainerUpgrades/`.
+## Build
 
-## Step 1: run the probe
+Needs Node 20+.
+
+```sh
+npm install
+npm run build       # TypeScript -> dist/TrainerUpgrades (one Lua 5.1 file)
+npm test            # build, then smoke test in a mock client
+npm run typecheck   # types only, no output
+npm run watch       # rebuild on save (does not copy the TOC)
+WOW_ADDONS_DIR=".../Interface/AddOns" npm run deploy
+```
+
+Notes:
+
+- TypeScriptToLua 1.37 needs **TypeScript 6.0.2** exactly. TypeScript 7
+  (the native Go port) does not work with it. Both are pinned.
+- The output is one bundled file with only the helpers it uses
+  (`luaLibImport: require-minimal`). The build fails if the output is not
+  valid Lua 5.1.
+- `noImplicitSelf` is on, so plain functions do not get a hidden `self`
+  parameter. Widget methods are still called with `:`.
+
+### Types
+
+No maintained TypeScript types exist for Classic-based clients. The npm
+packages target retail 9.0.5 or very old Classic builds. So
+`types/wow-forever.d.ts` is hand-written. It covers only what the addon
+uses. Any API the probe has not confirmed for Forever is typed as possibly
+`undefined`, so the compiler makes you check for it first.
+
+### Slash commands
+
+| Command     | What it does          |
+| ----------- | --------------------- |
+| `/tu`       | Version and help      |
+| `/tu debug` | Toggle debug messages |
+
+## Run the probe
 
 1. Copy `probe/TrainerUpgradesProbe` into
    `World of Warcraft/<client folder>/Interface/AddOns/`.
@@ -33,7 +75,7 @@ The output is also saved to
 `WTF/Account/<ACCOUNT>/SavedVariables/TrainerUpgradesProbe.lua` after
 `/reload` or logout.
 
-### Slash commands
+### Probe slash commands
 
 | Command          | What it does                                      |
 | ---------------- | ------------------------------------------------- |

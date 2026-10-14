@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TypeScriptToLua/TypeScriptToLua/master/tsconfig-schema.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["@typescript-to-lua/language-extensions"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "rootDir": ".",
+    "outDir": "dist/TrainerUpgrades"
+  },
+  "tstl": {
+    "luaTarget": "5.1",
+    "luaBundle": "TrainerUpgrades.lua",
+    "luaBundleEntry": "src/main.ts",
+    "luaLibImport": "require-minimal",
+    "noImplicitSelf": true,
+    "noHeader": true
+  },
+  "include": ["src", "types"]
+}

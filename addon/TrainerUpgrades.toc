@@ -1,0 +1,7 @@
+## Interface: 16000, 16001
+## Title: TrainerUpgrades
+## Notes: Marks trainer recipes that would be gear upgrades.
+## Version: 0.1.0
+## SavedVariables: TrainerUpgradesDB
+
+TrainerUpgrades.lua
