@@ -104,8 +104,8 @@ it looks different from the current version.
 **Text**
 
 - [ ] [curseforge/description.md](curseforge/description.md) matches what
-      the addon does now: features, commands, and the "What it doesn't do"
-      list. Paste it into the project description.
+      the addon does now: the pitch at the top, "How it works", and "Good
+      to know". Paste it into the project description.
 - [ ] The one-line summary below is still true.
 - [ ] `README.md` feature list and `docs/HOW-IT-WORKS.md` match what
       the addon does.
@@ -208,4 +208,4 @@ The first file goes through moderation before it shows up.
 
 ## Summary (one line)
 
-Compare trainer recipe gear to what you wear, with the game's compare tooltips. Made for WoW Forever.
+Before you buy a recipe, see how its gear compares to what you wear. Made for WoW Forever.
