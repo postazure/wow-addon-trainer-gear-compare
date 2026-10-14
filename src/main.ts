@@ -10,7 +10,7 @@ import { resetUsableCache } from "./usable";
 
 const ADDON_NAME = "TrainerUpgrades";
 const TRAINER_UI = "Blizzard_TrainerUI";
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 
 /** Gear, level, or known spells changed: results are stale. */
 const STALE_EVENTS = ["PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "SPELLS_CHANGED", "LEARNED_SPELL_IN_TAB"];

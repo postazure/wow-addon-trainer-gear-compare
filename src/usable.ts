@@ -94,7 +94,7 @@ export function isFishingPole(item: ItemData): boolean {
 
 /** Reason the player can't use this item, or undefined if they can. */
 export function unusableReason(item: ItemData): string | undefined {
-  if (item.minLevel > UnitLevel("player")) return `requires level ${item.minLevel}`;
+  if (item.minLevel > UnitLevel("player")) return `Requires level ${item.minLevel}`;
 
   const cls = playerClass();
   if (item.classID === ITEM_CLASS_ARMOR) {
@@ -106,7 +106,7 @@ export function unusableReason(item: ItemData): string | undefined {
     : item.classID === ITEM_CLASS_WEAPON ? WEAPON_SPELL[item.subclassID]
     : undefined;
   if (spell !== undefined && canCheckProficiency() && !IsPlayerSpell(spell)) {
-    return `you can't use ${item.subType}`;
+    return `${item.subType} not learned`;
   }
 
   const wanted = CLASS_MAIN_STATS[cls];
@@ -119,7 +119,7 @@ export function unusableReason(item: ItemData): string | undefined {
         if (wanted.includes(stat)) hasWanted = true;
       }
     }
-    if (hasMain && !hasWanted) return "wrong main stats for your class";
+    if (hasMain && !hasWanted) return "No main stats for your class";
   }
   return undefined;
 }

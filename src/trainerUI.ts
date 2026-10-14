@@ -6,13 +6,11 @@ import { tooltipLines } from "./tooltip";
 const DIM_ALPHA = 0.35;
 const OWNER = {}; // callback registry owner token
 
-interface Marker {
-  arrow: Texture;
-  dash: Texture;
-}
+/** Red X on rows for gear the player can't use. */
+const UNUSABLE_TEXTURE = "Interface\\RaidFrame\\ReadyCheck-NotReady";
 
 // Our own tables, keyed by Blizzard's row buttons. We never write fields on them.
-const markers = new Map<Frame, Marker>();
+const markers = new Map<Frame, Texture>();
 const dimmed = new Set<Frame>();
 
 let installed = false;
@@ -75,41 +73,29 @@ function rowLabel(button: Frame): string | undefined {
 // Markers and dimming
 // ---------------------------------------------------------------------------
 
-function markerFor(button: Frame): Marker {
+function markerFor(button: Frame): Texture {
   const hit = markers.get(button);
   if (hit) return hit;
 
   const icon = field(button, "icon") ?? field(button, "Icon");
   const anchor = typeof icon === "object" ? (icon as Region) : button;
 
-  const arrow = button.CreateTexture(undefined, "OVERLAY");
-  arrow.SetTexture("Interface\\Buttons\\UI-MicroStream-Green");
-  arrow.SetTexCoord(0, 1, 1, 0); // flip the down arrow so it points up
-  arrow.SetSize(14, 14);
-  arrow.SetPoint("TOPLEFT", anchor, "TOPLEFT", -3, 3);
-
-  const dash = button.CreateTexture(undefined, "OVERLAY");
-  dash.SetColorTexture(0.65, 0.65, 0.65, 1);
-  dash.SetSize(8, 2);
-  dash.SetPoint("TOPLEFT", anchor, "TOPLEFT", 1, -2);
-
-  const marker = { arrow, dash };
-  markers.set(button, marker);
-  return marker;
+  const cross = button.CreateTexture(undefined, "OVERLAY");
+  cross.SetTexture(UNUSABLE_TEXTURE);
+  cross.SetSize(14, 14);
+  cross.SetPoint("TOPLEFT", anchor, "TOPLEFT", -3, 3);
+  markers.set(button, cross);
+  return cross;
 }
 
+/** Facts only: mark gear you can't use. Nothing else gets a marker. */
 function showVerdict(button: Frame, ev: Evaluation | undefined): void {
-  const verdict = ev?.verdict;
-  if (verdict === "upgrade" || verdict === "same") {
-    const m = markerFor(button);
-    if (verdict === "upgrade") { m.arrow.Show(); m.dash.Hide(); } else { m.arrow.Hide(); m.dash.Show(); }
-  } else {
-    const m = markers.get(button);
-    if (m) { m.arrow.Hide(); m.dash.Hide(); }
-  }
+  const unusable = ev?.reason !== undefined;
+  if (unusable) markerFor(button).Show();
+  else markers.get(button)?.Hide();
 
   // Fade only what we know: gear you can't use. Non-gear and loading rows stay.
-  const dim = settings().onlyUsable && ev?.reason !== undefined;
+  const dim = settings().onlyUsable && unusable;
   if (dim) {
     button.SetAlpha(DIM_ALPHA);
     dimmed.add(button);

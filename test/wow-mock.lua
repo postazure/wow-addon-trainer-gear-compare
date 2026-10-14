@@ -298,11 +298,10 @@ function check(cond, msg)
 end
 function passCount() return passed end
 
--- Marker state for a row: "upgrade", "same", or "none".
+-- Marker state for a row: "unusable" (red X) or "none".
 function marker(row)
   for _, t in ipairs(row.button.textures) do
-    if t.shown and t.texture == "Interface\\Buttons\\UI-MicroStream-Green" then return "upgrade" end
-    if t.shown and t.texture == "color" then return "same" end
+    if t.shown and t.texture == "Interface\\RaidFrame\\ReadyCheck-NotReady" then return "unusable" end
   end
   return "none"
 end

@@ -1,11 +1,10 @@
 # TrainerUpgrades (WoW Forever)
 
-Shows, in the profession trainer window, whether each recipe's item would be
-an upgrade over your equipped gear.
+Shows, in the profession trainer window, how each recipe's item compares to
+your equipped gear, and whether you can use it. Facts only: it doesn't
+claim anything is an "upgrade".
 
-- **Green arrow** on the recipe icon: upgrade.
-- **Gray dash**: same or worse.
-- **No marker**: not gear, no item (enchants), or you can't use it.
+- **Red X** on the recipe icon: gear you can't use. Nothing else is marked.
 - **Compare**: hover a recipe and hold Shift (or turn on "Always compare
   items") to see Blizzard's normal compare: your equipped item(s) on the
   left, the recipe on the right. Works for gear you can't use, too.
@@ -36,8 +35,8 @@ No other addon is needed.
 | `/tu`                       | Version and help                                     |
 | `/tu filter`                | Toggle "Only show usable gear"                       |
 | `/tu scoring`               | Show the current scoring method                      |
-| `/tu scoring itemLevel`     | Higher item level wins (default)                     |
-| `/tu scoring statWeights`   | Simple per-class stat weights                        |
+| `/tu scoring itemLevel`     | Item level only (default)                            |
+| `/tu scoring statWeights`   | Add a rough per-class stat-weight score line         |
 | `/tu debug`                 | Toggle debug messages (also shows silent failures)   |
 | `/tu dump`                  | Hook status and what each visible row resolved to    |
 | `/tu menus`                 | Diagnostic: how dropdowns and compare tooltips work  |
@@ -45,28 +44,30 @@ No other addon is needed.
 
 Settings are saved per account in `TrainerUpgradesDB`.
 
-## How it decides
+## How it works
 
 1. The trainer gives the crafted item through `GetTrainerServiceItemLink`.
    No link means no item (enchants and similar): skipped quietly.
-2. The item's equip slot picks what to compare against:
-   - Rings and trinkets: the weaker of your two.
+2. **Can you use it?** Gear gets a red X and a "Can't use: ..." line if:
+   - the level requirement isn't met,
+   - the armor type or weapon skill isn't known (checked with
+     `IsPlayerSpell` and Classic proficiency spell ids),
+   - it's a relic for another class, or
+   - it has only main stats your class doesn't use (for example, only
+     Spirit on a Paladin).
+3. **What does it replace?** The equip slot picks the equipped item(s) for
+   the item level line and the stat changes:
+   - Rings and trinkets: the weaker of your two (by item level). The compare
+     tooltips show both.
    - One-hand weapon: main hand. If you can dual wield, the weaker hand.
-   - Two-hander: the average (item level) or sum (stat weights) of your
-     main hand and off hand. An empty hand counts as 0.
-   - Anything while you wield a two-hander: compared against the two-hander.
-   - An empty slot: always an upgrade.
+   - Two-hander: your main hand and off hand together.
+   - Anything while you wield a two-hander: the two-hander.
    - Shirts, tabards, bags, ammo and fishing poles: not compared.
-3. It must be gear you can use:
-   - Level requirement met.
-   - Armor type and weapon skill known (checked with `IsPlayerSpell` and
-     Classic proficiency spell ids).
-   - Not the wrong main stats for your class. For example, an item with
-     only Spirit is hidden for a Paladin.
-4. Higher score wins. Ties are "same or worse".
 
-To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
-`SCORERS`. It shows up in `/tu scoring` by itself.
+`/tu scoring statWeights` is opt-in. It adds a "Score X vs Y" line from rough
+per-class weights and uses those weights to pick the "weaker" ring or
+trinket. To add a scoring method, write a `Scorer` in `src/scoring.ts` and
+add it to `SCORERS`.
 
 ## Known limits
 
@@ -79,7 +80,7 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
 - **The filter lives in the Settings dropdown** (menu tag
   `MENU_TRAINER_FILTER`, added with `Menu.ModifyMenu`). If a client has no
   `Menu` API, a "Usable" checkbox appears left of the Train button instead.
-- **The marker position is a best guess** (top-left corner of the recipe
+- **The red X position is a best guess** (top-left corner of the recipe
   icon).
 - **Rows are matched to recipes through the ScrollBox row data**
   (`skillIndex`, `index`, and so on). If a row's visible name does not match
@@ -96,7 +97,8 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
   loading, the tooltip says so. Move the mouse off and back on.
 - **Stat weights are rough.** They are a tie-breaker, not a sim.
   Enchants on your equipped gear are not counted.
-- **Gear above your level is hidden,** even if you'll reach that level soon.
+- **Gear above your level counts as not usable,** even if you'll reach that
+  level soon.
 - **ForeverGear and GearSetImprover:** neither was installed in the client
   the probe ran on, so their APIs couldn't be checked. There is no
   integration. TrainerUpgrades only uses the compare tooltips while a
@@ -109,7 +111,7 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
 addon/TrainerUpgrades.toc     TOC, copied into the build output
 src/main.ts                   Events and slash commands
 src/trainerUI.ts              Hooks, markers, Settings menu entry, compare tooltips
-src/compare.ts                Upgrade decision and slot rules (cached)
+src/compare.ts                Usable check, what it replaces, slot rules (cached)
 src/items.ts                  Item data cache; handles late-loading items
 src/usable.ts                 Level, proficiency, main-stat checks
 src/scoring.ts                Swappable scoring methods

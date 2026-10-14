@@ -38,32 +38,35 @@ SlashCmdList.TRAINERUPGRADES("filter")
 flush()
 check(TrainerUpgradesDB.onlyUsable == false and axe.button.alpha == 1, "/tu filter turns it off")
 
--- Markers -------------------------------------------------------------------
-check(marker(mace) == "upgrade", "Copper Mace (ilvl 9) beats Worn Mace (ilvl 2)")
-check(marker(axe) == "none", "no marker: Paladin can't use axes")
-check(marker(sword) == "none", "no marker: Paladin has not learned swords")
+-- Markers: facts only. A red X on gear you can't use; nothing else is marked.
+check(marker(mace) == "none", "usable gear: no marker")
+check(marker(bracers) == "none", "usable gear with a lower item level: no marker")
+check(marker(maul) == "none", "usable two-hander: no marker")
+check(marker(ring) == "none", "usable ring: no marker")
+check(marker(axe) == "unusable", "X: Paladin can't use axes")
+check(marker(sword) == "unusable", "X: Paladin has not learned swords")
+check(marker(spiritGloves) == "unusable", "X: spirit-only gloves on a Paladin")
+check(marker(highHelm) == "unusable", "X: level 20 helm at level 17")
 check(marker(belt) == "none", "no marker while belt data loads")
 check(requested[2851], "belt data requested")
-check(marker(bracers) == "same", "Copper Bracers (7) not better than Old Bracers (15)")
 check(marker(enchant) == "none", "enchant has no item: no marker")
-check(marker(maul) == "upgrade", "2H maul (11) beats Worn Mace + empty off hand (avg 1)")
-check(marker(spiritGloves) == "none", "spirit-only gloves hidden for Paladin")
-check(marker(highHelm) == "none", "level 20 helm hidden at level 17")
-check(marker(ring) == "upgrade", "ring (8) beats the weaker ring (5)")
-check(marker(shirt) == "none", "shirts are not compared")
+check(marker(shirt) == "none", "shirts are not gear here: no marker")
 check(marker(category) == "none", "category row gets no marker")
 check(marker(mismatch) == "none", "row with a mismatched label gets no marker")
 
 -- Late item data ------------------------------------------------------------
+hover(4)
+check(tooltipHas("Loading item data..."), "tooltip says the item is loading")
 items[2851].cached = true
 fire("GET_ITEM_INFO_RECEIVED", 2851, true)
 flush()
-check(marker(belt) == "upgrade", "belt marked once its data arrives (waist slot empty)")
+hover(4)
+check(tooltipHas("Item level 9 vs empty (Waist)"), "belt facts shown once its data arrives")
 
 -- Tooltip lines (always on) -----------------------------------------------------
 local DELTA = "If you replace this item, the following stat changes will occur:"
 hover(1)
-check(tooltipHas("TrainerUpgrades: upgrade"), "mace tooltip says upgrade")
+check(not tooltipHas("upgrade"), "no upgrade claims in the tooltip")
 check(tooltipHas("Item level 9 vs 2 (Main Hand)"), "mace tooltip shows item levels")
 check(lineIndex(DELTA) ~= nil, "stat changes use the built-in heading")
 check(lineIndex("+2.2 Damage Per Second") == lineIndex(DELTA) + 1, "each stat on its own line, under the heading")
@@ -80,11 +83,15 @@ hover(5)
 check(lineIndex("-2 Stamina") ~= nil, "a lost stat shows as its own negative line")
 
 hover(2)
-check(tooltipHas("can't use (you can't use One-Handed Axes)"), "axe tooltip gives the reason")
+check(tooltipHas("Can't use: One-Handed Axes not learned"), "axe tooltip gives the reason")
+hover(9)
+check(tooltipHas("Can't use: Requires level 20"), "helm tooltip gives the level")
+hover(8)
+check(tooltipHas("Can't use: No main stats for your class"), "spirit gloves tooltip gives the reason")
 hover(10)
 check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against the weaker ring")
 hover(6)
-check(not tooltipHas("TrainerUpgrades"), "enchant tooltip unchanged")
+check(not tooltipHas("Item level") and not tooltipHas("Can't use"), "enchant tooltip unchanged")
 
 -- Native compare ------------------------------------------------------------------
 -- Built-in trigger: Shift, or "always compare items".
@@ -152,19 +159,21 @@ local goodMace = addItem(103, { name = "Good Mace", ilvl = 20, minLevel = 10, su
 equippedLinks[16] = goodMace
 fire("PLAYER_EQUIPMENT_CHANGED", 16, false)
 flush()
-check(marker(mace) == "same", "1H mace compared against the equipped 2H (20)")
-check(marker(maul) == "same", "2H maul (11) not better than 2H (20)")
+hover(1)
+check(tooltipHas("Item level 9 vs 20 (Main Hand)"), "1H mace compared against the equipped 2H")
+hover(7)
+check(tooltipHas("Item level 11 vs 20 (Main Hand)"), "2H maul compared against the equipped 2H")
 
--- Stat weights ----------------------------------------------------------------
+-- Stat weights (opt-in) ---------------------------------------------------------
 equippedLinks[16] = wornMace
 fire("PLAYER_EQUIPMENT_CHANGED", 16, false)
+hover(1)
+check(not tooltipHas("Score"), "no score line by default")
 SlashCmdList.TRAINERUPGRADES("scoring statweights")
 flush()
 check(TrainerUpgradesDB.scoring == "statWeights", "/tu scoring switches scorer")
-check(marker(mace) == "upgrade", "mace still an upgrade by stat weights (more DPS)")
-check(marker(bracers) == "same", "bracers with no stats lose to Old Bracers (+2 Stamina)")
 hover(1)
-check(tooltipHas("(stat weights)"), "tooltip shows the weighted score")
+check(tooltipHas("(stat weights)"), "tooltip shows the weighted score once picked")
 SlashCmdList.TRAINERUPGRADES("scoring nope")
 check(TrainerUpgradesDB.scoring == "statWeights", "unknown scorer ignored")
 SlashCmdList.TRAINERUPGRADES("scoring itemlevel")
@@ -174,11 +183,11 @@ SlashCmdList.TRAINERUPGRADES("scoring itemlevel")
 knownSpells[9078] = nil
 fire("SPELLS_CHANGED")
 flush()
-check(marker(axe) == "upgrade", "proficiency check skipped when spells are unreliable")
+check(marker(axe) == "none", "proficiency check skipped when spells are unreliable")
 knownSpells[9078] = true
 fire("SPELLS_CHANGED")
 flush()
-check(marker(axe) == "none", "proficiency check back once Cloth is known")
+check(marker(axe) == "unusable", "proficiency check back once Cloth is known")
 
 -- Nothing failed so far (debug has been on the whole time).
 for _, l in ipairs(output) do
@@ -194,7 +203,7 @@ GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
 flush()
 GetTrainerServiceInfo = realInfo
-check(marker(mace) == "upgrade", "marker kept when a later refresh fails")
+check(marker(axe) == "unusable", "marker kept when a later refresh fails")
 local sawFailure = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then sawFailure = true end end
 check(sawFailure, "failures reported with debug on")

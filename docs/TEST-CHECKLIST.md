@@ -27,14 +27,14 @@ data keys, which is what I need to fix it.
 
 ## 3. Markers
 
-- [ ] An item clearly better than what you wear shows a **green arrow** on
-      its icon.
-- [ ] An item worse than what you wear shows a **gray dash**.
-- [ ] A weapon type you haven't learned shows **no marker**.
-- [ ] Gear above your level shows **no marker**.
-- [ ] An item for an empty slot shows a green arrow.
-- [ ] The arrow and dash are easy to see and don't cover anything
-      important. (Positions are a guess. Tell me if they're off.)
+- [ ] A weapon type you haven't learned shows a **red X** on its icon.
+- [ ] Armor you can't wear (for example plate before you learn it) shows a
+      red X.
+- [ ] Gear above your level shows a red X.
+- [ ] Gear you can use shows **no marker**, whether it's better or worse.
+- [ ] Enchants and other non-gear recipes show no marker.
+- [ ] The X is easy to see and doesn't cover anything important.
+      (Position is a guess. Tell me if it's off.)
 
 ## 4. Scrolling and categories
 
@@ -47,13 +47,15 @@ data keys, which is what I need to fix it.
 
 ## 5. Compare and tooltips
 
-- [ ] Hover a gear recipe. The tooltip ends with "TrainerUpgrades: upgrade"
-      (or "not an upgrade"), "Item level X vs Y (slot)", then the heading
+- [ ] Hover a gear recipe. The tooltip ends with "Item level X vs Y (slot)",
+      then the heading
       "If you replace this item, the following stat changes will occur:"
       with **one stat per line**, green for gains and red for losses.
 - [ ] Stats are in item tooltip order: DPS, Armor, Strength, Agility,
       Stamina, Intellect, Spirit.
-- [ ] Hover gear you can't use. It says "can't use (...)" with the reason.
+- [ ] Hover gear you can't use. A red line says "Can't use: ..." with the
+      reason (for example "One-Handed Axes not learned").
+- [ ] No line anywhere says "upgrade".
 - [ ] Hover an enchant or a non-gear recipe. No TrainerUpgrades lines.
 - [ ] Without "Always compare items", the compare shows only while you hold
       Shift.
@@ -76,7 +78,7 @@ data keys, which is what I need to fix it.
       "TrainerUpgrades", and an **"Only show usable gear"** checkbox.
 - [ ] There's no separate checkbox in the trainer window.
 - [ ] Ticking it fades gear you can't use (wrong armor, unlearned weapon,
-      level too high). Gear you can use stays bright, upgrade or not.
+      level too high). Gear you can use stays bright.
 - [ ] Enchants and other non-gear recipes are never faded.
 - [ ] `/tu filter` toggles it, and the dropdown shows the new state.
 - [ ] The setting is kept after `/reload`.
