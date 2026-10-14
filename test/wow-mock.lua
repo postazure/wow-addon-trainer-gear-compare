@@ -9,15 +9,10 @@ function print(...)
   for i = 1, select("#", ...) do parts[#parts + 1] = tostring((select(i, ...))) end
   DEFAULT_CHAT_FRAME:AddMessage(table.concat(parts, " "))
 end
-UISpecialFrames = {}
-ChatFontNormal = {}
-BackdropTemplateMixin = {}
--- Modern menu API: prints open menu tags to chat, like Blizzard's.
-openMenuTag = nil
+-- Modern menu API.
 menuCallbacks = {}
 Menu = {
   ModifyMenu = function(tag, fn) menuCallbacks[tag] = fn end,
-  PrintOpenMenuTags = function() if openMenuTag then print(openMenuTag) end end,
 }
 -- Generate a menu the way Blizzard does on open; returns what was added.
 function openMenu(tag)
@@ -59,6 +54,7 @@ function flush()
   end
 end
 
+-- Real clients have this; the addon must add nothing to it.
 SlashCmdList = {}
 function hooksecurefunc(a, b, c)
   if type(a) == "table" then
@@ -109,13 +105,8 @@ function CreateFrame(kind, name, parent)
   function f:CreateFontString() return newRegion() end
   function f:GetID() return 0 end
   function f:SetChecked(v) self.checked = v end
-  for _, m in ipairs({ "SetFrameStrata", "SetMovable", "EnableMouse", "RegisterForDrag", "StartMoving",
-    "StopMovingOrSizing", "SetWidth", "SetMultiLine", "SetAutoFocus", "SetFontObject", "SetFocus",
-    "SetScrollChild", "SetBackdrop" }) do f[m] = function() end end
-  function f:HighlightText() self.highlighted = true end
   function f:GetChecked() return self.checked end
   if name then _G[name] = f end
-  if kind == "EditBox" then lastEditBox = f end
   return f
 end
 UIParent = CreateFrame("Frame")

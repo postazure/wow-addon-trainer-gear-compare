@@ -1,5 +1,4 @@
 import type { Evaluation } from "./compare";
-import { itemLevelScorer } from "./scoring";
 
 export interface TooltipLine {
   text: string;
@@ -81,9 +80,7 @@ function statLines(ev: Evaluation): TooltipLine[] {
 
 /**
  * Facts only: item level vs equipped, and the stat changes. Shown for gear
- * you can't use, too; the item's own red text already says why. A score line
- * appears only when the player picked stat weights, since a score is a
- * judgment, not a fact.
+ * you can't use, too; the item's own red text already says why.
  */
 export function tooltipLines(ev: Evaluation): TooltipLine[] {
   if (ev.verdict === "pending") return [GRAY_LINE("Loading item data...")];
@@ -96,10 +93,5 @@ export function tooltipLines(ev: Evaluation): TooltipLine[] {
     ? versus.items.map((i) => num(i.itemLevel)).join(" / ")
     : "empty";
   lines.push({ text: `Item level ${num(item.itemLevel)} vs ${oldLevels} (${versus.label})`, r: 1, g: 1, b: 1 });
-
-  if (ev.scorer && ev.scorer.id !== itemLevelScorer.id && ev.newScore !== undefined) {
-    const old = versus.score === undefined ? "empty" : num(Math.floor(versus.score * 10 + 0.5) / 10);
-    lines.push({ text: `Score ${num(Math.floor(ev.newScore * 10 + 0.5) / 10)} vs ${old} (${ev.scorer.label})`, r: 1, g: 1, b: 1 });
-  }
   return [...lines, ...statLines(ev)];
 }

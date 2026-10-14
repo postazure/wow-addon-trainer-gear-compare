@@ -142,8 +142,9 @@ Then tell the owner:
 - **Actions → Release** is running: check, build, GitHub release, then
   CurseForge (skipped until its token and project id are set).
 - Check the GitHub release page when it's done.
-- After CurseForge moderation, install from the CurseForge app and check
-  `/tc` shows the new version.
+- After CurseForge moderation, install from the CurseForge app, turn debug
+  on (`/run TrainerCompareDB.debug = true`), `/reload`, and check chat says
+  `loaded v<version>`.
 
 ## After a push
 

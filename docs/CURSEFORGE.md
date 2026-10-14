@@ -14,7 +14,7 @@ clean.
 ## 1. Prepare
 
 - [ ] Bump `"version"` in `package.json`. That is the only place the version
-      lives; the build writes it into the TOC, and `/tc` reads it from there.
+      lives; the build writes it into the TOC.
 - [ ] Move the `## Unreleased` lines in `CHANGELOG.md` into a section for
       the version, written for players. Leave `## Unreleased` empty above it.
 - [ ] Check the TOC's `## Interface:` line matches the live client. In game,
@@ -38,7 +38,8 @@ Lua errors first: `/console scriptErrors 1`.
       release into AddOns, and log in. No Lua errors.
 - [ ] The addon list shows **Trainer Compare** with its icon, and it isn't
       marked out of date.
-- [ ] `/tc` prints the new version.
+- [ ] With debug on (`/run TrainerCompareDB.debug = true`), `/reload` prints
+      `loaded v<version>` with the new version.
 - [ ] Update install (skip for the first release): put the previous release
       back, set the filter on, then install this zip over it. The setting
       is kept.
@@ -59,9 +60,10 @@ all of it for a big change, and at least this for a small one)
 - [ ] No marks on any recipe row.
 - [ ] Rings or trinkets: the compare shows both of yours.
 - [ ] Train a recipe. No "action blocked" or "interface action failed".
-- [ ] With `/tc debug` on, chat says `compare: native, left`. (`manual` still
+- [ ] With debug on, chat says `compare: native, left`. (`manual` still
       works, but note it in the release notes.)
-- [ ] With `/tc debug` off, Trainer Compare prints nothing during normal play.
+- [ ] With debug off (`/run TrainerCompareDB.debug = false`), Trainer Compare prints nothing
+      during normal play.
 
 **Coverage**
 
@@ -148,7 +150,7 @@ those notes as they are; no AI runs in it.
       release on GitHub, then re-run the CurseForge upload (it uses the
       release's notes).
 - [ ] After CurseForge moderation, install it from the CurseForge app on a
-      clean AddOns folder, log in, and check `/tc` shows the new version.
+      clean AddOns folder, log in, and check the version as in section 2.
 
 **Tagging by hand** (without the skill): write the notes to a file, then
 `git tag -a v<version> -F <file> --cleanup=verbatim`. Without

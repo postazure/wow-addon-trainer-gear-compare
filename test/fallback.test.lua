@@ -11,10 +11,10 @@ TrainerCompareUsableFilter.checked = true
 TrainerCompareUsableFilter.scripts.OnClick(TrainerCompareUsableFilter)
 flush()
 check(TrainerCompareDB.onlyUsable == true and axe.button.alpha < 1, "checkbox turns the usable filter on")
-SlashCmdList.TRAINERCOMPARE("filter")
+TrainerCompareUsableFilter.checked = false
+TrainerCompareUsableFilter.scripts.OnClick(TrainerCompareUsableFilter)
 flush()
-check(TrainerCompareUsableFilter.checked == false, "checkbox follows /tc filter")
-check(axe.button.alpha == 1, "faded rows restored")
+check(TrainerCompareDB.onlyUsable == false and axe.button.alpha == 1, "checkbox turns it off; faded rows restored")
 
 -- Compare filled in by us ---------------------------------------------------------
 alwaysCompare = true
@@ -48,7 +48,7 @@ end
 -- No metadata API: the version shows as "?" instead of failing.
 C_AddOns.GetAddOnMetadata = nil
 output = {}
-SlashCmdList.TRAINERCOMPARE("")
-check(output[1]:find("v?", 1, true) ~= nil, "unknown version shows as v?")
+fire("ADDON_LOADED", "TrainerCompare")
+check(output[1] ~= nil and output[1]:find("loaded v?", 1, true) ~= nil, "unknown version shows as v?")
 
 report("fallback")

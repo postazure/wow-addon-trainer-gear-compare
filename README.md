@@ -30,21 +30,18 @@ From CurseForge, or from source:
 
 No other addon is needed.
 
-## Slash commands
+## Settings
 
-| Command                     | What it does                                         |
-| --------------------------- | ---------------------------------------------------- |
-| `/tc`                       | Version and help                                     |
-| `/tc filter`                | Toggle "Only show usable gear"                       |
-| `/tc scoring`               | Show the current scoring method                      |
-| `/tc scoring itemLevel`     | Item level only (default)                            |
-| `/tc scoring statWeights`   | Add a rough per-class stat-weight score line         |
-| `/tc debug`                 | Toggle debug messages (also shows silent failures)   |
-| `/tc dump`                  | Hook status and what each visible row resolved to    |
-| `/tc menus`                 | Diagnostic: how dropdowns and compare tooltips work  |
-| `/tc copy`                  | Reopen the last `/tc menus` copy window              |
+There are no slash commands. "Only show usable gear" is in the trainer's
+Settings dropdown. Settings are saved per account in `TrainerCompareDB`.
 
-Settings are saved per account in `TrainerCompareDB`.
+Debug messages (they also show silent failures) are off by default:
+
+- On: `/run TrainerCompareDB.debug = true`
+- Off: `/run TrainerCompareDB.debug = false`
+
+Either takes effect at once and is saved. With debug on, `/reload` prints the
+version.
 
 ## How it works
 
@@ -59,17 +56,13 @@ Settings are saved per account in `TrainerCompareDB`.
      Spirit on a Paladin).
 3. **What does it replace?** The equip slot picks the equipped item(s) for
    the item level line and the stat changes:
-   - Rings and trinkets: the weaker of your two (by item level). The compare
+   - Rings and trinkets: the one with the lower item level. The compare
      tooltips show both.
-   - One-hand weapon: main hand. If you can dual wield, the weaker hand.
+   - One-hand weapon: main hand. If you can dual wield, the hand with the
+     lower item level.
    - Two-hander: your main hand and off hand together.
    - Anything while you wield a two-hander: the two-hander.
    - Shirts, tabards, bags, ammo and fishing poles: not compared.
-
-`/tc scoring statWeights` is opt-in. It adds a "Score X vs Y" line from rough
-per-class weights and uses those weights to pick the "weaker" ring or
-trinket. To add a scoring method, write a `Scorer` in `src/scoring.ts` and
-add it to `SCORERS`.
 
 ## Known limits
 
@@ -85,18 +78,18 @@ add it to `SCORERS`.
 - **Rows are matched to recipes through the ScrollBox row data**
   (`skillIndex`, `index`, and so on). If a row's visible name does not match
   the recipe, it is never faded. That way it fails safe and never shows a
-  wrong result. `/tc dump` shows what each row resolved to.
+  wrong result. With debug on, a skipped row is reported in chat.
 - **The compare is started by hand.** Blizzard's compare only starts for
   item tooltips, and the trainer tooltip is a spell tooltip. So
   Trainer Compare feeds the crafted item to `TooltipComparisonManager`
   itself, then moves the compare to the left. If that doesn't show
   anything, it fills `ShoppingTooltip1/2` with your equipped items and
-  shows their "Currently Equipped" header. `/tc debug` says which one ran.
+  shows their "Currently Equipped" header. With debug on, chat says which
+  one ran.
 - **No compare when the slot is empty.** There's nothing to show.
 - **Loading lines don't update by themselves.** If an item is still
   loading, the tooltip says so. Move the mouse off and back on.
-- **Stat weights are rough.** They are a tie-breaker, not a sim.
-  Enchants on your equipped gear are not counted.
+- **Enchants on your equipped gear are not counted** in the stat changes.
 - **Gear above your level counts as not usable,** even if you'll reach that
   level soon.
 - **ForeverGear and GearSetImprover:** neither was installed in the client
@@ -109,16 +102,13 @@ add it to `SCORERS`.
 
 ```
 addon/TrainerCompare.toc      TOC, copied into the build output
-src/main.ts                   Events and slash commands
+src/main.ts                   Events
 src/trainerUI.ts              Hooks, usable filter, Settings menu entry, compare tooltips
 src/compare.ts                Usable check, what it replaces, slot rules (cached)
 src/items.ts                  Item data cache; handles late-loading items
 src/usable.ts                 Level, proficiency, main-stat checks
-src/scoring.ts                Swappable scoring methods
 src/slots.ts                  Equip slot ids and placement rules
 src/tooltip.ts                Tooltip lines and stat changes
-src/diagnose.ts               /tc menus diagnostic
-src/copyWindow.ts             Copy window for diagnostic output
 src/db.ts, src/log.ts         Settings; debug log and safe() wrapper
 types/wow-forever.d.ts        Hand-written WoW API types
 test/                         Mock client, fixtures, main + fallback suites
@@ -137,7 +127,7 @@ CLAUDE.md                     Working rules and lessons for Claude sessions
 
 ```sh
 npm run build       # TypeScript -> one Lua 5.1 file in dist/TrainerCompare
-npm test            # build, 150+ checks in two mock clients, and the release-script tests
+npm test            # build, 125+ checks in two mock clients, and the release-script tests
 npm run typecheck
 npm run watch       # rebuild on save (does not copy the TOC)
 npm run package     # build, test, zip for CurseForge
@@ -172,7 +162,7 @@ commits since the last tag, bumps the version, commits, and tags. It pushes
 only when you say yes. No AI runs in the workflows.
 
 The tag must match `"version"` in `package.json`, which is the only place the
-version lives (the build writes it into the TOC, and `/tc` reads it from there).
+version lives (the build writes it into the TOC).
 
 The tag starts the **Release** workflow (`.github/workflows/release.yml`):
 
@@ -223,7 +213,8 @@ Classic data on a modern engine:
 - The trainer tooltip is a spell tooltip with the item embedded.
   `C_TooltipInfo.GetTrainerService` reports type Spell.
 
-From `/tc menus` on the same client:
+From a menu diagnostic on the same client (since removed; the probe is
+the place for new ones):
 
 - Modern `Menu` API is present. The trainer's Settings dropdown is
   `ClassTrainerFrame.FilterDropdown`, tag `MENU_TRAINER_FILTER`.

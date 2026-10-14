@@ -61,8 +61,8 @@ mismatch = makeRow({ skillIndex = 1 }, "Something Else")
 rows[#rows + 1] = mismatch
 
 -- Load ----------------------------------------------------------------------
--- An old saved file: tooltipLines was a setting in an earlier version.
-TrainerCompareDB = { debug = true, tooltipLines = false }
+-- An old saved file: tooltipLines and scoring were settings in earlier versions.
+TrainerCompareDB = { debug = true, tooltipLines = false, scoring = "statWeights" }
 fire("ADDON_LOADED", "TrainerCompare")
 loadTrainerUI()
 fire("ADDON_LOADED", "Blizzard_TrainerUI")

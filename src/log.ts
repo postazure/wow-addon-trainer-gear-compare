@@ -1,19 +1,14 @@
+import { settings } from "./db";
+
 export const PREFIX = "|cff33ff99Trainer Compare|r ";
 
-let debugOn = false;
-
-export function setDebug(on: boolean): void {
-  debugOn = on;
-}
-
-/** Always prints. Use only for replies to slash commands. */
-export function say(msg: string): void {
-  print(PREFIX + msg);
-}
-
-/** Prints only when `/tc debug` is on. */
+/**
+ * Prints only when debug is on. It's off by default; to turn it on, type
+ * /run TrainerCompareDB.debug = true (and false to turn it off). It takes
+ * effect at once and is saved.
+ */
 export function debug(msg: string): void {
-  if (debugOn) print(PREFIX + "|cff999999debug|r " + msg);
+  if (settings().debug) print(PREFIX + "|cff999999debug|r " + msg);
 }
 
 /**

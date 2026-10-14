@@ -15,7 +15,7 @@ First public release, for WoW Forever 1.60.1.
 - "Only show usable gear" in the trainer's Settings dropdown fades gear you
   can't use (armor type, weapon skill, level, class). Recipe rows are never
   changed otherwise.
-- `/tc` for commands. No other addons needed.
+- Nothing to set up: no slash commands, and no other addons needed.
 - Icon in the addon list.
 - The shipped Lua starts with a header explaining how it's generated and
   where the TypeScript source lives, and keeps the source's doc comments.

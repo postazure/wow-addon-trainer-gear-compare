@@ -27,8 +27,6 @@ declare function hooksecurefunc<T extends object>(table: T, method: keyof T & st
 /** Global table. Used for localized strings and feature detection. */
 declare const _G: Record<string, unknown>;
 
-declare const SlashCmdList: Record<string, (msg: string) => void>;
-declare let SLASH_TRAINERCOMPARE1: string;
 
 /** SavedVariables. Nil on first load, before ADDON_LOADED fills it in. */
 declare let TrainerCompareDB: TrainerCompareSaved | undefined;
@@ -37,7 +35,6 @@ interface TrainerCompareSaved {
   debug: boolean;
   /** Fade recipes for gear the player can't use. */
   onlyUsable: boolean;
-  scoring: string;
 }
 
 /** Fourth value is the TOC interface number. Confirmed. */
@@ -114,7 +111,6 @@ declare function GetInventorySlotInfo(slotName: string): LuaMultiReturn<[number]
 type WowEvent = string;
 
 interface UIObject {
-  GetName(): string | undefined;
   GetObjectType(): string;
 }
 
@@ -175,7 +171,6 @@ interface TrainerFrame extends Frame {
 declare function CreateFrame(frameType: "Frame", name?: string, parent?: Frame, template?: string): Frame;
 declare function CreateFrame(frameType: "CheckButton", name?: string, parent?: Frame, template?: string): CheckButton;
 
-declare const UIParent: Frame;
 declare const GameTooltip: GameTooltip;
 
 /** Load-on-demand (Blizzard_TrainerUI). Nil until the first trainer opens. */
@@ -203,50 +198,7 @@ declare namespace string {
 }
 
 // ---------------------------------------------------------------------------
-// Copy window (EditBox in a ScrollFrame). Standard in every client.
-// ---------------------------------------------------------------------------
-
-interface Frame {
-  SetFrameStrata(strata: string): void;
-  SetMovable(movable: boolean): void;
-  EnableMouse(enable: boolean): void;
-  RegisterForDrag(button: string): void;
-  StartMoving(): void;
-  StopMovingOrSizing(): void;
-  SetWidth(width: number): void;
-}
-
-interface EditBox extends Frame {
-  SetMultiLine(multi: boolean): void;
-  SetAutoFocus(auto: boolean): void;
-  SetFontObject(font: unknown): void;
-  SetText(text: string): void;
-  HighlightText(): void;
-  SetFocus(): void;
-}
-
-interface ScrollFrame extends Frame {
-  SetScrollChild(child: Frame): void;
-}
-
-/** Frames with the BackdropTemplate get SetBackdrop. */
-interface BackdropFrame extends Frame {
-  SetBackdrop?(backdrop: object): void;
-}
-
-declare function CreateFrame(frameType: "Button", name?: string, parent?: Frame, template?: string): Frame;
-declare function CreateFrame(frameType: "EditBox", name?: string, parent?: Frame, template?: string): EditBox;
-declare function CreateFrame(frameType: "ScrollFrame", name?: string, parent?: Frame, template?: string): ScrollFrame;
-
-declare const BackdropTemplateMixin: unknown;
-/** Frame names here close on Escape. */
-declare const UISpecialFrames: string[];
-declare const ChatFontNormal: unknown;
-/** print() writes here. Hooked (post-hook) to capture Blizzard's own output. */
-declare const DEFAULT_CHAT_FRAME: Frame & { AddMessage(text: string, ...rest: unknown[]): void };
-
-// ---------------------------------------------------------------------------
-// Confirmed by /tc menus on 1.60.1
+// Confirmed by the menu diagnostic on 1.60.1
 // ---------------------------------------------------------------------------
 
 interface Region {

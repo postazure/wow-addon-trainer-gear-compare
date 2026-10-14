@@ -32,7 +32,7 @@ const header = `-- Trainer Compare ${version}
 -- How to read it:
 --   * "lualib_bundle" holds TSTL's small runtime helpers (__TS__ArrayIncludes, ...).
 --   * Each "src.<name>" module is the file src/<name>.ts in the repo.
---   * "src.main" is the entry point: events and the /tc slash commands.
+--   * "src.main" is the entry point. It registers the events.
 --   * Comments starting with "---" come from the TypeScript source.
 --   * Names like ____exports or ____opt_1 are TSTL temporaries.
 --

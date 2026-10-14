@@ -1,7 +1,6 @@
 const DEFAULTS: TrainerCompareSaved = {
   debug: false,
   onlyUsable: false,
-  scoring: "itemLevel",
 };
 
 let current: TrainerCompareSaved = { ...DEFAULTS };

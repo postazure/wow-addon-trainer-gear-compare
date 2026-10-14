@@ -1,5 +1,4 @@
 import { evaluate } from "./compare";
-import { counters } from "./counters";
 import { debug, safe } from "./log";
 import { tooltipLines } from "./tooltip";
 import { field, isRegion, keysOf } from "./widgets";
@@ -14,7 +13,7 @@ let lastCompareLog = "";
 let loggedHeader = false;
 
 /** Blizzard's two compare tooltips, if this client has them. */
-export function shoppingTooltips(): GameTooltip[] {
+function shoppingTooltips(): GameTooltip[] {
   const tips: GameTooltip[] = [];
   for (const name of ["ShoppingTooltip1", "ShoppingTooltip2"]) {
     const tip = _G[name];
@@ -69,7 +68,7 @@ function equippedText(): string {
 }
 
 /** The header's font string: a named field if Blizzard gave it one, else any font string in it. */
-export function headerLabel(header: Region): FontString | undefined {
+function headerLabel(header: Region): FontString | undefined {
   for (const key of ["Label", "Text", "label", "text", "HeaderText"]) {
     const value = field(header, key);
     if (typeof value === "object" && typeof field(value, "SetText") === "function") return value as FontString;
@@ -165,7 +164,6 @@ function showCompare(tooltip: GameTooltip, index: number): void {
     compareShown = "manual";
   }
   const side = placeCompare(tooltip);
-  counters.compare++;
   const log = `compare: ${compareShown}, ${side}`;
   if (log !== lastCompareLog) {
     lastCompareLog = log;
@@ -182,7 +180,6 @@ function addTooltipLines(tooltip: GameTooltip, index: number): void {
   if (link === undefined) return;
   const lines = tooltipLines(evaluate(link));
   if (lines.length === 0) return;
-  counters.tooltip++;
   tooltip.AddLine(" ");
   for (const line of lines) tooltip.AddLine(line.text, line.r, line.g, line.b, true);
   tooltip.Show();

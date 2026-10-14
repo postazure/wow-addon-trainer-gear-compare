@@ -29,16 +29,6 @@ Made for **WoW Forever**.
 - It doesn't change the trainer window. No marks are drawn on recipe rows, and the filter only fades rows; it never hides or removes them.
 - It doesn't need any other addon.
 
-## Commands
-
-| Command | What it does |
-| --- | --- |
-| `/tc` | Help and version |
-| `/tc filter` | Turn *Only show usable gear* on or off |
-| `/tc scoring statWeights` | Also show a rough per-class stat score (off by default; `/tc scoring itemLevel` turns it off) |
-| `/tc debug` | Show what failed, if something looks wrong |
-| `/tc dump` | Details for bug reports |
-
 ## Good to know
 
 - Item data sometimes loads late. If a tooltip says *Loading item data...*, move the mouse off the recipe and back.
@@ -49,4 +39,4 @@ Made for **WoW Forever**.
 Trainer Compare is open source under the MIT license. It's written in TypeScript and compiled to plain, readable Lua.
 
 - Source, issues and bug reports: https://github.com/postazure/wow-addon-trainer-gear-compare
-- For a bug report, run `/tc debug`, reproduce the problem, then `/tc dump`, and include what it prints.
+- For a bug report, turn on debug messages with `/run TrainerCompareDB.debug = true`, reproduce the problem, and include a screenshot of what it prints. `/run TrainerCompareDB.debug = false` turns them off.

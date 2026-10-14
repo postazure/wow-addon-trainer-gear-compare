@@ -3,14 +3,14 @@ import { debug, safe } from "./log";
 import { scheduleRefresh } from "./rows";
 import { field, isWidget } from "./widgets";
 
-/** The trainer's Settings dropdown, found with /tc menus on 1.60.1. */
+/** The trainer's Settings dropdown, as found on 1.60.1. */
 const FILTER_MENU_TAG = "MENU_TRAINER_FILTER";
 
 /** The fallback checkbox, when the client has no Menu API. */
 let checkbox: CheckButton | undefined;
 
 /** Turn the usable filter on or off, keep the checkbox in step, and refresh the rows. */
-export function setOnlyUsable(on: boolean): void {
+function setOnlyUsable(on: boolean): void {
   settings().onlyUsable = on;
   checkbox?.SetChecked(on);
   scheduleRefresh();

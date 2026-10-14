@@ -1,6 +1,5 @@
 import { refreshHover } from "./compareTooltips";
 import { evaluate, type Evaluation, invalidate } from "./compare";
-import { counters } from "./counters";
 import { settings } from "./db";
 import { debug, safe } from "./log";
 import { field, keysOf } from "./widgets";
@@ -21,7 +20,7 @@ type DataNode = { GetData(this: DataNode): unknown };
  * Which trainer service a row shows. Undefined for category rows and for
  * row data we don't recognize. Handles plain data, tree nodes, and numbers.
  */
-export function resolveIndex(button: Frame, elementData: unknown): number | undefined {
+function resolveIndex(button: Frame, elementData: unknown): number | undefined {
   let data = elementData;
   if (data === undefined && button.GetElementData) data = button.GetElementData();
   if (typeof data === "object" && typeof field(data, "GetData") === "function") {
@@ -96,7 +95,6 @@ export function decorate(button: Frame, elementData: unknown): void {
 export function refreshVisible(): void {
   const box = ClassTrainerFrame?.ScrollBox;
   if (!box || !box.ForEachFrame || !ClassTrainerFrame?.IsShown()) return;
-  counters.refresh++;
   box.ForEachFrame((frame, data) => {
     safe("decorate", () => decorate(frame, data));
   });
@@ -113,8 +111,8 @@ export function scheduleRefresh(): void {
   });
 }
 
-/** Gear, level, spells or scoring changed: drop cached results and refresh. */
-export function rescore(): void {
+/** Gear, level or spells changed: drop cached results and refresh. */
+export function recheck(): void {
   invalidate();
   scheduleRefresh();
 }

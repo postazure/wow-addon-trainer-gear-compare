@@ -1,8 +1,9 @@
 # In-game test checklist
 
 Run these with only Trainer Compare enabled first. Then run them again with
-your usual addons. Turn on `/tc debug` for the first run, so silent failures
-show up in chat.
+your usual addons. Turn debug on for the first run, so silent failures show
+up in chat: `/run TrainerCompareDB.debug = true`. Turn it off with
+`/run TrainerCompareDB.debug = false`. Either takes effect at once and is saved.
 
 Before you start, note your class, level, and what's in your main hand, off
 hand, wrists, waist and both ring slots.
@@ -10,19 +11,18 @@ hand, wrists, waist and both ring slots.
 ## 1. Load
 
 - [ ] No Lua error on login or `/reload`.
-- [ ] `/tc` prints the version and the command list.
-- [ ] `/tc debug` prints "debug on". `/reload` keeps it on.
+- [ ] With debug on, `/reload` prints `loaded v<version>` with the right
+      version. Debug stays on after the reload.
 
 ## 2. Hooks
 
 Open a trainer that teaches gear (Blacksmithing, Leatherworking, Tailoring).
 
 - [ ] With debug on, chat shows `hooks: ...`. Most entries say `yes`.
-- [ ] `/tc dump` lists each visible row as `-> [n] <name>: <verdict>`.
-      The names match what the window shows.
-- [ ] No row says `no index` unless it is a category row.
+- [ ] With debug on, chat shows no `row data has no index` and no
+      `... but service is ...; skipped` lines.
 
-If rows say `no index`, paste the `/tc dump` output back. It shows the row
+If either shows up, send a screenshot of chat. Those lines name the row
 data keys, which is what I need to fix it.
 
 ## 3. Rows
@@ -65,7 +65,7 @@ With "Only show usable gear" on:
 - [ ] Nothing equipped in that slot: no compare.
 - [ ] Move from a recipe to a bag item: the normal Blizzard compare still
       works and nothing is left over from the recipe.
-- [ ] With `/tc debug` on, chat says `compare: native, left`. If it says
+- [ ] With debug on, chat says `compare: native, left`. If it says
       `manual`, the native compare didn't start; tell me.
 
 ## 6. Filter
@@ -76,7 +76,6 @@ With "Only show usable gear" on:
 - [ ] Ticking it fades gear you can't use (wrong armor, unlearned weapon,
       level too high). Gear you can use stays bright.
 - [ ] Enchants and other non-gear recipes are never faded.
-- [ ] `/tc filter` toggles it, and the dropdown shows the new state.
 - [ ] The setting is kept after `/reload`.
 - [ ] Faded rows can still be selected, and you can still train them.
 
@@ -94,14 +93,7 @@ With "Only show usable gear" on:
 - [ ] Equip a two-hander. One-hand weapons and off hands now compare
       against it.
 
-## 9. Scoring
-
-- [ ] `/tc scoring` shows `itemLevel` and lists the options.
-- [ ] `/tc scoring statWeights`: tooltips add a
-      "Score X vs Y (stat weights)" line.
-- [ ] `/tc scoring itemLevel` switches back.
-
-## 10. Other addons and taint
+## 9. Other addons and taint
 
 - [ ] With ForeverGear / GearSetImprover Forever enabled, their item
       tooltips still look right (bags, character sheet).
@@ -109,4 +101,4 @@ With "Only show usable gear" on:
       duplicates or errors.
 - [ ] Train a recipe with Trainer Compare on. No "action blocked" or
       "interface action failed" messages.
-- [ ] `/tc debug` off: no Trainer Compare messages at all during normal use.
+- [ ] Debug off: no Trainer Compare messages at all during normal use.

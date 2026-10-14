@@ -1,14 +1,10 @@
-import { currentScorer, invalidate } from "./compare";
-import { loadDB, settings } from "./db";
-import { reopenCopyWindow } from "./copyWindow";
-import { diagnoseMenus } from "./diagnose";
+import { invalidate } from "./compare";
+import { loadDB } from "./db";
 import { onItemInfoReceived } from "./items";
-import { debug, safe, say, setDebug } from "./log";
-import { findScorer, SCORERS } from "./scoring";
+import { debug, safe } from "./log";
 import { refreshHover } from "./compareTooltips";
-import { rescore, scheduleRefresh } from "./rows";
-import { setOnlyUsable } from "./settingsMenu";
-import { dumpState, installTrainerHooks } from "./trainerUI";
+import { recheck, scheduleRefresh } from "./rows";
+import { installTrainerHooks } from "./trainerUI";
 import { resetUsableCache } from "./usable";
 
 const ADDON_NAME = "TrainerCompare";
@@ -27,8 +23,7 @@ function onEvent(event: string, args: any[]): void {
   if (event === "ADDON_LOADED") {
     const name = args[0];
     if (name === ADDON_NAME) {
-      const db = loadDB();
-      setDebug(db.debug);
+      loadDB();
       const [, , , iface] = GetBuildInfo();
       debug(`loaded v${addonVersion()}, client interface ${iface}`);
       /** The trainer UI may already be loaded by another addon. */
@@ -49,49 +44,7 @@ function onEvent(event: string, args: any[]): void {
     refreshHover();
   } else if (STALE_EVENTS.includes(event)) {
     resetUsableCache();
-    rescore();
-  }
-}
-
-function onSlash(msg: string): void {
-  const [cmd, arg] = msg.trim().toLowerCase().split(" ");
-  const db = settings();
-
-  if (cmd === "debug") {
-    db.debug = !db.debug;
-    setDebug(db.debug);
-    say(`debug ${db.debug ? "on" : "off"}`);
-  } else if (cmd === "filter") {
-    setOnlyUsable(!db.onlyUsable);
-    say(`only show usable gear: ${db.onlyUsable ? "on" : "off"}`);
-  } else if (cmd === "scoring") {
-    const ids = SCORERS.map((s) => s.id).join(", ");
-    if (arg === undefined || arg === "") {
-      say(`scoring: ${currentScorer().id} (options: ${ids})`);
-      return;
-    }
-    const scorer = findScorer(arg);
-    if (!scorer) {
-      say(`unknown scoring "${arg}". Options: ${ids}`);
-      return;
-    }
-    db.scoring = scorer.id;
-    rescore();
-    say(`scoring: ${scorer.id}`);
-  } else if (cmd === "dump") {
-    dumpState(say);
-  } else if (cmd === "menus") {
-    diagnoseMenus(say);
-  } else if (cmd === "copy") {
-    reopenCopyWindow();
-  } else {
-    say(`v${addonVersion()}`);
-    say("/tc filter - toggle only show usable gear");
-    say(`/tc scoring [${SCORERS.map((s) => s.id).join("|")}] - how gear is scored`);
-    say("/tc debug - toggle debug messages");
-    say("/tc dump - show hook status and what each visible row resolved to");
-    say("/tc menus - find how the trainer's dropdowns and compare tooltips work");
-    say("/tc copy - reopen the last copy window");
+    recheck();
   }
 }
 
@@ -104,7 +57,3 @@ events.SetScript("OnEvent", (_frame, event, ...args: any[]) => {
   safe(`event ${event}`, () => onEvent(event, args));
 });
 
-SLASH_TRAINERCOMPARE1 = "/tc";
-SlashCmdList["TRAINERCOMPARE"] = (msg) => {
-  safe("slash command", () => onSlash(msg));
-};

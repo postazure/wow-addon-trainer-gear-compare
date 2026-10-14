@@ -50,7 +50,7 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
   with the same rules as release notes. Skip internal changes (refactors,
   tests, docs, CI).
 - Display name is "Trainer Compare"; code, folder and file names are
-  `TrainerCompare` (no space). Slash command `/tc`. The old name
+  `TrainerCompare` (no space). The old name
   (TrainerUpgrades) must not appear anywhere.
 
 ## Product rules (decided with the owner; don't undo without asking)
@@ -72,7 +72,12 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
   then the built-in "If you replace this item..." heading and one stat per
   line. The number is green or red; the stat name is white.
 - No "can't use" line: the item's own red text already says it.
-- The stat-weight score line shows only if the player picks `/tc scoring statWeights`.
+- **No slash commands.** Everything a player does has UI in the trainer
+  window. Debug is a saved setting:
+  `/run TrainerCompareDB.debug = true` (or `false`), at once and saved.
+- **No scores.** Item level and stat changes are facts; stat weights were
+  guesses and were removed. Rings, trinkets and dual-wield hands compare
+  against the one with the lower item level.
 
 ## Don't assume the WoW API
 
@@ -94,10 +99,10 @@ retail docs are both wrong in places. What we learned (more in README
 Rules:
 
 - Before using an API that hasn't been confirmed, find out first: extend the
-  probe (`probe/`) or `/tc menus`, and ask the owner to run it. Build from
-  what the client returns.
+  probe (`probe/`) and ask the owner to run it. Build from what the client
+  returns. Diagnostics live in the probe, not the shipped addon.
 - WoW chat text can't be selected. Any diagnostic must end in a copy window
-  (see `src/copyWindow.ts`) so the owner can paste the result.
+  (the probe's `/tcprobe show`) so the owner can paste the result.
 - Feature-detect everything that isn't confirmed. In `types/wow-forever.d.ts`,
   type unconfirmed APIs as possibly `undefined`, and note the source of each.
 - Keep `types/wow-forever.d.ts` to what the code uses. There are no
@@ -128,8 +133,8 @@ Rules:
   functions or edit Blizzard data (ScrollBox data providers included).
 - Never write fields onto Blizzard frames; keep our own tables keyed by frame.
 - Only hide tooltips we showed. Never hide a compare Blizzard showed itself.
-- Every event, hook and slash handler runs inside `safe()`: errors stay
-  silent unless `/tc debug` is on. No Lua errors in chat, ever.
+- Every event and hook handler runs inside `safe()`: errors stay silent
+  unless debug is on. No Lua errors in chat, ever.
 
 ## Testing
 

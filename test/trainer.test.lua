@@ -2,16 +2,14 @@
 -- Setup is in fixtures.lua.
 
 -- Settings ------------------------------------------------------------------
-check(TrainerCompareDB.scoring == "itemLevel", "scoring defaults to itemLevel")
 check(TrainerCompareDB.onlyUsable == false, "filter defaults off")
-check(TrainerCompareDB.tooltipLines == nil, "removed settings drop out of the saved file")
+check(TrainerCompareDB.tooltipLines == nil and TrainerCompareDB.scoring == nil, "removed settings drop out of the saved file")
 
 -- Name ----------------------------------------------------------------------
-check(SLASH_TRAINERCOMPARE1 == "/tc", "slash command is /tc")
-output = {}
-SlashCmdList.TRAINERCOMPARE("")
-check(output[1]:find("|cff33ff99Trainer Compare|r", 1, true) == 1, "chat prefix reads Trainer Compare")
-check(output[1]:find("v0.6.0", 1, true) ~= nil, "/tc shows the version from the TOC")
+check(next(SlashCmdList) == nil and SLASH_TRAINERCOMPARE1 == nil, "no slash commands")
+local first = output[1] or ""
+check(first:find("|cff33ff99Trainer Compare|r", 1, true) == 1, "chat prefix reads Trainer Compare")
+check(first:find("loaded v0.6.0", 1, true) ~= nil, "debug load line shows the version from the TOC")
 
 -- Settings dropdown -----------------------------------------------------------
 check(menuCallbacks["MENU_TRAINER_FILTER"] ~= nil, "added to the trainer's Settings dropdown")
@@ -40,20 +38,17 @@ flush()
 check(TrainerCompareDB.onlyUsable == false, "menu toggle turns the filter off")
 check(axe.button.alpha == 1, "faded rows restored")
 
-SlashCmdList.TRAINERCOMPARE("filter")
-flush()
-check(TrainerCompareDB.onlyUsable == true and axe.button.alpha < 1, "/tc filter turns it on")
-SlashCmdList.TRAINERCOMPARE("filter")
-flush()
-check(TrainerCompareDB.onlyUsable == false and axe.button.alpha == 1, "/tc filter turns it off")
+local function toggleFilter()
+  entry.setSelected()
+  flush()
+end
 
 -- Rows: no marks of any kind. With the filter on, only gear you can't use fades.
 local anyTexture = false
 for _, r in ipairs(rows) do if #r.button.textures > 0 then anyTexture = true end end
 check(not anyTexture, "nothing is drawn on recipe rows")
 
-SlashCmdList.TRAINERCOMPARE("filter") -- on
-flush()
+toggleFilter() -- on
 check(rowState(mace) == "shown", "usable gear shown")
 check(rowState(bracers) == "shown", "usable gear with a lower item level shown")
 check(rowState(maul) == "shown", "usable two-hander shown")
@@ -68,8 +63,7 @@ check(rowState(enchant) == "shown", "enchant shown")
 check(rowState(shirt) == "shown", "shirt shown")
 check(rowState(category) == "shown", "category row shown")
 check(rowState(mismatch) == "shown", "row with a mismatched label is never faded")
-SlashCmdList.TRAINERCOMPARE("filter") -- off
-flush()
+toggleFilter() -- off
 
 -- Late item data ------------------------------------------------------------
 hover(4)
@@ -215,23 +209,14 @@ check(tooltipHas("Item level 9 vs 20 (Main Hand)"), "1H mace compared against th
 hover(7)
 check(tooltipHas("Item level 11 vs 20 (Main Hand)"), "2H maul compared against the equipped 2H")
 
--- Stat weights (opt-in) ---------------------------------------------------------
 equippedLinks[16] = wornMace
 fire("PLAYER_EQUIPMENT_CHANGED", 16, false)
 hover(1)
-check(not tooltipHas("Score"), "no score line by default")
-SlashCmdList.TRAINERCOMPARE("scoring statweights")
-flush()
-check(TrainerCompareDB.scoring == "statWeights", "/tc scoring switches scorer")
-hover(1)
-check(tooltipHas("(stat weights)"), "tooltip shows the weighted score once picked")
-SlashCmdList.TRAINERCOMPARE("scoring nope")
-check(TrainerCompareDB.scoring == "statWeights", "unknown scorer ignored")
-SlashCmdList.TRAINERCOMPARE("scoring itemlevel")
+check(not tooltipHas("Score"), "no score line, even from an old saved scoring setting")
 
 -- Proficiency fallback --------------------------------------------------------
 -- If IsPlayerSpell can't see Cloth, proficiency spells don't work: don't hide gear.
-SlashCmdList.TRAINERCOMPARE("filter") -- on
+toggleFilter() -- on
 knownSpells[9078] = nil
 fire("SPELLS_CHANGED")
 flush()
@@ -248,8 +233,8 @@ end
 
 -- Silent failures ---------------------------------------------------------------
 output = {}
-TrainerCompareDB.debug = false
-SlashCmdList.TRAINERCOMPARE("debug") -- on
+-- Debug is a saved setting (/run TrainerCompareDB.debug = true) and takes effect at once.
+TrainerCompareDB.debug = true
 local realInfo = GetTrainerServiceInfo
 GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
@@ -260,40 +245,12 @@ local sawFailure = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then sawFailure = true end end
 check(sawFailure, "failures reported with debug on")
 
-SlashCmdList.TRAINERCOMPARE("debug") -- off
+TrainerCompareDB.debug = false
 output = {}
 GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
 flush()
 GetTrainerServiceInfo = realInfo
 check(#output == 0, "failures silent with debug off")
-
--- Dump runs without errors.
-output = {}
-SlashCmdList.TRAINERCOMPARE("dump")
-check(#output > 0, "/tc dump prints")
-local dumpFailed = false
-for _, l in ipairs(output) do if l:find("failed", 1, true) then dumpFailed = true end end
-check(not dumpFailed, "/tc dump has no failures")
-
--- Menu diagnostic runs, watches, and finishes in a copy window.
-output = {}
-openMenuTag = "MENU_TRAINER_FILTER"
-SlashCmdList.TRAINERCOMPARE("menus")
-flush()
-local copy = TrainerCompareCopyWindow
-check(copy ~= nil and copy.shown, "/tc menus opens the copy window")
-local copyText = lastEditBox and lastEditBox.text or ""
-check(copyText:find("menu API present", 1, true) ~= nil, "copy window has our report")
-check(copyText:find("MENU_TRAINER_FILTER", 1, true) ~= nil, "copy window has Blizzard's printed menu tag")
-check(copyText:find("done.", 1, true) ~= nil, "copy window has the whole run")
-check(lastEditBox.highlighted, "copy window text is selected")
-local _, prefixCount = copyText:gsub("Trainer Compare|", "")
-check(prefixCount == 0, "our lines are not doubled by the chat capture")
-SlashCmdList.TRAINERCOMPARE("copy")
-check(copy.shown, "/tc copy reopens it")
-local menuFailed = false
-for _, l in ipairs(output) do if l:find("failed", 1, true) then menuFailed = true end end
-check(not menuFailed, "/tc menus has no failures")
 
 report("main")
