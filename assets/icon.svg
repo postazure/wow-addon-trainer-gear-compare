@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <!-- Trainer Compare icon: two item tooltips side by side (equipped vs new, with
-       green and red stat changes), and a rolled recipe scroll with a wax seal on top. -->
+       green and red stat changes), and a crossed hammer and pick (the profession trainer) on top. -->
   <defs>
     <radialGradient id="bg" cx="50%" cy="40%" r="70%">
       <stop offset="0%" stop-color="#2b2f3d"/>
@@ -15,29 +15,50 @@
       <stop offset="0%" stop-color="#141a2e"/>
       <stop offset="100%" stop-color="#090c17"/>
     </linearGradient>
-    <linearGradient id="tube" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f8eac2"/>
-      <stop offset="45%" stop-color="#e3c98f"/>
-      <stop offset="100%" stop-color="#a98446"/>
+    <!-- Wood: shaded across the handle's width, light along the top edge. -->
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a220f"/>
+      <stop offset="22%" stop-color="#b98450"/>
+      <stop offset="48%" stop-color="#8a5a2e"/>
+      <stop offset="100%" stop-color="#2c190a"/>
     </linearGradient>
-    <radialGradient id="paperEnd" cx="45%" cy="45%" r="60%">
-      <stop offset="0%" stop-color="#f3e2b3"/>
-      <stop offset="100%" stop-color="#c9a764"/>
-    </radialGradient>
-    <linearGradient id="flap" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f6e6bd"/>
-      <stop offset="100%" stop-color="#cfae6c"/>
+    <linearGradient id="woodDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a1709"/>
+      <stop offset="25%" stop-color="#8e5f33"/>
+      <stop offset="50%" stop-color="#65401f"/>
+      <stop offset="100%" stop-color="#1f1106"/>
     </linearGradient>
-    <linearGradient id="ribbon" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#8f1c14"/>
-      <stop offset="50%" stop-color="#d8392c"/>
-      <stop offset="100%" stop-color="#8f1c14"/>
+    <!-- Bright steel for the hammer head. -->
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5b646e"/>
+      <stop offset="30%" stop-color="#eef2f6"/>
+      <stop offset="55%" stop-color="#a7b1bc"/>
+      <stop offset="100%" stop-color="#3c434b"/>
     </linearGradient>
-    <radialGradient id="wax" cx="40%" cy="35%" r="70%">
-      <stop offset="0%" stop-color="#f05646"/>
-      <stop offset="60%" stop-color="#c3271c"/>
-      <stop offset="100%" stop-color="#7d1912"/>
-    </radialGradient>
+    <linearGradient id="steelFace" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d8dee5"/>
+      <stop offset="100%" stop-color="#6f7882"/>
+    </linearGradient>
+    <!-- Dark iron for the pick head, lit along its outer edge. -->
+    <linearGradient id="iron" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="#9aa3ad"/>
+      <stop offset="18%" stop-color="#525a63"/>
+      <stop offset="60%" stop-color="#2b3036"/>
+      <stop offset="100%" stop-color="#16191c"/>
+    </linearGradient>
+    <linearGradient id="leather" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e120a"/>
+      <stop offset="40%" stop-color="#5a3a22"/>
+      <stop offset="100%" stop-color="#140b05"/>
+    </linearGradient>
+    <!-- Painted look: fine noise multiplied over the tools, plus a soft shadow. -->
+    <filter id="painted" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.9 0" result="grain"/>
+      <feComposite in="grain" in2="SourceAlpha" operator="in" result="grainIn"/>
+      <feBlend in="SourceGraphic" in2="grainIn" mode="multiply" result="textured"/>
+      <feDropShadow in="textured" dx="0" dy="7" stdDeviation="8" flood-color="#000" flood-opacity="0.7"/>
+    </filter>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity="0.65"/>
     </filter>
@@ -68,41 +89,43 @@
     <rect x="326" y="196" width="94" height="14" rx="7" fill="#d7dbe2"/>
   </g>
 
-  <!-- Recipe scroll, on top of everything: rolled parchment with a big spiral end,
-       a torn flap at the far end, and a red wax seal with ribbons. Drawn along a
-       horizontal axis, then turned to run lower-left to upper-right. -->
-  <g filter="url(#shadow)">
-    <g transform="translate(244 330) rotate(-33) scale(0.9)">
-      <!-- Torn flap of paper at the far end -->
-      <path d="M86 -40 L150 -58 L158 -44 L150 -34 L163 -22 L152 -10 L160 2 L118 16 L92 40 Z"
-            fill="url(#flap)" stroke="#6b4d1e" stroke-width="5" stroke-linejoin="round"/>
-      <!-- Tube, wider at the near (spiral) end -->
-      <path d="M-112 -64 L96 -42 C110 -40 110 40 96 42 L-112 64 Z"
-            fill="url(#tube)" stroke="#6b4d1e" stroke-width="5" stroke-linejoin="round"/>
-      <!-- Ragged edge of the outer sheet -->
-      <path d="M-70 -58 L-40 -50 L-46 -36 L-20 -30 L-28 -14 L4 -10 L-2 6 L30 8 L22 24 L60 30 L54 44"
-            fill="none" stroke="#8a6a33" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-      <path d="M-90 -50 C-20 -44 40 -38 90 -32" fill="none" stroke="#fff6d8" stroke-width="6"
-            stroke-linecap="round" opacity="0.6"/>
-      <!-- Near end with the spiral -->
-      <ellipse cx="-112" cy="0" rx="44" ry="64" fill="url(#paperEnd)" stroke="#6b4d1e" stroke-width="5"/>
-      <ellipse cx="-112" cy="0" rx="30" ry="44" fill="none" stroke="#7d5e2a" stroke-width="5"/>
-      <path d="M-112 -30 C-92 -26 -92 24 -112 28 C-128 24 -128 -12 -112 -14 C-104 -10 -104 10 -112 12"
-            fill="none" stroke="#7d5e2a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <ellipse cx="-112" cy="0" rx="5" ry="8" fill="#5a4119"/>
+  <!-- Crossed hammer and pick (the profession trainer), painted rather than flat.
+       Each tool is drawn along a horizontal axis with its head at +x, then turned. -->
+  <g transform="translate(256 356) scale(0.8)" filter="url(#painted)">
+    <!-- Pick: handle lower right, curved iron head upper left. -->
+    <g transform="rotate(-135)">
+      <rect x="-165" y="-15" width="290" height="30" rx="13" fill="url(#woodDark)"/>
+      <path d="M-150 -4 C-80 -7 -20 -2 100 -5" fill="none" stroke="#2a1709" stroke-width="2" opacity="0.6"/>
+      <path d="M-140 5 C-60 3 0 7 105 4" fill="none" stroke="#c18f5c" stroke-width="1.5" opacity="0.35"/>
+      <rect x="-165" y="-16" width="46" height="32" rx="12" fill="url(#leather)"/>
+      <path d="M-158 -16 L-150 16 M-146 -16 L-138 16 M-134 -16 L-126 16" stroke="#0f0905" stroke-width="2" opacity="0.7"/>
+      <!-- Head: a curved bar with points at both ends. -->
+      <path d="M112 -20 C120 -62 110 -100 84 -132 L90 -136 C134 -106 150 -64 150 -20
+               L150 20 C150 64 134 106 90 136 L84 132 C110 100 120 62 112 20 Z" fill="url(#iron)" stroke="#0d0f11" stroke-width="4" stroke-opacity="0.8" stroke-linejoin="round"/>
+      <path d="M150 -18 C150 -62 134 -104 92 -134" fill="none" stroke="#d3d9df" stroke-width="3" opacity="0.65" stroke-linecap="round"/>
+      <path d="M150 18 C150 62 134 104 92 134" fill="none" stroke="#c0c7ce" stroke-width="2.5" opacity="0.45" stroke-linecap="round"/>
+      <!-- Socket where the handle goes in -->
+      <rect x="104" y="-24" width="52" height="48" rx="7" fill="#22262b"/>
+      <rect x="108" y="-24" width="44" height="10" rx="4" fill="#7d8790" opacity="0.55"/>
+      <circle cx="130" cy="2" r="5" fill="#9aa3ad"/>
     </g>
-  </g>
-  <!-- Ribbons hang straight down from the seal -->
-  <g filter="url(#shadow)">
-    <path d="M275 305 L267 401 L277 391 L285 405 L287 307 Z"
-          fill="url(#ribbon)" stroke="#5e110c" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M287 303 L293 387 L301 377 L311 389 L301 301 Z"
-          fill="url(#ribbon)" stroke="#5e110c" stroke-width="4" stroke-linejoin="round"/>
-  </g>
-  <!-- Wax seal -->
-  <g filter="url(#shadow)">
-    <circle cx="281" cy="291" r="25" fill="url(#wax)" stroke="#5e110c" stroke-width="5"/>
-    <circle cx="281" cy="291" r="13" fill="none" stroke="#7d1912" stroke-width="4"/>
-    <circle cx="274" cy="284" r="5" fill="#f07a6c" opacity="0.8"/>
+    <!-- Hammer: handle lower left, steel head upper right. Drawn last, so it crosses over the pick. -->
+    <g transform="rotate(-45)">
+      <rect x="-165" y="-16" width="285" height="32" rx="14" fill="url(#wood)"/>
+      <path d="M-150 -5 C-70 -8 -10 -3 100 -6" fill="none" stroke="#3a220f" stroke-width="2" opacity="0.55"/>
+      <path d="M-145 6 C-60 4 10 8 104 5" fill="none" stroke="#e0b07a" stroke-width="1.5" opacity="0.4"/>
+      <rect x="-165" y="-17" width="48" height="34" rx="13" fill="url(#leather)"/>
+      <path d="M-158 -17 L-150 17 M-146 -17 L-138 17 M-134 -17 L-126 17" stroke="#0f0905" stroke-width="2" opacity="0.7"/>
+      <!-- Head: a steel block across the handle, with bevelled faces. -->
+      <rect x="94" y="-70" width="82" height="140" rx="7" fill="url(#steel)"/>
+      <rect x="94" y="-70" width="82" height="140" rx="7" fill="none" stroke="#1d2125" stroke-width="5" opacity="0.8"/>
+      <rect x="97" y="-67" width="76" height="16" rx="5" fill="url(#steelFace)"/>
+      <rect x="97" y="51" width="76" height="16" rx="5" fill="#4d555e"/>
+      <path d="M120 -50 L120 50" stroke="#ffffff" stroke-width="5" opacity="0.55" stroke-linecap="round"/>
+      <path d="M100 -66 L170 -66" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+      <!-- Collar where the handle meets the head -->
+      <rect x="80" y="-21" width="18" height="42" rx="4" fill="#4a525b"/>
+      <rect x="80" y="-21" width="18" height="8" rx="3" fill="#9aa3ad" opacity="0.6"/>
+    </g>
   </g>
 </svg>
