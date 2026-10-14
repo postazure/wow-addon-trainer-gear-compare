@@ -26,7 +26,7 @@ const DEFS: Record<SlotKey, [string, number, string]> = {
   RANGED: ["RANGEDSLOT", 18, "Ranged"],
 };
 
-export interface SlotInfo {
+interface SlotInfo {
   id: number;
   label: string;
 }

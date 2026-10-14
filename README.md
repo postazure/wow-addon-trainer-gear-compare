@@ -15,6 +15,9 @@ claim anything is an "upgrade".
   you can't use (armor type, weapon skill, level, class). Non-gear recipes
   are never faded.
 
+There is nothing to set up and there are no slash commands. The filter is
+the only option, and it's saved per account.
+
 Built for WoW Forever 1.60.1 (interface 16001), from what the client
 actually returns. See [Probe findings](#probe-findings).
 
@@ -29,19 +32,6 @@ From CurseForge, or from source:
 4. Run the [in-game test checklist](docs/TEST-CHECKLIST.md).
 
 No other addon is needed.
-
-## Settings
-
-There are no slash commands. "Only show usable gear" is in the trainer's
-Settings dropdown. Settings are saved per account in `TrainerCompareDB`.
-
-Debug messages (they also show silent failures) are off by default:
-
-- On: `/run TrainerCompareDB.debug = true`
-- Off: `/run TrainerCompareDB.debug = false`
-
-Either takes effect at once and is saved. With debug on, `/reload` prints the
-version.
 
 ## How it works
 
@@ -98,18 +88,33 @@ version.
   recipe is hovered, and never hides a compare it didn't show.
 - Only the default Blizzard trainer UI is supported.
 
+## Bug reports
+
+Turn on debug messages, reproduce the problem, and send a screenshot of
+chat. Debug messages also show failures that are normally silent.
+
+- On: `/run TrainerCompareDB.debug = true`
+- Off: `/run TrainerCompareDB.debug = false`
+
+Either takes effect at once and is saved. With debug on, `/reload` prints the
+version, and the first trainer you open prints which hooks were installed.
+
 ## Development
 
 ```
 addon/TrainerCompare.toc      TOC, copied into the build output
-src/main.ts                   Events
-src/trainerUI.ts              Hooks, usable filter, Settings menu entry, compare tooltips
-src/compare.ts                Usable check, what it replaces, slot rules (cached)
+src/main.ts                   Entry point: registers the events
+src/trainerUI.ts              Installs the trainer hooks
+src/rows.ts                   Matches rows to recipes; fades the ones you can't use
+src/settingsMenu.ts           The filter toggle (Settings dropdown, or a fallback checkbox)
+src/compareTooltips.ts        Native compare, with a filled-in fallback
+src/tooltip.ts                Tooltip lines: item level and stat changes
+src/compare.ts                What a recipe's item would replace (cached)
+src/usable.ts                 Level, proficiency, relic and main-stat checks
 src/items.ts                  Item data cache; handles late-loading items
-src/usable.ts                 Level, proficiency, main-stat checks
 src/slots.ts                  Equip slot ids and placement rules
-src/tooltip.ts                Tooltip lines and stat changes
-src/db.ts, src/log.ts         Settings; debug log and safe() wrapper
+src/widgets.ts                Helpers for reading Blizzard frames safely
+src/db.ts, src/log.ts         Saved settings; debug log and safe() wrapper
 types/wow-forever.d.ts        Hand-written WoW API types
 test/                         Mock client, fixtures, main + fallback suites
 probe/TrainerCompareProbe/    Debug addon (plain Lua) that found the API
@@ -124,6 +129,9 @@ CHANGELOG.md, LICENSE         Release notes; MIT license
 CLAUDE.md                     Working rules and lessons for Claude sessions
 .claude/skills/release/       Release skill (/release): notes, version, tag
 ```
+
+Changes go through a pull request to `main`. `npm test` must pass before you
+push.
 
 ```sh
 npm run build       # TypeScript -> one Lua 5.1 file in dist/TrainerCompare
@@ -158,8 +166,9 @@ Notes:
 Releases are cut by tagging `main` with an **annotated** tag whose message is
 the release notes. Run the release skill in Claude Code on your machine:
 `/release` (`.claude/skills/release/SKILL.md`). It drafts the notes from the
-commits since the last tag, bumps the version, commits, and tags. It pushes
-only when you say yes. No AI runs in the workflows.
+commits since the last tag, opens a release PR with the version bump, and
+after you merge it, tags `main`. It pushes the tag only when you say yes. No
+AI runs in the workflows.
 
 The tag must match `"version"` in `package.json`, which is the only place the
 version lives (the build writes it into the TOC).

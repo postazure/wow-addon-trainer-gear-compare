@@ -1,6 +1,6 @@
 import type { Evaluation } from "./compare";
 
-export interface TooltipLine {
+interface TooltipLine {
   text: string;
   r: number;
   g: number;

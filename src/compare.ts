@@ -3,10 +3,10 @@ import { PLACEMENT, type Placement, type SlotKey, slotInfo } from "./slots";
 import { isFishingPole, unusableReason } from "./usable";
 
 /** compared: gear with something to compare against. none: not gear, or not compared (shirts, fishing poles). */
-export type Verdict = "compared" | "none" | "pending";
+type Verdict = "compared" | "none" | "pending";
 
 /** What the new item is compared against. */
-export interface Versus {
+interface Versus {
   label: string;
   /** Equipped items in play: 0, 1, or 2 (main hand + off hand). */
   items: ItemData[];

@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a Trainer Compare release on the owner's machine. Drafts the player-facing notes from the commits and CHANGELOG, bumps the version, commits, and makes the annotated v<version> tag whose message is the notes. Pushes only after the owner says yes.
+description: Cut a Trainer Compare release on the owner's machine. Drafts the player-facing notes from the commits and CHANGELOG, opens a release PR with the version bump, and after it merges makes the annotated v<version> tag on main whose message is the notes. Pushes the tag only after the owner says yes.
 disable-model-invocation: true
 ---
 
@@ -97,14 +97,34 @@ Ask the owner whether the **Release testing checklist** and the **Assets
 checklist** in `docs/CURSEFORGE.md` are done. The owner tests in game; you
 can't. Don't tick them yourself, and don't go on until they say yes.
 
-## 7. Commit and tag
+## 7. Open the release PR
 
 ```sh
+git checkout -b "release-v<version>"
 git add package.json package-lock.json CHANGELOG.md
 git commit -m "Release v<version>"
+git push -u origin "release-v<version>"
 ```
 
-Write the approved notes to a file in your scratchpad (not in the repo), then:
+Write the approved notes to a file in your scratchpad (not in the repo).
+Open a PR titled `Release v<version>` with the notes as its body:
+`gh pr create --title "Release v<version>" --body-file <notes-file>`, or on
+GitHub if `gh` isn't installed. Give the owner the link and wait for them
+to merge it. Nothing is published by the merge; only the tag publishes.
+
+## 8. Tag main
+
+Once the PR is merged:
+
+```sh
+git checkout main
+git pull origin main
+git log --oneline -3                 # the release PR must be the latest change
+node -p 'require("./package.json").version'   # must print <version>
+```
+
+If something else was merged after the release PR, stop and ask the owner.
+The tag would include it, and the notes wouldn't mention it.
 
 ```sh
 git tag -a "v<version>" -F <notes-file> --cleanup=verbatim
@@ -122,20 +142,16 @@ diff <notes-file> <scratchpad>/check.md    # must print nothing
 ```
 
 If anything is wrong, fix it, `git tag -d "v<version>"`, and tag again. The
-tag is only local until step 8.
+tag is only local until step 9.
 
-## 8. Push, only when the owner says so
+## 9. Push the tag, only when the owner says so
 
-Show the owner: the version, the release commit, and the notes. Ask: "Push
-main and the tag?" Push only on a clear yes.
+Show the owner the version, the commit the tag is on, and the notes. Ask:
+"Push the tag?" Push only on a clear yes.
 
 ```sh
-git push origin main
 git push origin "v<version>"
 ```
-
-Push `main` first, so the tagged commit is on `main` when the workflow
-starts.
 
 Then tell the owner:
 
@@ -152,9 +168,9 @@ Never move or delete a pushed tag unless the owner asks.
 
 - **Notes need a fix:** edit the GitHub release, then run **Actions → Upload
   to CurseForge** with the tag (it reads the release's notes). Fix the
-  `CHANGELOG.md` section in a normal commit.
+  `CHANGELOG.md` section in a normal PR.
 - **The workflow failed before publishing** (for example the check): fix it
-  on `main`, then release the next patch version. Nothing was published, so
+  in a PR, then release the next patch version. Nothing was published, so
   re-using the same version is also fine, but only if the owner agrees to
   delete the pushed tag (`git push origin :refs/tags/v<version>`).
 - **The workflow failed after the build** (GitHub or CurseForge was down):
