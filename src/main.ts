@@ -1,5 +1,6 @@
 import { currentScorer, invalidate } from "./compare";
 import { loadDB, settings } from "./db";
+import { diagnoseMenus } from "./diagnose";
 import { onItemInfoReceived } from "./items";
 import { debug, safe, say, setDebug } from "./log";
 import { findScorer, SCORERS } from "./scoring";
@@ -67,12 +68,15 @@ function onSlash(msg: string): void {
     say(`scoring: ${scorer.id}`);
   } else if (cmd === "dump") {
     dumpState(say);
+  } else if (cmd === "menus") {
+    diagnoseMenus(say);
   } else {
     say(`v${VERSION}`);
     say("/tu filter - toggle only show upgrades");
     say(`/tu scoring [${SCORERS.map((s) => s.id).join("|")}] - how upgrades are judged`);
     say("/tu debug - toggle debug messages");
     say("/tu dump - show hook status and what each visible row resolved to");
+    say("/tu menus - find how the trainer's dropdowns are built");
   }
 }
 

@@ -201,5 +201,17 @@ local dumpFailed = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then dumpFailed = true end end
 check(not dumpFailed, "/tu dump has no failures")
 
+-- Menu diagnostic runs, watches, and finishes without errors.
+output = {}
+SlashCmdList.TRAINERUPGRADES("menus")
+flush()
+local sawDone, menuFailed = false, false
+for _, l in ipairs(output) do
+  if l:find("done.", 1, true) then sawDone = true end
+  if l:find("failed", 1, true) then menuFailed = true end
+end
+check(sawDone, "/tu menus finishes its watch")
+check(not menuFailed, "/tu menus has no failures")
+
 print = function(...) io.write(table.concat({ ... }, " "), "\n") end
 print(passCount() .. " checks passed")
