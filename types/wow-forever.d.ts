@@ -36,10 +36,9 @@ declare let TrainerUpgradesDB: TrainerUpgradesSaved | undefined;
 
 interface TrainerUpgradesSaved {
   debug: boolean;
-  onlyUpgrades: boolean;
+  /** Fade recipes for gear the player can't use. */
+  onlyUsable: boolean;
   scoring: string;
-  /** Our own lines on the trainer tooltip. Off: the built-in compare tooltips are used instead. */
-  tooltipLines: boolean;
 }
 
 /** Fourth value is the TOC interface number. Confirmed. */
@@ -253,3 +252,36 @@ declare const UISpecialFrames: string[];
 declare const ChatFontNormal: unknown;
 /** print() writes here. Hooked (post-hook) to capture Blizzard's own output. */
 declare const DEFAULT_CHAT_FRAME: Frame & { AddMessage(text: string, ...rest: unknown[]): void };
+
+// ---------------------------------------------------------------------------
+// Confirmed by /tu menus on 1.60.1
+// ---------------------------------------------------------------------------
+
+interface Region {
+  GetEffectiveScale(): number;
+  GetWidth(): number;
+}
+
+/** Modern menu builder passed to Menu.ModifyMenu callbacks. */
+interface MenuDescription {
+  CreateDivider(): unknown;
+  CreateTitle(text: string): unknown;
+  CreateCheckbox(text: string, isSelected: (data?: unknown) => boolean, setSelected: (data?: unknown) => void, data?: unknown): unknown;
+}
+
+/** Present. The trainer's Settings dropdown is tagged MENU_TRAINER_FILTER. */
+declare const Menu: {
+  ModifyMenu?: (this: void, tag: string, fn: (owner: unknown, root: MenuDescription, context: unknown) => void) => void;
+} | undefined;
+
+/** Present. CompareItem confirmed; the other two are retail names, feature-checked. */
+declare const TooltipComparisonManager: {
+  CompareItem?(comparisonItem: unknown, tooltip: GameTooltip, anchorFrame?: Region): void;
+  CreateComparisonItem?(tooltipData: unknown): unknown;
+  Clear?(tooltip: GameTooltip): void;
+} | undefined;
+
+/** Hyperlink tooltip data carries an item GUID the native compare can use. Not probed. */
+declare const C_TooltipInfo: {
+  GetHyperlink?: (this: void, link: string) => { guid?: string } | undefined;
+} | undefined;

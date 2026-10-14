@@ -1,6 +1,6 @@
 {
   "name": "trainer-upgrades",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "WoW Forever addon: marks trainer recipes that would be gear upgrades.",
   "type": "module",

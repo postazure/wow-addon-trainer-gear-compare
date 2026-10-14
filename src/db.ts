@@ -1,16 +1,22 @@
 const DEFAULTS: TrainerUpgradesSaved = {
   debug: false,
-  onlyUpgrades: false,
+  onlyUsable: false,
   scoring: "itemLevel",
-  tooltipLines: false,
 };
 
 let current: TrainerUpgradesSaved = { ...DEFAULTS };
 
-/** Merge saved settings over defaults and write the result back. */
+/**
+ * Load saved settings over defaults and write the result back.
+ * Only known keys are kept, so settings removed in later versions drop out.
+ */
 export function loadDB(): TrainerUpgradesSaved {
-  const saved: Partial<TrainerUpgradesSaved> = TrainerUpgradesDB ?? {};
-  current = { ...DEFAULTS, ...saved };
+  const saved = (TrainerUpgradesDB ?? {}) as Record<string, unknown>;
+  const merged = { ...DEFAULTS } as Record<string, unknown>;
+  for (const key of Object.keys(DEFAULTS)) {
+    if (typeof saved[key] === typeof merged[key]) merged[key] = saved[key];
+  }
+  current = merged as unknown as TrainerUpgradesSaved;
   TrainerUpgradesDB = current;
   return current;
 }

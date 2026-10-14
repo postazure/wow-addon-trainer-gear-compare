@@ -59,12 +59,14 @@ function compute(link: string): Evaluation {
   const placement = PLACEMENT[item.equipLoc];
   if (!placement || isFishingPole(item)) return NONE;
 
-  const reason = unusableReason(item);
-  if (reason !== undefined) return { verdict: "none", reason, item };
-
   const scorer = currentScorer();
   const versus = findVersus(placement, scorer);
   if (versus === "pending") return PENDING;
+
+  // Gear you can't use: no verdict, but keep what it would replace, so the
+  // compare tooltips can still show it.
+  const reason = unusableReason(item);
+  if (reason !== undefined) return { verdict: "none", reason, item, versus };
 
   const newScore = scorer.score(item);
   const better = versus.score === undefined || newScore > versus.score;

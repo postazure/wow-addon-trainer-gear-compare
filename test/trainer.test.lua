@@ -1,81 +1,42 @@
--- Scenario tests. A level 17 Paladin (as in the probe) at a Blacksmithing trainer.
--- Paladin here knows: Cloth, Leather, Mail, Shield, 1H Maces, 2H Maces.
+-- Main suite: the client as the probe found it (Menu API and native compare present).
+-- Setup is in fixtures.lua.
 
-local ARMOR, WEAPON = 4, 2
-local DPS = "ITEM_MOD_DAMAGE_PER_SECOND_SHORT"
-
--- Equipped gear ---------------------------------------------------------------
-local wornMace = addItem(36, { name = "Worn Mace", ilvl = 2, minLevel = 1, subType = "One-Handed Maces",
-  equipLoc = "INVTYPE_WEAPON", classID = WEAPON, subclassID = 4, stats = { [DPS] = 1.6 } })
-local oldBracers = addItem(100, { name = "Old Bracers", ilvl = 15, minLevel = 10, subType = "Mail",
-  equipLoc = "INVTYPE_WRIST", classID = ARMOR, subclassID = 3, stats = { ITEM_MOD_STAMINA_SHORT = 2 } })
-local ringA = addItem(101, { name = "Ring A", ilvl = 10, minLevel = 5, subType = "Miscellaneous",
-  equipLoc = "INVTYPE_FINGER", classID = ARMOR, subclassID = 0, stats = {} })
-local ringB = addItem(102, { name = "Ring B", ilvl = 5, minLevel = 1, subType = "Miscellaneous",
-  equipLoc = "INVTYPE_FINGER", classID = ARMOR, subclassID = 0, stats = {} })
-equippedLinks[16] = wornMace
-equippedLinks[9] = oldBracers
-equippedLinks[11] = ringA
-equippedLinks[12] = ringB
-
--- Trainer services --------------------------------------------------------
--- 1-3 are exact values from the probe.
-local function service(name, link, category)
-  services[#services + 1] = { name = name, type = "available", link = link, category = category }
-  local row = makeRow({ skillIndex = #services }, name)
-  rows[#rows + 1] = row
-  return row
-end
-
-local mace = service("Copper Mace", addItem(2844, { name = "Copper Mace", ilvl = 9, minLevel = 4,
-  subType = "One-Handed Maces", equipLoc = "INVTYPE_WEAPON", classID = WEAPON, subclassID = 4,
-  stats = { [DPS] = 3.8461537361145 } }), "One-Handed Maces")
-local axe = service("Copper Axe", addItem(2845, { name = "Copper Axe", ilvl = 9, minLevel = 4,
-  subType = "One-Handed Axes", equipLoc = "INVTYPE_WEAPON", classID = WEAPON, subclassID = 0,
-  stats = { [DPS] = 3.75 } }), "One-Handed Axes")
-local sword = service("Copper Shortsword", addItem(2847, { name = "Copper Shortsword", ilvl = 10, minLevel = 4,
-  subType = "One-Handed Swords", equipLoc = "INVTYPE_WEAPON", classID = WEAPON, subclassID = 7,
-  stats = { [DPS] = 5.4000000953674, ITEM_MOD_STRENGTH_SHORT = 1 } }), "One-Handed Swords")
-local belt = service("Copper Chain Belt", addItem(2851, { name = "Copper Chain Belt", ilvl = 9, minLevel = 4,
-  subType = "Mail", equipLoc = "INVTYPE_WAIST", classID = ARMOR, subclassID = 3, stats = {}, cached = false }))
-local bracers = service("Copper Bracers", addItem(2853, { name = "Copper Bracers", ilvl = 7, minLevel = 2,
-  subType = "Mail", equipLoc = "INVTYPE_WRIST", classID = ARMOR, subclassID = 3, stats = {} }))
-local enchant = service("Enchant Bracer - Minor Health", nil)
-local maul = service("Copper Maul", addItem(2900, { name = "Copper Maul", ilvl = 11, minLevel = 6,
-  subType = "Two-Handed Maces", equipLoc = "INVTYPE_2HWEAPON", classID = WEAPON, subclassID = 5,
-  stats = { [DPS] = 6 } }))
-local spiritGloves = service("Spirit Gloves", addItem(2901, { name = "Spirit Gloves", ilvl = 12, minLevel = 5,
-  subType = "Cloth", equipLoc = "INVTYPE_HAND", classID = ARMOR, subclassID = 1,
-  stats = { ITEM_MOD_SPIRIT_SHORT = 3 } }))
-local highHelm = service("Iron Helm", addItem(2902, { name = "Iron Helm", ilvl = 25, minLevel = 20,
-  subType = "Mail", equipLoc = "INVTYPE_HEAD", classID = ARMOR, subclassID = 3, stats = {} }))
-local ring = service("Copper Ring", addItem(2903, { name = "Copper Ring", ilvl = 8, minLevel = 4,
-  subType = "Miscellaneous", equipLoc = "INVTYPE_FINGER", classID = ARMOR, subclassID = 0, stats = {} }))
-local shirt = service("Linen Shirt", addItem(2904, { name = "Linen Shirt", ilvl = 5, minLevel = 1,
-  subType = "Miscellaneous", equipLoc = "INVTYPE_BODY", classID = ARMOR, subclassID = 0, stats = {} }))
-
--- A category row, and a row whose label does not match its service.
-local category = makeRow({ categoryName = "Maces" }, "Maces")
-rows[#rows + 1] = category
-local mismatch = makeRow({ skillIndex = 1 }, "Something Else")
-rows[#rows + 1] = mismatch
-
--- Load ----------------------------------------------------------------------
-TrainerUpgradesDB = { debug = true }
-fire("ADDON_LOADED", "TrainerUpgrades")
+-- Settings ------------------------------------------------------------------
 check(TrainerUpgradesDB.scoring == "itemLevel", "scoring defaults to itemLevel")
-check(TrainerUpgradesDB.onlyUpgrades == false, "filter defaults off")
+check(TrainerUpgradesDB.onlyUsable == false, "filter defaults off")
+check(TrainerUpgradesDB.tooltipLines == nil, "removed settings drop out of the saved file")
 
-loadTrainerUI()
-fire("ADDON_LOADED", "Blizzard_TrainerUI")
-check(TrainerUpgradesOnlyUpgrades ~= nil, "checkbox created")
-local cbPoint = TrainerUpgradesOnlyUpgrades.point
-check(cbPoint[1] == "RIGHT" and cbPoint[2] == ClassTrainerTrainButton and cbPoint[3] == "LEFT",
-  "checkbox sits left of the Train button")
-
-fire("TRAINER_SHOW")
-ClassTrainerFrame_Update()
+-- Settings dropdown -----------------------------------------------------------
+check(menuCallbacks["MENU_TRAINER_FILTER"] ~= nil, "added to the trainer's Settings dropdown")
+check(TrainerUpgradesUsableFilter == nil, "no separate checkbox when the menu works")
+local entry
+for _, item in ipairs(openMenu("MENU_TRAINER_FILTER")) do
+  if item.kind == "checkbox" then entry = item end
+end
+check(entry ~= nil and entry.text == "Only show usable gear", "menu has the usable-gear toggle")
+check(entry.isSelected() == false, "menu toggle starts off")
+entry.setSelected()
 flush()
+check(TrainerUpgradesDB.onlyUsable == true, "menu toggle turns the filter on")
+check(entry.isSelected() == true, "menu toggle shows on")
+check(axe.button.alpha < 1, "gear you can't use is faded")
+check(highHelm.button.alpha < 1, "gear above your level is faded")
+check(mace.button.alpha == 1, "usable gear stays visible")
+check(bracers.button.alpha == 1, "usable gear stays visible even if not better")
+check(enchant.button.alpha == 1, "non-gear recipes stay visible")
+check(shirt.button.alpha == 1, "shirts stay visible")
+check(category.button.alpha == 1, "category rows stay visible")
+entry.setSelected()
+flush()
+check(TrainerUpgradesDB.onlyUsable == false, "menu toggle turns the filter off")
+check(axe.button.alpha == 1, "faded rows restored")
+
+SlashCmdList.TRAINERUPGRADES("filter")
+flush()
+check(TrainerUpgradesDB.onlyUsable == true and axe.button.alpha < 1, "/tu filter turns it on")
+SlashCmdList.TRAINERUPGRADES("filter")
+flush()
+check(TrainerUpgradesDB.onlyUsable == false and axe.button.alpha == 1, "/tu filter turns it off")
 
 -- Markers -------------------------------------------------------------------
 check(marker(mace) == "upgrade", "Copper Mace (ilvl 9) beats Worn Mace (ilvl 2)")
@@ -99,41 +60,81 @@ fire("GET_ITEM_INFO_RECEIVED", 2851, true)
 flush()
 check(marker(belt) == "upgrade", "belt marked once its data arrives (waist slot empty)")
 
--- Compare tooltips ------------------------------------------------------------
--- Built-in rule: only with Shift (or "always compare"). No extra lines by default.
+-- Tooltip lines (always on) -----------------------------------------------------
+local DELTA = "If you replace this item, the following stat changes will occur:"
 hover(1)
-check(compareSlots() == "", "no compare without Shift")
-check(not tooltipHas("TrainerUpgrades"), "no extra tooltip lines by default")
+check(tooltipHas("TrainerUpgrades: upgrade"), "mace tooltip says upgrade")
+check(tooltipHas("Item level 9 vs 2 (Main Hand)"), "mace tooltip shows item levels")
+check(lineIndex(DELTA) ~= nil, "stat changes use the built-in heading")
+check(lineIndex("+2.2 Damage Per Second") == lineIndex(DELTA) + 1, "each stat on its own line, under the heading")
 
+hover(7)
+local h = lineIndex(DELTA)
+check(h ~= nil
+  and lineIndex("+4.4 Damage Per Second") == h + 1
+  and lineIndex("+3 Strength") == h + 2
+  and lineIndex("+2 Stamina") == h + 3, "stats ordered like an item tooltip: DPS, Strength, Stamina")
+check(tooltipHas("Item level 11 vs 2 (Main Hand + Off Hand)"), "maul tooltip compares against both hands")
+
+hover(5)
+check(lineIndex("-2 Stamina") ~= nil, "a lost stat shows as its own negative line")
+
+hover(2)
+check(tooltipHas("can't use (you can't use One-Handed Axes)"), "axe tooltip gives the reason")
+hover(10)
+check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against the weaker ring")
+hover(6)
+check(not tooltipHas("TrainerUpgrades"), "enchant tooltip unchanged")
+
+-- Native compare ------------------------------------------------------------------
+-- Built-in trigger: Shift, or "always compare items".
+hover(1)
+check(not ShoppingTooltip1.shown, "no compare without Shift")
 shiftDown = true
 fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
-check(compareSlots() == "16", "Shift shows the equipped main hand")
+check(ShoppingTooltip1.native == "Item-2844", "Shift starts Blizzard's own compare for the crafted item")
+local p = ShoppingTooltip1.point
+check(p[1] == "TOPRIGHT" and p[2] == GameTooltip and p[3] == "TOPLEFT", "equipped item on the left, recipe on the right")
+check(not ShoppingTooltip1.CompareHeader.shown, "native compare handles its own header")
 shiftDown = false
+local cleared = compareCleared
 fire("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
-check(compareSlots() == "", "releasing Shift hides it")
+check(not ShoppingTooltip1.shown and compareCleared == cleared + 1, "releasing Shift clears the native compare")
 
 alwaysCompare = true
-hover(1)
-check(compareSlots() == "16", "always-compare shows it without Shift")
-hover(10)
-check(compareSlots() == "11,12", "ring compares against both rings")
-hover(7)
-check(compareSlots() == "16", "2H compares against the main hand (off hand empty)")
 hover(2)
-check(compareSlots() == "", "no compare for gear you can't use")
+check(ShoppingTooltip1.native == "Item-2845", "compare shows for gear you can't use, too")
+hover(9)
+check(not ShoppingTooltip1.shown, "no compare when nothing is equipped in that slot")
+equippedLinks[1] = addItem(104, { name = "Old Cap", ilvl = 4, minLevel = 1, subType = "Leather",
+  equipLoc = "INVTYPE_HEAD", classID = ARMOR, subclassID = 2, stats = {} })
+fire("PLAYER_EQUIPMENT_CHANGED", 1, false)
+flush()
+hover(9)
+check(ShoppingTooltip1.native == "Item-2902", "compare shows for gear above your level")
 hover(6)
-check(compareSlots() == "", "no compare for a recipe with no item")
+check(not ShoppingTooltip1.shown, "no compare for a recipe with no item")
+hover(11)
+check(not ShoppingTooltip1.shown, "no compare for non-gear (shirt)")
+
+GameTooltip.left = 100 -- no room on the left
 hover(1)
-GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT")  -- moved to something else
-check(compareSlots() == "", "compare hidden when the tooltip gets a new owner")
+p = ShoppingTooltip1.point
+check(p[1] == "TOPLEFT" and p[3] == "TOPRIGHT", "flips to the right only when the left has no room")
+GameTooltip.left = nil
+
+-- Native compare can't start (no GUID): fill the compare tooltips ourselves.
+noGuid[2844] = true
 hover(1)
+check(ShoppingTooltip1.native == nil and ShoppingTooltip1.slot == 16, "falls back to showing the equipped main hand")
+check(ShoppingTooltip1.CompareHeader.shown, "fallback shows the Currently Equipped header")
 GameTooltip:Hide()
-check(compareSlots() == "", "compare hidden with the tooltip")
-check(ShoppingTooltip1.point[1] == "TOPLEFT" and ShoppingTooltip1.point[3] == "TOPRIGHT", "compare opens to the right")
-GameTooltip.right = 900
+check(not ShoppingTooltip1.shown and not ShoppingTooltip1.CompareHeader.shown, "fallback compare and header hidden with the tooltip")
+noGuid[2844] = nil
+
 hover(1)
-check(ShoppingTooltip1.point[1] == "TOPRIGHT" and ShoppingTooltip1.point[3] == "TOPLEFT", "compare opens left near the screen edge")
-GameTooltip.right = nil
+GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT") -- moved to something else
+check(not ShoppingTooltip1.shown, "compare hidden when the tooltip gets a new owner")
 alwaysCompare = false
 
 -- Blizzard's own compare (a bag item, say) is never hidden by us.
@@ -144,41 +145,6 @@ GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT")
 GameTooltip:Hide()
 check(ShoppingTooltip1.shown and ShoppingTooltip1.slot == 5, "Blizzard's own compare left alone")
 ShoppingTooltip1:Hide()
-
--- Optional tooltip lines (/tu lines) ------------------------------------------
-SlashCmdList.TRAINERUPGRADES("lines")
-check(TrainerUpgradesDB.tooltipLines == true, "/tu lines turns lines on")
-hover(1)
-check(tooltipHas("TrainerUpgrades: upgrade"), "mace tooltip says upgrade")
-check(tooltipHas("Item level 9 vs 2 (Main Hand)"), "mace tooltip shows item levels")
-check(tooltipHas("+2.2 Damage Per Second"), "mace tooltip shows DPS change")
-
-hover(2)
-check(tooltipHas("can't use (you can't use One-Handed Axes)"), "axe tooltip gives the reason")
-
-hover(7)
-check(tooltipHas("Item level 11 vs 2 (Main Hand + Off Hand)"), "maul tooltip compares against both hands")
-
-hover(10)
-check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against the weaker ring")
-
-hover(6)
-check(not tooltipHas("TrainerUpgrades"), "enchant tooltip unchanged")
-
--- Filter --------------------------------------------------------------------
-SlashCmdList.TRAINERUPGRADES("filter")
-flush()
-check(TrainerUpgradesDB.onlyUpgrades == true, "/tu filter turns the filter on")
-check(TrainerUpgradesOnlyUpgrades.checked == true, "checkbox follows /tu filter")
-check(mace.button.alpha == 1, "upgrade stays visible")
-check(axe.button.alpha < 1, "non-upgrade is faded")
-check(category.button.alpha == 1, "category row is never faded")
-
-TrainerUpgradesOnlyUpgrades.checked = false
-TrainerUpgradesOnlyUpgrades.scripts.OnClick(TrainerUpgradesOnlyUpgrades)
-flush()
-check(TrainerUpgradesDB.onlyUpgrades == false, "checkbox turns the filter off")
-check(axe.button.alpha == 1, "faded rows restored")
 
 -- Gear changes --------------------------------------------------------------
 local goodMace = addItem(103, { name = "Good Mace", ilvl = 20, minLevel = 10, subType = "Two-Handed Maces",
@@ -202,8 +168,6 @@ check(tooltipHas("(stat weights)"), "tooltip shows the weighted score")
 SlashCmdList.TRAINERUPGRADES("scoring nope")
 check(TrainerUpgradesDB.scoring == "statWeights", "unknown scorer ignored")
 SlashCmdList.TRAINERUPGRADES("scoring itemlevel")
-SlashCmdList.TRAINERUPGRADES("lines")
-check(TrainerUpgradesDB.tooltipLines == false, "/tu lines turns lines off")
 
 -- Proficiency fallback --------------------------------------------------------
 -- If IsPlayerSpell can't see Cloth, proficiency spells don't work: don't hide gear.
@@ -224,7 +188,7 @@ end
 -- Silent failures ---------------------------------------------------------------
 output = {}
 TrainerUpgradesDB.debug = false
-SlashCmdList.TRAINERUPGRADES("debug")  -- on
+SlashCmdList.TRAINERUPGRADES("debug") -- on
 local realInfo = GetTrainerServiceInfo
 GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
@@ -235,7 +199,7 @@ local sawFailure = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then sawFailure = true end end
 check(sawFailure, "failures reported with debug on")
 
-SlashCmdList.TRAINERUPGRADES("debug")  -- off
+SlashCmdList.TRAINERUPGRADES("debug") -- off
 output = {}
 GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
@@ -251,30 +215,24 @@ local dumpFailed = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then dumpFailed = true end end
 check(not dumpFailed, "/tu dump has no failures")
 
--- Menu diagnostic runs, watches, and finishes without errors.
+-- Menu diagnostic runs, watches, and finishes in a copy window.
 output = {}
-openMenuTag = "MENU_CLASS_TRAINER_SETTINGS"
+openMenuTag = "MENU_TRAINER_FILTER"
 SlashCmdList.TRAINERUPGRADES("menus")
 flush()
 local copy = TrainerUpgradesCopyWindow
 check(copy ~= nil and copy.shown, "/tu menus opens the copy window")
 local copyText = lastEditBox and lastEditBox.text or ""
 check(copyText:find("menu API present", 1, true) ~= nil, "copy window has our report")
-check(copyText:find("MENU_CLASS_TRAINER_SETTINGS", 1, true) ~= nil, "copy window has Blizzard's printed menu tag")
+check(copyText:find("MENU_TRAINER_FILTER", 1, true) ~= nil, "copy window has Blizzard's printed menu tag")
 check(copyText:find("done.", 1, true) ~= nil, "copy window has the whole run")
 check(lastEditBox.highlighted, "copy window text is selected")
 local _, prefixCount = copyText:gsub("TrainerUpgrades|", "")
 check(prefixCount == 0, "our lines are not doubled by the chat capture")
 SlashCmdList.TRAINERUPGRADES("copy")
 check(copy.shown, "/tu copy reopens it")
-
-local sawDone, menuFailed = false, false
-for _, l in ipairs(output) do
-  if l:find("done.", 1, true) then sawDone = true end
-  if l:find("failed", 1, true) then menuFailed = true end
-end
-check(sawDone, "/tu menus finishes its watch")
+local menuFailed = false
+for _, l in ipairs(output) do if l:find("failed", 1, true) then menuFailed = true end end
 check(not menuFailed, "/tu menus has no failures")
 
-print = function(...) io.write(table.concat({ ... }, " "), "\n") end
-print(passCount() .. " checks passed")
+report("main")

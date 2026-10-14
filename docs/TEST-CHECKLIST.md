@@ -47,31 +47,38 @@ data keys, which is what I need to fix it.
 
 ## 5. Compare and tooltips
 
-- [ ] Hover a gear recipe. No compare tooltips show until you hold Shift.
-- [ ] Hold Shift: your equipped item shows in the compare tooltip next to
-      the recipe tooltip. Let go: it hides.
-- [ ] With "Always compare items" turned on (Interface options), it shows
-      without Shift.
-- [ ] Ring or trinket: both equipped rings or trinkets show.
-- [ ] Two-hander while you hold a one-hander and an off hand: both show.
-- [ ] Hover a weapon you can't use, or an enchant: no compare.
-- [ ] Hover a recipe near the right edge of the screen: the compare opens
-      on the left instead of going off screen.
+- [ ] Hover a gear recipe. The tooltip ends with "TrainerUpgrades: upgrade"
+      (or "not an upgrade"), "Item level X vs Y (slot)", then the heading
+      "If you replace this item, the following stat changes will occur:"
+      with **one stat per line**, green for gains and red for losses.
+- [ ] Stats are in item tooltip order: DPS, Armor, Strength, Agility,
+      Stamina, Intellect, Spirit.
+- [ ] Hover gear you can't use. It says "can't use (...)" with the reason.
+- [ ] Hover an enchant or a non-gear recipe. No TrainerUpgrades lines.
+- [ ] Without "Always compare items", the compare shows only while you hold
+      Shift.
+- [ ] The compare shows **"Currently Equipped"** and Blizzard's own stat
+      summary, like a normal item compare.
+- [ ] Your equipped item is on the **left**. The recipe tooltip is on the
+      right.
+- [ ] Gear you can't use (wrong weapon, too high level) still shows the
+      compare.
+- [ ] Rings and trinkets show both of yours. A two-hander shows both hands.
+- [ ] Nothing equipped in that slot: no compare.
 - [ ] Move from a recipe to a bag item: the normal Blizzard compare still
       works and nothing is left over from the recipe.
-- [ ] By default the recipe tooltip has no TrainerUpgrades lines.
-- [ ] `/tu lines`: the tooltip now ends with "TrainerUpgrades: upgrade",
-      "Item level X vs Y (slot)", and stat changes. For gear you can't use,
-      it says "can't use (...)". `/tu lines` again turns them off.
+- [ ] With `/tu debug` on, chat says `compare: native, left`. If it says
+      `manual`, the native compare didn't start; tell me.
 
 ## 6. Filter
 
-- [ ] The "Upgrades" checkbox sits just left of the Train
-      button, with its label to its left. Nothing overlaps (the money
-      display, the settings dropdown).
-- [ ] Hovering it shows an explanation.
-- [ ] Ticking it fades every non-upgrade row. Upgrades stay bright.
-- [ ] `/tu filter` toggles it, and the checkbox follows.
+- [ ] Open the trainer's **Settings** dropdown. At the bottom: a divider,
+      "TrainerUpgrades", and an **"Only show usable gear"** checkbox.
+- [ ] There's no separate checkbox in the trainer window.
+- [ ] Ticking it fades gear you can't use (wrong armor, unlearned weapon,
+      level too high). Gear you can use stays bright, upgrade or not.
+- [ ] Enchants and other non-gear recipes are never faded.
+- [ ] `/tu filter` toggles it, and the dropdown shows the new state.
 - [ ] The setting is kept after `/reload`.
 - [ ] Faded rows can still be selected, and you can still train them.
 

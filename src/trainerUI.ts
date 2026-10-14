@@ -108,7 +108,8 @@ function showVerdict(button: Frame, ev: Evaluation | undefined): void {
     if (m) { m.arrow.Hide(); m.dash.Hide(); }
   }
 
-  const dim = settings().onlyUpgrades && ev !== undefined && verdict !== "upgrade";
+  // Fade only what we know: gear you can't use. Non-gear and loading rows stay.
+  const dim = settings().onlyUsable && ev?.reason !== undefined;
   if (dim) {
     button.SetAlpha(DIM_ALPHA);
     dimmed.add(button);
@@ -163,8 +164,8 @@ export function scheduleRefresh(): void {
   });
 }
 
-export function setOnlyUpgrades(on: boolean): void {
-  settings().onlyUpgrades = on;
+export function setOnlyUsable(on: boolean): void {
+  settings().onlyUsable = on;
   checkbox?.SetChecked(on);
   scheduleRefresh();
 }
@@ -180,8 +181,9 @@ export function rescore(): void {
 
 // The trainer service GameTooltip is showing, if any.
 let hoveredIndex: number | undefined;
-// True only while the shopping tooltips show what we put there.
-let compareShown = false;
+// Which compare we are showing: Blizzard's own, our filled-in copy, or none.
+let compareShown: "native" | "manual" | undefined;
+let lastCompareLog = "";
 
 function shoppingTooltips(): GameTooltip[] {
   const tips: GameTooltip[] = [];
@@ -190,6 +192,10 @@ function shoppingTooltips(): GameTooltip[] {
     if (typeof tip === "object" && typeof field(tip, "SetInventoryItem") === "function") tips.push(tip as GameTooltip);
   }
   return tips;
+}
+
+function isRegion(value: unknown): value is Region {
+  return typeof value === "object" && typeof field(value, "Show") === "function";
 }
 
 /** Same trigger as the built-in compare: "always compare" or the compare modifier (Shift). */
@@ -202,15 +208,71 @@ function wantsCompare(): boolean {
 
 /** Hide the compare tooltips, but only if we are the ones showing them. */
 function hideCompare(): void {
-  if (!compareShown) return;
-  compareShown = false;
-  for (const tip of shoppingTooltips()) tip.Hide();
+  const mode = compareShown;
+  if (mode === undefined) return;
+  compareShown = undefined;
+  if (mode === "native" && TooltipComparisonManager?.Clear) {
+    TooltipComparisonManager.Clear(GameTooltip);
+  }
+  for (const tip of shoppingTooltips()) {
+    const header = field(tip, "CompareHeader");
+    if (mode === "manual" && isRegion(header)) header.Hide();
+    tip.Hide();
+  }
 }
 
 /**
- * The trainer tooltip is a spell tooltip, so the built-in compare never
- * starts. Show the equipped item(s) in the built-in compare tooltips.
+ * Blizzard's own compare, fed the crafted item. The trainer tooltip is a
+ * spell tooltip, so it never starts by itself. Returns true if it showed.
  */
+function nativeCompare(tooltip: GameTooltip, link: string): boolean {
+  const manager = TooltipComparisonManager;
+  const getHyperlink = C_TooltipInfo?.GetHyperlink;
+  if (!manager?.CompareItem || !getHyperlink) return false;
+  const data = getHyperlink(link);
+  if (data?.guid === undefined) return false;
+  const item = manager.CreateComparisonItem ? manager.CreateComparisonItem(data) : { guid: data.guid };
+  if (item === undefined) return false;
+  manager.CompareItem(item, tooltip);
+  return shoppingTooltips()[0]?.IsShown() ?? false;
+}
+
+/** Fallback: fill the compare tooltips with the equipped items ourselves. */
+function manualCompare(tooltip: GameTooltip, slots: number[]): void {
+  const tips = shoppingTooltips();
+  for (let i = 0; i < slots.length && i < tips.length; i++) {
+    const tip = tips[i];
+    tip.SetOwner(tooltip, "ANCHOR_NONE");
+    tip.SetInventoryItem("player", slots[i]);
+    const header = field(tip, "CompareHeader"); // "Currently Equipped"
+    if (isRegion(header)) header.Show();
+    tip.Show();
+  }
+}
+
+/**
+ * Equipped item(s) on the left, recipe tooltip on the right.
+ * Flips to the right only when there's no room on the left of the screen.
+ */
+function placeCompare(tooltip: GameTooltip): string {
+  const shown = shoppingTooltips().filter((t) => t.IsShown());
+  if (shown.length === 0) return "none";
+  let width = 0;
+  for (const t of shown) width += t.GetWidth() * t.GetEffectiveScale();
+  const room = (tooltip.GetLeft() ?? 0) * tooltip.GetEffectiveScale();
+  const side = room >= width ? "left" : "right";
+  let anchor: Region = tooltip;
+  for (let i = 0; i < shown.length; i++) {
+    const t = shown[i];
+    const y = i === 0 ? -10 : 0;
+    t.ClearAllPoints();
+    if (side === "left") t.SetPoint("TOPRIGHT", anchor, "TOPLEFT", 0, y);
+    else t.SetPoint("TOPLEFT", anchor, "TOPRIGHT", 0, y);
+    anchor = t;
+  }
+  return side;
+}
+
 function showCompare(tooltip: GameTooltip, index: number): void {
   hideCompare();
   if (!wantsCompare()) return;
@@ -218,28 +280,24 @@ function showCompare(tooltip: GameTooltip, index: number): void {
   if (link === undefined) return;
   const ev = evaluate(link);
   const slots = ev.versus?.compareSlots ?? [];
-  if ((ev.verdict !== "upgrade" && ev.verdict !== "same") || slots.length === 0) return;
-  const tips = shoppingTooltips();
-  if (tips.length === 0) return;
+  // Any gear, usable or not, like the built-in compare. Not for non-gear.
+  if (ev.item === undefined || slots.length === 0) return;
+  if (shoppingTooltips().length === 0) return;
 
-  // Open to the left when there's no room on the right, like the built-in compare.
-  const right = tooltip.GetRight() ?? 0;
-  const screen = UIParent.GetRight() ?? 0;
-  const toLeft = screen > 0 && right > screen * 0.6;
-  let anchor: Region = tooltip;
-  for (let i = 0; i < slots.length && i < tips.length; i++) {
-    const tip = tips[i];
-    tip.SetOwner(tooltip, "ANCHOR_NONE");
-    tip.ClearAllPoints();
-    const y = i === 0 ? -10 : 0;
-    if (toLeft) tip.SetPoint("TOPRIGHT", anchor, "TOPLEFT", 0, y);
-    else tip.SetPoint("TOPLEFT", anchor, "TOPRIGHT", 0, y);
-    tip.SetInventoryItem("player", slots[i]);
-    tip.Show();
-    anchor = tip;
+  if (safe("native compare", () => nativeCompare(tooltip, link)) === true) {
+    compareShown = "native";
+  } else {
+    for (const tip of shoppingTooltips()) tip.Hide();
+    manualCompare(tooltip, slots);
+    compareShown = "manual";
   }
-  compareShown = true;
+  const side = placeCompare(tooltip);
   counters.compare++;
+  const log = `compare: ${compareShown}, ${side}`;
+  if (log !== lastCompareLog) {
+    lastCompareLog = log;
+    debug(log);
+  }
 }
 
 /** Shift pressed or released, or data arrived, while a recipe is hovered. */
@@ -249,7 +307,7 @@ export function refreshHover(): void {
 
 function onTrainerTooltip(tooltip: GameTooltip, index: number): void {
   hoveredIndex = index;
-  if (settings().tooltipLines) addTooltipLines(tooltip, index);
+  addTooltipLines(tooltip, index);
   showCompare(tooltip, index);
 }
 
@@ -270,8 +328,28 @@ function addTooltipLines(tooltip: GameTooltip, index: number): void {
 }
 
 // ---------------------------------------------------------------------------
-// Checkbox
+// Settings dropdown entry (preferred), or a checkbox if the menu API is missing
 // ---------------------------------------------------------------------------
+
+const FILTER_MENU_TAG = "MENU_TRAINER_FILTER"; // from /tu menus on 1.60.1
+
+/** Add our toggle to the trainer's Settings dropdown. Blizzard's supported, taint-safe hook. */
+function addToSettingsMenu(): boolean {
+  const modify = Menu?.ModifyMenu;
+  if (!modify) return false;
+  modify(FILTER_MENU_TAG, (_owner, root) => {
+    safe("settings menu", () => {
+      root.CreateDivider();
+      root.CreateTitle("TrainerUpgrades");
+      root.CreateCheckbox(
+        "Only show usable gear",
+        () => settings().onlyUsable,
+        () => { safe("menu toggle", () => setOnlyUsable(!settings().onlyUsable)); },
+      );
+    });
+  });
+  return true;
+}
 
 /** The trainer's Train button. The probe found ClassTrainerTrainButton_OnClick. */
 function trainButton(parent: Frame): Region | undefined {
@@ -284,7 +362,7 @@ function trainButton(parent: Frame): Region | undefined {
 }
 
 function createCheckbox(parent: Frame): void {
-  const cb = CreateFrame("CheckButton", "TrainerUpgradesOnlyUpgrades", parent, "UICheckButtonTemplate");
+  const cb = CreateFrame("CheckButton", "TrainerUpgradesUsableFilter", parent, "UICheckButtonTemplate");
   cb.SetSize(24, 24);
   // Sit just left of the Train button: [label][box][Train].
   const train = trainButton(parent);
@@ -296,15 +374,15 @@ function createCheckbox(parent: Frame): void {
   }
   const text = cb.CreateFontString(undefined, "OVERLAY", "GameFontNormalSmall");
   text.SetPoint("RIGHT", cb, "LEFT", 0, 1);
-  text.SetText("Upgrades");
-  cb.SetChecked(settings().onlyUpgrades);
+  text.SetText("Usable");
+  cb.SetChecked(settings().onlyUsable);
   cb.SetScript("OnClick", (self: CheckButton) => {
-    safe("checkbox", () => setOnlyUpgrades(self.GetChecked()));
+    safe("checkbox", () => setOnlyUsable(self.GetChecked()));
   });
   cb.SetScript("OnEnter", (self: CheckButton) => {
     GameTooltip.SetOwner(self, "ANCHOR_TOP");
-    GameTooltip.SetText("Only show upgrades");
-    GameTooltip.AddLine("Fades every recipe that is not a gear upgrade.", 1, 1, 1, true);
+    GameTooltip.SetText("Only show usable gear");
+    GameTooltip.AddLine("Fades gear you can't use: armor type, weapon skill, level, or class.", 1, 1, 1, true);
     GameTooltip.AddLine("Rows are faded, not removed, so the Blizzard trainer frame is never changed.", 0.7, 0.7, 0.7, true);
     GameTooltip.Show();
   });
@@ -370,7 +448,9 @@ export function installTrainerHooks(): void {
   tryHook("GameTooltip OnHide", () =>
     GameTooltip.HookScript("OnHide", () => safe("tooltip hide", onTooltipCleared)));
 
-  tryHook("checkbox", () => createCheckbox(frame));
+  let inMenu = false;
+  tryHook("settings menu", () => { inMenu = addToSettingsMenu(); });
+  if (!inMenu) tryHook("checkbox", () => createCheckbox(frame));
   debug(`hooks: ${hookStatus.join(", ")}`);
 }
 

@@ -5,12 +5,12 @@ import { diagnoseMenus } from "./diagnose";
 import { onItemInfoReceived } from "./items";
 import { debug, safe, say, setDebug } from "./log";
 import { findScorer, SCORERS } from "./scoring";
-import { dumpState, installTrainerHooks, refreshHover, rescore, scheduleRefresh, setOnlyUpgrades } from "./trainerUI";
+import { dumpState, installTrainerHooks, refreshHover, rescore, scheduleRefresh, setOnlyUsable } from "./trainerUI";
 import { resetUsableCache } from "./usable";
 
 const ADDON_NAME = "TrainerUpgrades";
 const TRAINER_UI = "Blizzard_TrainerUI";
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
 /** Gear, level, or known spells changed: results are stale. */
 const STALE_EVENTS = ["PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "SPELLS_CHANGED", "LEARNED_SPELL_IN_TAB"];
@@ -53,8 +53,8 @@ function onSlash(msg: string): void {
     setDebug(db.debug);
     say(`debug ${db.debug ? "on" : "off"}`);
   } else if (cmd === "filter") {
-    setOnlyUpgrades(!db.onlyUpgrades);
-    say(`only show upgrades: ${db.onlyUpgrades ? "on" : "off"}`);
+    setOnlyUsable(!db.onlyUsable);
+    say(`only show usable gear: ${db.onlyUsable ? "on" : "off"}`);
   } else if (cmd === "scoring") {
     const ids = SCORERS.map((s) => s.id).join(", ");
     if (arg === undefined || arg === "") {
@@ -69,9 +69,6 @@ function onSlash(msg: string): void {
     db.scoring = scorer.id;
     rescore();
     say(`scoring: ${scorer.id}`);
-  } else if (cmd === "lines") {
-    db.tooltipLines = !db.tooltipLines;
-    say(`extra tooltip lines: ${db.tooltipLines ? "on" : "off"}`);
   } else if (cmd === "dump") {
     dumpState(say);
   } else if (cmd === "menus") {
@@ -80,9 +77,8 @@ function onSlash(msg: string): void {
     reopenCopyWindow();
   } else {
     say(`v${VERSION}`);
-    say("/tu filter - toggle only show upgrades");
+    say("/tu filter - toggle only show usable gear");
     say(`/tu scoring [${SCORERS.map((s) => s.id).join("|")}] - how upgrades are judged`);
-    say("/tu lines - toggle item level and stat lines on the recipe tooltip");
     say("/tu debug - toggle debug messages");
     say("/tu dump - show hook status and what each visible row resolved to");
     say("/tu menus - find how the trainer's dropdowns and compare tooltips work");

@@ -8,10 +8,6 @@ export interface TooltipLine {
   b: number;
 }
 
-const GREEN = "|cff20ff20";
-const RED = "|cffff4040";
-const END = "|r";
-
 const TITLE = "TrainerUpgrades";
 const GRAY_LINE = (text: string): TooltipLine => ({ text, r: 0.6, g: 0.6, b: 0.6 });
 
@@ -28,20 +24,57 @@ function statName(key: string): string {
   return typeof name === "string" ? name : key;
 }
 
-/** New item stats minus the equipped item(s) stats, non-zero only. */
-function statDiff(ev: Evaluation): string | undefined {
-  if (!ev.item || !ev.versus) return undefined;
+/** Display order, like an item tooltip. Anything else follows, sorted. */
+const STAT_ORDER = [
+  "ITEM_MOD_DAMAGE_PER_SECOND_SHORT", "RESISTANCE0_NAME",
+  "ITEM_MOD_STRENGTH_SHORT", "ITEM_MOD_AGILITY_SHORT", "ITEM_MOD_STAMINA_SHORT",
+  "ITEM_MOD_INTELLECT_SHORT", "ITEM_MOD_SPIRIT_SHORT",
+  "RESISTANCE1_NAME", "RESISTANCE2_NAME", "RESISTANCE3_NAME", "RESISTANCE4_NAME",
+  "RESISTANCE5_NAME", "RESISTANCE6_NAME",
+];
+
+function orderOf(key: string): number {
+  const i = STAT_ORDER.indexOf(key);
+  return i >= 0 ? i : STAT_ORDER.length;
+}
+
+function globalString(name: string, fallback: string): string {
+  const value = _G[name];
+  return typeof value === "string" ? value : fallback;
+}
+
+/**
+ * Stat changes if the new item replaces the equipped one(s), laid out like
+ * the built-in compare: a heading, then one stat per line, green or red.
+ */
+function statLines(ev: Evaluation): TooltipLine[] {
+  if (!ev.item || !ev.versus) return [];
   const diff: Record<string, number> = {};
   for (const [k, v] of Object.entries(ev.item.stats)) diff[k] = (diff[k] ?? 0) + v;
   for (const old of ev.versus.items) {
     for (const [k, v] of Object.entries(old.stats)) diff[k] = (diff[k] ?? 0) - v;
   }
-  const parts: string[] = [];
-  for (const key of Object.keys(diff).sort()) {
+
+  // No `||` on numbers here: 0 is truthy in Lua.
+  const keys = Object.keys(diff).sort((a, b) => {
+    const byOrder = orderOf(a) - orderOf(b);
+    if (byOrder !== 0) return byOrder;
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+  const lines: TooltipLine[] = [];
+  for (const key of keys) {
     const d = Math.floor(diff[key] * 10 + 0.5) / 10;
-    if (d !== 0) parts.push(`${d > 0 ? GREEN : RED}${signed(d)} ${statName(key)}${END}`);
+    if (d === 0) continue;
+    lines.push(d > 0
+      ? { text: `${signed(d)} ${statName(key)}`, r: 0.1, g: 1, b: 0.1 }
+      : { text: `${signed(d)} ${statName(key)}`, r: 1, g: 0.25, b: 0.25 });
   }
-  return parts.length > 0 ? parts.join(", ") : undefined;
+  if (lines.length === 0) return [];
+
+  const heading = ev.versus.items.length > 1
+    ? globalString("ITEM_DELTA_MULTIPLE_COMPARISON_DESCRIPTION", "If you replace these items, the following stat changes will occur:")
+    : globalString("ITEM_DELTA_DESCRIPTION", "If you replace this item, the following stat changes will occur:");
+  return [{ text: " ", r: 1, g: 1, b: 1 }, { text: heading, r: 1, g: 0.82, b: 0 }, ...lines];
 }
 
 export function tooltipLines(ev: Evaluation): TooltipLine[] {
@@ -67,7 +100,5 @@ export function tooltipLines(ev: Evaluation): TooltipLine[] {
     lines.push({ text: `Score ${num(Math.floor(ev.newScore * 10 + 0.5) / 10)} vs ${old} (${ev.scorer.label})`, r: 1, g: 1, b: 1 });
   }
 
-  const diff = statDiff(ev);
-  if (diff !== undefined) lines.push({ text: diff, r: 1, g: 1, b: 1 });
-  return lines;
+  return [...lines, ...statLines(ev)];
 }

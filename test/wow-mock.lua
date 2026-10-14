@@ -14,10 +14,23 @@ ChatFontNormal = {}
 BackdropTemplateMixin = {}
 -- Modern menu API: prints open menu tags to chat, like Blizzard's.
 openMenuTag = nil
+menuCallbacks = {}
 Menu = {
-  ModifyMenu = function() end,
+  ModifyMenu = function(tag, fn) menuCallbacks[tag] = fn end,
   PrintOpenMenuTags = function() if openMenuTag then print(openMenuTag) end end,
 }
+-- Generate a menu the way Blizzard does on open; returns what was added.
+function openMenu(tag)
+  local items = {}
+  local root = {}
+  function root:CreateDivider() items[#items + 1] = { kind = "divider" } end
+  function root:CreateTitle(text) items[#items + 1] = { kind = "title", text = text } end
+  function root:CreateCheckbox(text, isSelected, setSelected)
+    items[#items + 1] = { kind = "checkbox", text = text, isSelected = isSelected, setSelected = setSelected }
+  end
+  if menuCallbacks[tag] then menuCallbacks[tag](nil, root, nil) end
+  return items
+end
 function date() return "now" end
 
 -- Localized strings the addon reads from _G.
@@ -66,8 +79,10 @@ local function newRegion()
   function r:IsShown() return self.shown end
   function r:SetPoint(point, rel, relPoint, x, y) self.point = { point, rel, relPoint, x, y } end
   function r:ClearAllPoints() self.point = nil end
-  function r:GetRight() return self.right or 400 end
-  function r:GetLeft() return 0 end
+  function r:GetRight() return self.right or 700 end
+  function r:GetLeft() return self.left or 500 end
+  function r:GetWidth() return self.width or 200 end
+  function r:GetEffectiveScale() return self.scale or 1 end
   function r:SetSize() end
   function r:SetAlpha(a) self.alpha = a end
   function r:GetAlpha() return self.alpha end
@@ -120,8 +135,30 @@ for i = 1, 2 do
   tip.shown = false
   function tip:SetOwner() end
   function tip:SetInventoryItem(unit, slot) self.slot = slot end
-  function tip:Hide() self.shown = false; self.slot = nil end
+  function tip:Hide() self.shown = false; self.slot = nil; self.native = nil end
+  tip.CompareHeader = newRegion()
+  tip.CompareHeader.shown = false
 end
+
+-- Native compare. Shows the item's GUID in ShoppingTooltip1, like Blizzard would.
+nativeWorks = true
+noGuid = {}
+compareCleared = 0
+TooltipComparisonManager = {}
+function TooltipComparisonManager:CreateComparisonItem(data) return { guid = data.guid } end
+function TooltipComparisonManager:CompareItem(item, tooltip)
+  if not nativeWorks then return end
+  ShoppingTooltip1.native = item.guid
+  ShoppingTooltip1.shown = true
+end
+function TooltipComparisonManager:Clear() compareCleared = compareCleared + 1 end
+C_TooltipInfo = {
+  GetHyperlink = function(link)
+    local id = tonumber(link:match("item:(%d+)"))
+    if noGuid[id] then return {} end
+    return { guid = "Item-" .. id }
+  end,
+}
 shiftDown = false
 alwaysCompare = false
 function IsModifiedClick(action) return action == "COMPAREITEMS" and shiftDown end
@@ -142,6 +179,10 @@ end
 function GameTooltip:SetText(t) self.lines = { t } end
 function GameTooltip:AddLine(t) self.lines[#self.lines + 1] = t end
 function GameTooltip:SetTrainerService(i) self.lines = { "service " .. i } end
+function lineIndex(text)
+  for i, l in ipairs(GameTooltip.lines) do if l == text then return i end end
+  return nil
+end
 function tooltipHas(text)
   for _, l in ipairs(GameTooltip.lines) do if l:find(text, 1, true) then return true end end
   return false
@@ -264,4 +305,8 @@ function marker(row)
     if t.shown and t.texture == "color" then return "same" end
   end
   return "none"
+end
+
+function report(suite)
+  io.write(suite .. ": " .. passCount() .. " checks passed\n")
 end

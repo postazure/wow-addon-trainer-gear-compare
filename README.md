@@ -7,11 +7,14 @@ an upgrade over your equipped gear.
 - **Gray dash**: same or worse.
 - **No marker**: not gear, no item (enchants), or you can't use it.
 - **Compare**: hover a recipe and hold Shift (or turn on "Always compare
-  items") to see your equipped item(s) in the built-in compare tooltips,
-  next to the recipe tooltip.
-- **Extra lines** (off by default, `/tu lines`): item level vs equipped,
-  stat changes, and why you can't use an item.
-- **"Upgrades"** checkbox next to the Train button: fades everything that isn't an upgrade.
+  items") to see Blizzard's normal compare: your equipped item(s) on the
+  left, the recipe on the right. Works for gear you can't use, too.
+- **Tooltip lines**: item level vs equipped, then the stat changes, one per
+  line, under "If you replace this item, the following stat changes will
+  occur:". For gear you can't use, it says why.
+- **"Only show usable gear"** in the trainer's Settings dropdown: fades gear
+  you can't use (armor type, weapon skill, level, class). Non-gear recipes
+  are never faded.
 
 Built for WoW Forever 1.60.1 (interface 16001), from what the client
 actually returns. See [Probe findings](#probe-findings).
@@ -31,11 +34,10 @@ No other addon is needed.
 | Command                     | What it does                                         |
 | --------------------------- | ---------------------------------------------------- |
 | `/tu`                       | Version and help                                     |
-| `/tu filter`                | Toggle the "Upgrades" filter                         |
+| `/tu filter`                | Toggle "Only show usable gear"                       |
 | `/tu scoring`               | Show the current scoring method                      |
 | `/tu scoring itemLevel`     | Higher item level wins (default)                     |
 | `/tu scoring statWeights`   | Simple per-class stat weights                        |
-| `/tu lines`                 | Toggle our extra lines on the recipe tooltip         |
 | `/tu debug`                 | Toggle debug messages (also shows silent failures)   |
 | `/tu dump`                  | Hook status and what each visible row resolved to    |
 | `/tu menus`                 | Diagnostic: how dropdowns and compare tooltips work  |
@@ -71,23 +73,27 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
 - **The filter fades rows. It doesn't remove them.** Removing rows means
   editing Blizzard's ScrollBox data, which taints the trainer frame. Faded
   rows stay clickable.
+- **"Usable" includes a main-stat rule.** An item with only stats your class
+  doesn't use (for example, only Spirit on a Paladin) counts as not usable.
+  That's a judgment call, unlike the armor, weapon, level and class checks.
+- **The filter lives in the Settings dropdown** (menu tag
+  `MENU_TRAINER_FILTER`, added with `Menu.ModifyMenu`). If a client has no
+  `Menu` API, a "Usable" checkbox appears left of the Train button instead.
 - **The marker position is a best guess** (top-left corner of the recipe
-  icon). The checkbox sits left of the Train button
-  (`ClassTrainerTrainButton`). If that button isn't found, it falls back to
-  the bottom right of the frame.
+  icon).
 - **Rows are matched to recipes through the ScrollBox row data**
   (`skillIndex`, `index`, and so on). If a row's visible name does not match
   the recipe, it gets no marker. That way it fails safe and never shows a
   wrong result. `/tu dump` shows what each row resolved to.
-- **The compare is rebuilt, not native.** Blizzard's compare only starts
-  for item tooltips, and the trainer tooltip is a spell tooltip. So
-  TrainerUpgrades fills the built-in compare tooltips (`ShoppingTooltip1/2`)
-  with your equipped items itself. There's no "Currently Equipped" header
-  or stat-change summary there yet. `/tu lines` adds the stat changes to
-  the recipe tooltip.
-- **Compare shows only for gear you can use** (upgrade or same/worse).
-- **Loading lines don't update by themselves.** With `/tu lines` on, if an
-  item is still loading, the tooltip says so. Move the mouse off and back on.
+- **The compare is started by hand.** Blizzard's compare only starts for
+  item tooltips, and the trainer tooltip is a spell tooltip. So
+  TrainerUpgrades feeds the crafted item to `TooltipComparisonManager`
+  itself, then moves the compare to the left. If that doesn't show
+  anything, it fills `ShoppingTooltip1/2` with your equipped items and
+  shows their "Currently Equipped" header. `/tu debug` says which one ran.
+- **No compare when the slot is empty.** There's nothing to show.
+- **Loading lines don't update by themselves.** If an item is still
+  loading, the tooltip says so. Move the mouse off and back on.
 - **Stat weights are rough.** They are a tie-breaker, not a sim.
   Enchants on your equipped gear are not counted.
 - **Gear above your level is hidden,** even if you'll reach that level soon.
@@ -102,25 +108,25 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
 ```
 addon/TrainerUpgrades.toc     TOC, copied into the build output
 src/main.ts                   Events and slash commands
-src/trainerUI.ts              Hooks, row markers, checkbox, compare tooltips
+src/trainerUI.ts              Hooks, markers, Settings menu entry, compare tooltips
 src/compare.ts                Upgrade decision and slot rules (cached)
 src/items.ts                  Item data cache; handles late-loading items
 src/usable.ts                 Level, proficiency, main-stat checks
 src/scoring.ts                Swappable scoring methods
 src/slots.ts                  Equip slot ids and placement rules
-src/tooltip.ts                Optional tooltip lines (/tu lines)
+src/tooltip.ts                Tooltip lines and stat changes
 src/diagnose.ts               /tu menus diagnostic
 src/copyWindow.ts             Copy window for diagnostic output
 src/db.ts, src/log.ts         Settings; debug log and safe() wrapper
 types/wow-forever.d.ts        Hand-written WoW API types
-test/                         Mock client + scenario tests
+test/                         Mock client, fixtures, main + fallback suites
 probe/TrainerUpgradesProbe/   Debug addon (plain Lua) that found the API
 dist/TrainerUpgrades/         Build output. This folder is the addon.
 ```
 
 ```sh
 npm run build       # TypeScript -> one Lua 5.1 file in dist/TrainerUpgrades
-npm test            # build, then 60+ scenario checks in a mock client
+npm test            # build, then 130+ checks in two mock clients (main + fallback)
 npm run typecheck
 npm run watch       # rebuild on save (does not copy the TOC)
 ```
@@ -156,6 +162,14 @@ Classic data on a modern engine:
   `ClassTrainerFrame_InitCategoryButton`, `ClassTrainerFrame_Update`.
 - The trainer tooltip is a spell tooltip with the item embedded.
   `C_TooltipInfo.GetTrainerService` reports type Spell.
+
+From `/tu menus` on the same client:
+
+- Modern `Menu` API is present. The trainer's Settings dropdown is
+  `ClassTrainerFrame.FilterDropdown`, tag `MENU_TRAINER_FILTER`.
+- Native compare is present: `TooltipComparisonManager.CompareItem`,
+  `C_TooltipComparison.GetItemComparisonInfo`. `ShoppingTooltip1` has a
+  `CompareHeader`. `ShoppingTooltip1:SetCompareItem` (Classic) is gone.
 
 To run the probe again: copy `probe/TrainerUpgradesProbe` into AddOns, open
 a trainer, then `/tuprobe all` and `/tuprobe show` (Ctrl+A, Ctrl+C).
