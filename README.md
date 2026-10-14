@@ -11,7 +11,7 @@ claim anything is an "upgrade".
 - **Tooltip lines**: item level vs equipped, then the stat changes, one per
   line, under "If you replace this item, the following stat changes will
   occur:". The number is green or red; the stat name is white. Gear you
-  can't use gets the same lines, after a red "Can't use: ..." line.
+  can't use gets the same lines. The item's own red text already says why.
 - **"Only show usable gear"** in the trainer's Settings dropdown: fades gear
   you can't use (armor type, weapon skill, level, class). Non-gear recipes
   are never faded.
@@ -49,7 +49,7 @@ Settings are saved per account in `TrainerUpgradesDB`.
 
 1. The trainer gives the crafted item through `GetTrainerServiceItemLink`.
    No link means no item (enchants and similar): skipped quietly.
-2. **Can you use it?** Gear gets a red X and a "Can't use: ..." line if:
+2. **Can you use it?** Gear gets a red X (and is faded by the filter) if:
    - the level requirement isn't met,
    - the armor type or weapon skill isn't known (checked with
      `IsPlayerSpell` and Classic proficiency spell ids),

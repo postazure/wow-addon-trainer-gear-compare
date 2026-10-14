@@ -89,20 +89,18 @@ check(staLine ~= nil, "a lost stat shows as its own negative line")
 check(rawLine(staLine) == "|cffff4040-2|r Stamina", "loss: red number, white stat name")
 
 hover(2)
-check(tooltipHas("Can't use: One-Handed Axes not learned"), "axe tooltip gives the reason")
-check(lineIndex("Can't use: One-Handed Axes not learned") < lineIndex("Item level 9 vs 2 (Main Hand)"),
-  "unusable gear: reason first, then the item level")
+check(not tooltipHas("Can't use"), "no can't-use line; the item's own red text says it")
+check(tooltipHas("Item level 9 vs 2 (Main Hand)"), "unusable gear still shows the item level")
 check(lineIndex("+2.2 Damage Per Second") ~= nil, "unusable gear still shows the stat changes")
 check(not tooltipHas("Score"), "no score line for unusable gear")
 hover(9)
-check(tooltipHas("Can't use: Requires level 20"), "helm tooltip gives the level")
 check(tooltipHas("Item level 25 vs empty (Head)"), "unusable gear in an empty slot still shows its item level")
 hover(8)
-check(tooltipHas("Can't use: No main stats for your class"), "spirit gloves tooltip gives the reason")
+check(tooltipHas("Item level 12 vs empty (Hands)"), "spirit gloves show their item level")
 hover(10)
 check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against the weaker ring")
 hover(6)
-check(not tooltipHas("Item level") and not tooltipHas("Can't use"), "enchant tooltip unchanged")
+check(not tooltipHas("Item level"), "enchant tooltip unchanged")
 
 -- Native compare ------------------------------------------------------------------
 -- Built-in trigger: Shift, or "always compare items".

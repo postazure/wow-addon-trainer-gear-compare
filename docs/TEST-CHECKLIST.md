@@ -54,9 +54,8 @@ data keys, which is what I need to fix it.
       (loss); the stat name is white.
 - [ ] Stats are in item tooltip order: DPS, Armor, Strength, Agility,
       Stamina, Intellect, Spirit.
-- [ ] Hover gear you can't use. A red line says "Can't use: ..." with the
-      reason (for example "One-Handed Axes not learned"). Under it: the
-      item level and stat changes, same as usable gear.
+- [ ] Hover gear you can't use. No extra "can't use" line (the item's own
+      red text shows it). The item level and stat changes still show.
 - [ ] No line anywhere says "upgrade".
 - [ ] Hover an enchant or a non-gear recipe. No TrainerUpgrades lines.
 - [ ] Without "Always compare items", the compare shows only while you hold

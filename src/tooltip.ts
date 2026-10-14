@@ -80,13 +80,12 @@ function statLines(ev: Evaluation): TooltipLine[] {
 }
 
 /**
- * Facts only: why you can't use it (if so), item level vs equipped, and the
- * stat changes. The comparison shows for gear you can't use, too.
+ * Facts only: item level vs equipped, and the stat changes. Shown for gear
+ * you can't use, too; the item's own red text already says why.
  */
 export function tooltipLines(ev: Evaluation): TooltipLine[] {
   if (ev.verdict === "pending") return [GRAY_LINE("Loading item data...")];
   const lines: TooltipLine[] = [];
-  if (ev.reason !== undefined) lines.push({ text: `Can't use: ${ev.reason}`, r: 1, g: 0.25, b: 0.25 });
   if (!ev.item || !ev.versus) return lines;
 
   const item = ev.item;
