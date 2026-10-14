@@ -1,5 +1,5 @@
-// Tests for the release scripts (node --test). No network: the Claude API is
-// either missing or pointed at a closed port, and CurseForge is never called.
+// Tests for the release scripts (node --test). No network: CurseForge is never
+// called. Tag tests run in throwaway git repos.
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -11,6 +11,7 @@ import {
   changelogSection, interfaceToVersion, releaseType, tocInterfaces, versionFromTag,
 } from "../scripts/lib/release.mjs";
 import { findForeverType, pickGameVersions, tocFromZip, tocVersion } from "../scripts/curseforge-upload.mjs";
+import { readTagNotes } from "../scripts/tag-notes.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const SCRIPTS = join(ROOT, "scripts");
@@ -64,54 +65,95 @@ test("the upload reads the TOC from inside the zip", () => {
   assert.throws(() => tocFromZip(zipSync({ "Other/Other.toc": new Uint8Array() })), /not in the zip/);
 });
 
-test("check-release passes for the current version and fails for a wrong tag", () => {
-  const { version } = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
-  const ok = spawnSync("node", [join(SCRIPTS, "check-release.mjs"), `v${version}`], { cwd: ROOT, encoding: "utf8" });
-  assert.equal(ok.status, 0, ok.stderr);
-  const bad = spawnSync("node", [join(SCRIPTS, "check-release.mjs"), "v99.0.0"], { cwd: ROOT, encoding: "utf8" });
-  assert.equal(bad.status, 1);
-  assert.match(bad.stderr, /package\.json says/);
-  assert.match(bad.stderr, /no "## 99\.0\.0" section/);
-});
+const NOTES = "### New\n\n- Shows item level on recipes.\n\n### Fixed\n\n- The equipped header has text.";
 
-/** A throwaway git repo with a changelog and two tags. */
-function repoWithTags() {
+/** A throwaway git repo with package.json at 0.2.0, a changelog, and a tagged first commit. */
+function makeRepo() {
   const dir = mkdtempSync(join(tmpdir(), "tc-release-"));
   const git = (...args) => execFileSync("git", args, { cwd: dir, encoding: "utf8" });
   git("init", "-q");
   git("config", "user.email", "test@example.com");
   git("config", "user.name", "Test");
+  git("config", "tag.gpgSign", "false");
+  writeFileSync(join(dir, "package.json"), JSON.stringify({ version: "0.2.0" }));
   writeFileSync(join(dir, "CHANGELOG.md"), "# Changelog\n\n## 0.2.0\n\n- Shows item level on recipes.\n\n## 0.1.0\n\n- First.\n");
   git("add", ".");
-  git("commit", "-q", "-m", "First release");
-  git("tag", "v0.1.0");
-  git("commit", "-q", "--allow-empty", "-m", "Show item level on recipes");
-  git("tag", "v0.2.0");
-  return dir;
+  git("commit", "-q", "-m", "Release v0.2.0");
+  const notesFile = join(dir, ".notes");
+  writeFileSync(notesFile, `${NOTES}\n`);
+  /** Tags the way the release skill does: annotated, message kept as written. */
+  const tagAnnotated = (tag) => git("tag", "-a", tag, "-F", notesFile, "--cleanup=verbatim");
+  return { dir, git, tagAnnotated, notesFile };
 }
 
-function runNotes(dir, env) {
-  const out = join(dir, "notes.md");
-  const res = spawnSync("node", [join(SCRIPTS, "release-notes.mjs"), "--tag", "v0.2.0", "--out", out], {
-    cwd: dir, encoding: "utf8", env: { PATH: process.env.PATH, HOME: process.env.HOME, ...env },
-  });
-  return { ...res, notes: readFileSync(out, "utf8") };
+function run(script, args, cwd) {
+  return spawnSync("node", [join(SCRIPTS, script), ...args], { cwd, encoding: "utf8" });
 }
 
-test("release notes fall back to the CHANGELOG section without an API key", () => {
-  const res = runNotes(repoWithTags(), {});
-  assert.equal(res.status, 0, res.stderr);
-  assert.equal(res.notes, "- Shows item level on recipes.\n");
-  assert.match(res.stdout, /ANTHROPIC_API_KEY is not set/);
-  assert.match(res.stdout, /commits since v0\.1\.0/);
-  assert.equal(res.stderr, "", "no git noise in the log");
+test("tag notes keep Markdown headings when tagged with --cleanup=verbatim", () => {
+  const { dir, tagAnnotated } = makeRepo();
+  tagAnnotated("v0.2.0");
+  assert.deepEqual(readTagNotes("v0.2.0", dir), { annotated: true, notes: NOTES });
 });
 
-test("release notes fall back when the Claude API can't be reached", () => {
-  // Port 9 (discard) refuses connections, so every attempt fails fast.
-  const res = runNotes(repoWithTags(), { ANTHROPIC_API_KEY: "test-key", ANTHROPIC_BASE_URL: "http://127.0.0.1:9" });
+test("plain git tag -a -F drops the headings, which is why the skill uses verbatim", () => {
+  const { dir, git, notesFile } = makeRepo();
+  git("tag", "-a", "v0.2.0", "-F", notesFile);
+  const { notes } = readTagNotes("v0.2.0", dir);
+  assert.doesNotMatch(notes, /###/);
+});
+
+test("lightweight and missing tags have no notes", () => {
+  const { dir, git } = makeRepo();
+  git("tag", "v0.2.0");
+  assert.deepEqual(readTagNotes("v0.2.0", dir), { annotated: false, notes: "" });
+  assert.deepEqual(readTagNotes("v9.9.9", dir), { annotated: false, notes: "" });
+});
+
+test("a signature block is not part of the notes", () => {
+  const { dir, git } = makeRepo();
+  const signed = join(dir, ".signed");
+  writeFileSync(signed, `${NOTES}\n-----BEGIN SSH SIGNATURE-----\nabc\n-----END SSH SIGNATURE-----\n`);
+  git("tag", "-a", "v0.2.0", "-F", signed, "--cleanup=verbatim");
+  assert.equal(readTagNotes("v0.2.0", dir).notes, NOTES);
+});
+
+test("tag-notes.mjs writes the notes, and fails for a lightweight tag", () => {
+  const { dir, git, tagAnnotated } = makeRepo();
+  tagAnnotated("v0.2.0");
+  const out = join(dir, "notes.md");
+  const ok = run("tag-notes.mjs", ["--tag", "v0.2.0", "--out", out], dir);
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.equal(readFileSync(out, "utf8"), `${NOTES}\n`);
+
+  git("tag", "v0.2.0-light");
+  const bad = run("tag-notes.mjs", ["--tag", "v0.2.0-light", "--out", out], dir);
+  assert.equal(bad.status, 1);
+  assert.match(bad.stderr, /has no release notes/);
+});
+
+test("check-release passes for an annotated tag that matches", () => {
+  const { dir, tagAnnotated } = makeRepo();
+  tagAnnotated("v0.2.0");
+  const res = run("check-release.mjs", ["v0.2.0"], dir);
   assert.equal(res.status, 0, res.stderr);
-  assert.equal(res.notes, "- Shows item level on recipes.\n");
-  assert.match(res.stdout, /Could not reach the Claude API/);
-  assert.doesNotMatch(res.stdout, /error undefined/);
+  assert.match(res.stdout, /v0\.2\.0 is ready/);
+});
+
+test("check-release fails for a lightweight tag", () => {
+  const { dir, git } = makeRepo();
+  git("tag", "v0.2.0");
+  const res = run("check-release.mjs", ["v0.2.0"], dir);
+  assert.equal(res.status, 1);
+  assert.match(res.stderr, /is not an annotated tag/);
+});
+
+test("check-release fails for a tag that doesn't match package.json or the changelog", () => {
+  const { dir, tagAnnotated } = makeRepo();
+  tagAnnotated("v99.0.0");
+  const res = run("check-release.mjs", ["v99.0.0"], dir);
+  assert.equal(res.status, 1);
+  assert.match(res.stderr, /package\.json says 0\.2\.0/);
+  assert.match(res.stderr, /no "## 99\.0\.0" section/);
+  assert.doesNotMatch(res.stderr, /annotated/);
 });

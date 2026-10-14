@@ -13,14 +13,21 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details: `README.md`.
 
 ## Releases
 
-- A release is a `v<version>` tag on `main` (no release branch). The owner
-  pushes the tag; never create or push release tags yourself unless asked.
+- A release is an annotated `v<version>` tag on `main` (no release branch),
+  made with the release skill (`/release`, `.claude/skills/release/`). Only
+  make a release tag through that skill, and push only when the owner says
+  yes.
+- The tag's message is the release notes. No AI runs in the workflows: they
+  publish the tag's notes as they are (`scripts/tag-notes.mjs`).
+- Tag with `git tag -a -F <file> --cleanup=verbatim`. Without it, git drops
+  lines starting with `#`, so Markdown headings vanish.
+- `actions/checkout` keeps only the commit, not the tag's message. The
+  workflow fetches the tag again before reading it.
 - The tag must match `package.json`, and `CHANGELOG.md` needs a
   `## <version>` section written for players. `scripts/check-release.mjs`
-  enforces both before anything is published.
-- `.github/workflows/release.yml`: build and test, Claude-written notes
-  (`scripts/release-notes.mjs`, falls back to the CHANGELOG section and must
-  never fail the release), then the GitHub release.
+  checks all three before anything is published.
+- `.github/workflows/release.yml`: check, build and test, then the GitHub
+  release with the tag's notes.
 - `.github/workflows/curseforge.yml` is separate on purpose: it reads the zip
   and notes from the GitHub release, can be re-run by hand for any tag, and
   skips (not fails) while `CURSEFORGE_TOKEN` / `CURSEFORGE_PROJECT_ID` are

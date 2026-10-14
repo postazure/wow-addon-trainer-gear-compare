@@ -1,8 +1,10 @@
-# Release: push a version tag on main (git tag v0.6.0 && git push origin v0.6.0).
+# Release: push an annotated version tag on main, made with the release skill
+# (.claude/skills/release). The tag's message is the release notes, so no AI
+# runs here.
 #
 # Jobs run in order and each can be re-run on its own from the Actions page:
-#   build           check tag/version/changelog agree, build, test, zip
-#   notes           Claude writes the release notes (falls back to CHANGELOG.md)
+#   build           check the tag (annotated, with notes) matches package.json
+#                   and CHANGELOG.md, then build, test, zip, and read the notes
 #   github-release  create or update the GitHub release with the zip and notes
 #   curseforge      upload to CurseForge (skipped until it is set up)
 name: Release
@@ -39,34 +41,19 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Check the tag, package.json and CHANGELOG.md agree
+      - name: Fetch the annotated tag (checkout keeps only the commit, not the tag's message)
+        run: git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
+      - name: Check the tag has notes and matches package.json and CHANGELOG.md
         run: node scripts/check-release.mjs "$TAG"
       - name: Type-check, build, test and zip
         run: npm run package
+      - name: Read the release notes from the tag
+        run: node scripts/tag-notes.mjs --tag "$TAG" --out release-notes.md
       - uses: actions/upload-artifact@v4
         with:
           name: addon-zip
           path: release/*.zip
           if-no-files-found: error
-
-  notes:
-    name: Write release notes
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.TAG }}
-          fetch-depth: 0 # history and tags, for the commits since the last release
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - name: Write notes with Claude (falls back to the CHANGELOG section)
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node scripts/release-notes.mjs --tag "$TAG" --out release-notes.md
       - uses: actions/upload-artifact@v4
         with:
           name: release-notes
@@ -75,7 +62,7 @@ jobs:
 
   github-release:
     name: GitHub release
-    needs: [build, notes]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

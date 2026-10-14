@@ -132,6 +132,7 @@ assets/                       Icon source (SVG), CurseForge logo, screenshots
 addon/icon.tga                In-game addon list icon (from assets/icon.svg)
 CHANGELOG.md, LICENSE         Release notes; MIT license
 CLAUDE.md                     Working rules and lessons for Claude sessions
+.claude/skills/release/       Release skill (/release): notes, version, tag
 ```
 
 ```sh
@@ -164,25 +165,30 @@ Notes:
 
 ## Releasing
 
-Releases are cut by tagging `main`: `git tag v0.6.0 && git push origin v0.6.0`.
+Releases are cut by tagging `main` with an **annotated** tag whose message is
+the release notes. Run the release skill in Claude Code on your machine:
+`/release` (`.claude/skills/release/SKILL.md`). It drafts the notes from the
+commits since the last tag, bumps the version, commits, and tags. It pushes
+only when you say yes. No AI runs in the workflows.
+
 The tag must match `"version"` in `package.json`, which is the only place the
 version lives (the build writes it into the TOC, and `/tc` reads it from there).
 
 The tag starts the **Release** workflow (`.github/workflows/release.yml`):
 
-1. **Build and test**: `scripts/check-release.mjs` checks the tag,
-   `package.json` and `CHANGELOG.md` agree; then `npm run package`.
-2. **Write release notes**: `scripts/release-notes.mjs` has Claude
-   (`claude-opus-5-5`) write player-facing notes from the version's
-   `CHANGELOG.md` section and the commits since the last tag. With no API key,
-   or if the API fails, it uses the `CHANGELOG.md` section. It never fails the
-   release.
-3. **GitHub release** with the zip and the notes.
-4. **CurseForge**: `.github/workflows/curseforge.yml` uploads the release's zip
+1. **Build and test**: `scripts/check-release.mjs` checks the tag is annotated
+   with notes, and that it, `package.json` and `CHANGELOG.md` agree; then
+   `npm run package`. `scripts/tag-notes.mjs` reads the notes from the tag.
+2. **GitHub release** with the zip and the notes.
+3. **CurseForge**: `.github/workflows/curseforge.yml` uploads the release's zip
    and notes with `scripts/curseforge-upload.mjs`, tagged with the Forever game
    versions from the zip's own TOC. It's a separate workflow, so it can be run
    by hand for any existing release, and it's skipped until its secret and
    variable are set.
+
+To tag by hand: `git tag -a v<version> -F <notes-file> --cleanup=verbatim`.
+Without `--cleanup=verbatim`, git drops lines starting with `#`, so Markdown
+headings vanish.
 
 Before tagging, go through [docs/CURSEFORGE.md](docs/CURSEFORGE.md): the
 release testing checklist, the assets checklist (screenshots, description,

@@ -120,23 +120,27 @@ it looks different from the current version.
 
 ## 4. Release
 
-Releases are cut by tagging `main`. There is no release branch.
+Releases are cut by tagging `main`. There is no release branch. The tag is
+**annotated**, and its message is the release notes. The workflow publishes
+those notes as they are; no AI runs in it.
 
-- [ ] Everything for the release is committed and pushed to `main`.
-- [ ] Tag that commit and push the tag:
-      `git tag v<version> && git push origin v<version>`.
-      The tag must match `package.json` (for example `v0.6.0`). A tag like
-      `v1.0.0-beta.1` makes a pre-release and a CurseForge **Beta** file.
+- [ ] Run the release skill in Claude Code on your machine: `/release`
+      (`.claude/skills/release/SKILL.md`). It:
+  1. checks you're on a clean, up-to-date `main` and the tests pass,
+  2. drafts player-facing notes from the commits since the last tag,
+  3. picks the version with you (`v1.0.0-beta.1` makes a pre-release and a
+     CurseForge **Beta** file),
+  4. bumps `package.json`, writes the `CHANGELOG.md` section, runs
+     `npm run package`, and asks you to confirm sections 2 and 3 are done,
+  5. commits "Release v<version>" and makes the annotated tag,
+  6. pushes `main` and the tag only when you say yes.
 - [ ] Watch **Actions → Release**. Its jobs run in order:
-  1. **Build and test**: checks the tag, `package.json` and `CHANGELOG.md`
-     agree, then builds, tests and zips. Nothing is published if this fails.
-  2. **Write release notes**: Claude turns this version's `CHANGELOG.md`
-     section (plus the commits since the last tag) into player-facing notes.
-     Without the `ANTHROPIC_API_KEY` secret, or if the API fails, it uses the
-     `CHANGELOG.md` section as is. It never fails the release.
-  3. **GitHub release**: creates the release with the zip and the notes, or
-     updates it if it already exists.
-  4. **CurseForge**: uploads the zip with the same notes, tagged with the
+  1. **Build and test**: checks the tag is annotated with notes and agrees
+     with `package.json` and `CHANGELOG.md`, then builds, tests and zips.
+     Nothing is published if this fails.
+  2. **GitHub release**: creates the release with the zip and the tag's
+     notes, or updates it if it already exists.
+  3. **CurseForge**: uploads the zip with the same notes, tagged with the
      Forever game versions from the TOC's Interface line. Skipped (not
      failed) until CurseForge is set up; see below.
 - [ ] Read the notes on the GitHub release. If they need a change, edit the
@@ -144,6 +148,13 @@ Releases are cut by tagging `main`. There is no release branch.
       release's notes).
 - [ ] After CurseForge moderation, install it from the CurseForge app on a
       clean AddOns folder, log in, and check `/tc` shows the new version.
+
+**Tagging by hand** (without the skill): write the notes to a file, then
+`git tag -a v<version> -F <file> --cleanup=verbatim`. Without
+`--cleanup=verbatim`, git drops every line starting with `#`, so Markdown
+headings vanish. A plain `git tag v<version>` has no message, and the
+release stops at the first check. `node scripts/check-release.mjs
+v<version>` runs the same check locally.
 
 **If a job fails:** fix the cause, then use **Re-run failed jobs** on the
 run. To build a tag again from scratch, run **Actions → Release → Run
@@ -158,11 +169,11 @@ line, 1.60.1 today), and the release's notes as the changelog.
 
 ## Automation setup (once)
 
-In the GitHub repo, **Settings → Secrets and variables → Actions**:
+Only CurseForge needs setup. In the GitHub repo, **Settings → Secrets and
+variables → Actions**:
 
 | Name | Kind | What it's for | Without it |
 | --- | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | Secret | Claude writes the release notes | Notes are the `CHANGELOG.md` section |
 | `CURSEFORGE_TOKEN` | Secret | Upload to CurseForge (from CurseForge → API Tokens) | CurseForge job is skipped |
 | `CURSEFORGE_PROJECT_ID` | Variable | Which CurseForge project (from the project page) | CurseForge job is skipped |
 
