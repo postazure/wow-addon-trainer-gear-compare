@@ -1,0 +1,7 @@
+## Interface: 16000, 16001
+## Title: TrainerUpgrades Probe
+## Notes: Debug probe. Reports what the trainer API returns in this client. Not the real addon.
+## Version: 0.1.0
+## SavedVariables: TrainerUpgradesProbeDB
+
+Probe.lua
