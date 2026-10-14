@@ -325,7 +325,6 @@ function addToSettingsMenu(): boolean {
   if (!modify) return false;
   modify(FILTER_MENU_TAG, (_owner, root) => {
     safe("settings menu", () => {
-      root.CreateDivider();
       root.CreateCheckbox(
         "Only show usable gear",
         () => settings().onlyUsable,
