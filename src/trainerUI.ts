@@ -192,19 +192,36 @@ function addTooltipLines(tooltip: GameTooltip, index: number): void {
 // Checkbox
 // ---------------------------------------------------------------------------
 
+/** The trainer's Train button. The probe found ClassTrainerTrainButton_OnClick. */
+function trainButton(parent: Frame): Region | undefined {
+  for (const candidate of [_G["ClassTrainerTrainButton"], field(parent, "TrainButton")]) {
+    if (typeof candidate === "object" && typeof field(candidate, "GetObjectType") === "function") {
+      return candidate as Region;
+    }
+  }
+  return undefined;
+}
+
 function createCheckbox(parent: Frame): void {
   const cb = CreateFrame("CheckButton", "TrainerUpgradesOnlyUpgrades", parent, "UICheckButtonTemplate");
   cb.SetSize(24, 24);
-  cb.SetPoint("TOPRIGHT", parent, "TOPRIGHT", -112, -28);
+  // Sit just left of the Train button: [label][box][Train].
+  const train = trainButton(parent);
+  if (train) {
+    cb.SetPoint("RIGHT", train, "LEFT", -4, 0);
+  } else {
+    debug("Train button not found; checkbox placed bottom right");
+    cb.SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -110, 4);
+  }
   const text = cb.CreateFontString(undefined, "OVERLAY", "GameFontNormalSmall");
-  text.SetPoint("LEFT", cb, "RIGHT", 0, 1);
+  text.SetPoint("RIGHT", cb, "LEFT", 0, 1);
   text.SetText("Only show upgrades");
   cb.SetChecked(settings().onlyUpgrades);
   cb.SetScript("OnClick", (self: CheckButton) => {
     safe("checkbox", () => setOnlyUpgrades(self.GetChecked()));
   });
   cb.SetScript("OnEnter", (self: CheckButton) => {
-    GameTooltip.SetOwner(self, "ANCHOR_RIGHT");
+    GameTooltip.SetOwner(self, "ANCHOR_TOP");
     GameTooltip.SetText("Only show upgrades");
     GameTooltip.AddLine("Fades every recipe that is not a gear upgrade.", 1, 1, 1, true);
     GameTooltip.AddLine("Rows are faded, not removed, so the Blizzard trainer frame is never changed.", 0.7, 0.7, 0.7, true);

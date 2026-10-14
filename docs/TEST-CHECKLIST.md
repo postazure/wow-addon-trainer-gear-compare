@@ -57,8 +57,9 @@ data keys, which is what I need to fix it.
 
 ## 6. Filter
 
-- [ ] The "Only show upgrades" checkbox is visible and doesn't overlap
-      anything. (Position is a guess.)
+- [ ] The "Only show upgrades" checkbox sits just left of the Train
+      button, with its label to its left. Nothing overlaps (the money
+      display, the settings dropdown).
 - [ ] Hovering it shows an explanation.
 - [ ] Ticking it fades every non-upgrade row. Upgrades stay bright.
 - [ ] `/tu filter` toggles it, and the checkbox follows.

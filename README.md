@@ -65,8 +65,10 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
 - **The filter fades rows. It doesn't remove them.** Removing rows means
   editing Blizzard's ScrollBox data, which taints the trainer frame. Faded
   rows stay clickable.
-- **Marker and checkbox positions are a best guess.** I haven't seen the
-  Forever trainer frame. Check them with the test list below.
+- **The marker position is a best guess** (top-left corner of the recipe
+  icon). The checkbox sits left of the Train button
+  (`ClassTrainerTrainButton`). If that button isn't found, it falls back to
+  the bottom right of the frame.
 - **Rows are matched to recipes through the ScrollBox row data**
   (`skillIndex`, `index`, and so on). If a row's visible name does not match
   the recipe, it gets no marker. That way it fails safe and never shows a

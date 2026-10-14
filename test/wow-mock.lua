@@ -53,7 +53,7 @@ local function newRegion()
   function r:Show() self.shown = true end
   function r:Hide() self.shown = false end
   function r:IsShown() return self.shown end
-  function r:SetPoint() end
+  function r:SetPoint(point, rel, relPoint, x, y) self.point = { point, rel, relPoint, x, y } end
   function r:SetSize() end
   function r:SetAlpha(a) self.alpha = a end
   function r:GetAlpha() return self.alpha end
@@ -70,6 +70,7 @@ handlers = {}
 function CreateFrame(kind, name, parent)
   local f = newRegion()
   f.kind = kind
+  function f:GetObjectType() return kind end
   f.scripts = {}
   function f:RegisterEvent() end
   function f:SetScript(n, fn) self.scripts[n] = fn; if kind == "Frame" and n == "OnEvent" then handlers.OnEvent = fn end end
@@ -178,6 +179,7 @@ end
 function loadTrainerUI()
   ClassTrainerFrame = CreateFrame("Frame", "ClassTrainerFrame")
   ClassTrainerFrame.ScrollBox = CreateFrame("Frame")
+  if withTrainButton ~= false then CreateFrame("Button", "ClassTrainerTrainButton", ClassTrainerFrame) end
   function ClassTrainerFrame.ScrollBox:ForEachFrame(fn)
     for _, r in ipairs(rows) do fn(r.button, r.data) end
   end

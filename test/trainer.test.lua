@@ -69,6 +69,9 @@ check(TrainerUpgradesDB.onlyUpgrades == false, "filter defaults off")
 loadTrainerUI()
 fire("ADDON_LOADED", "Blizzard_TrainerUI")
 check(TrainerUpgradesOnlyUpgrades ~= nil, "checkbox created")
+local cbPoint = TrainerUpgradesOnlyUpgrades.point
+check(cbPoint[1] == "RIGHT" and cbPoint[2] == ClassTrainerTrainButton and cbPoint[3] == "LEFT",
+  "checkbox sits left of the Train button")
 
 fire("TRAINER_SHOW")
 ClassTrainerFrame_Update()
