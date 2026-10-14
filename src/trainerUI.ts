@@ -317,7 +317,7 @@ function addTooltipLines(tooltip: GameTooltip, index: number): void {
 // Settings dropdown entry (preferred), or a checkbox if the menu API is missing
 // ---------------------------------------------------------------------------
 
-const FILTER_MENU_TAG = "MENU_TRAINER_FILTER"; // from /tu menus on 1.60.1
+const FILTER_MENU_TAG = "MENU_TRAINER_FILTER"; // from /tc menus on 1.60.1
 
 /** Add our toggle to the trainer's Settings dropdown. Blizzard's supported, taint-safe hook. */
 function addToSettingsMenu(): boolean {
@@ -346,7 +346,7 @@ function trainButton(parent: Frame): Region | undefined {
 }
 
 function createCheckbox(parent: Frame): void {
-  const cb = CreateFrame("CheckButton", "TrainerUpgradesUsableFilter", parent, "UICheckButtonTemplate");
+  const cb = CreateFrame("CheckButton", "TrainerCompareUsableFilter", parent, "UICheckButtonTemplate");
   cb.SetSize(24, 24);
   // Sit just left of the Train button: [label][box][Train].
   const train = trainButton(parent);
@@ -438,7 +438,7 @@ export function installTrainerHooks(): void {
   debug(`hooks: ${hookStatus.join(", ")}`);
 }
 
-/** For /tu dump: what is hooked and what each visible row resolved to. */
+/** For /tc dump: what is hooked and what each visible row resolved to. */
 export function dumpState(say: (msg: string) => void): void {
   say(`hooks: ${hookStatus.length > 0 ? hookStatus.join(", ") : "not installed"}`);
   say(`calls: initRow=${counters.initRow} initCategory=${counters.initCategory} refresh=${counters.refresh} tooltip=${counters.tooltip} compare=${counters.compare}`);

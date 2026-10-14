@@ -44,7 +44,7 @@ function describe(name: string, widget: unknown): string {
   return `${name} (${type}) methods={${methods.join(",")}}${tag !== undefined ? ` menuTag=${tag}` : ""}`;
 }
 
-// Lines collected for the copy window while /tu menus runs.
+// Lines collected for the copy window while /tc menus runs.
 let captured: string[] | undefined;
 let chatHooked = false;
 
@@ -91,7 +91,7 @@ function runDiagnosis(say: (msg: string) => void): void {
 
   const frame = ClassTrainerFrame;
   if (!frame) {
-    say("open a trainer first, then run /tu menus again");
+    say("open a trainer first, then run /tc menus again");
     finishCapture();
     return;
   }

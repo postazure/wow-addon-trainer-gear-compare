@@ -2,13 +2,21 @@
 -- Setup is in fixtures.lua.
 
 -- Settings ------------------------------------------------------------------
-check(TrainerUpgradesDB.scoring == "itemLevel", "scoring defaults to itemLevel")
-check(TrainerUpgradesDB.onlyUsable == false, "filter defaults off")
-check(TrainerUpgradesDB.tooltipLines == nil, "removed settings drop out of the saved file")
+check(TrainerCompareDB.scoring == "itemLevel", "scoring defaults to itemLevel")
+check(TrainerCompareDB.onlyUsable == false, "filter defaults off")
+check(TrainerCompareDB.tooltipLines == nil, "removed settings drop out of the saved file")
+
+-- Old name ----------------------------------------------------------------
+output = {}
+fire("ADDON_LOADED", "TrainerUpgrades")
+local warned = false
+for _, l in ipairs(output) do if l:find("old TrainerUpgrades addon", 1, true) then warned = true end end
+check(warned, "warns when the old TrainerUpgrades addon is also loaded")
+check(SLASH_TRAINERCOMPARE1 == "/tc", "slash command is /tc")
 
 -- Settings dropdown -----------------------------------------------------------
 check(menuCallbacks["MENU_TRAINER_FILTER"] ~= nil, "added to the trainer's Settings dropdown")
-check(TrainerUpgradesUsableFilter == nil, "no separate checkbox when the menu works")
+check(TrainerCompareUsableFilter == nil, "no separate checkbox when the menu works")
 local entry
 local menuItems = openMenu("MENU_TRAINER_FILTER")
 for _, item in ipairs(menuItems) do
@@ -19,7 +27,7 @@ check(entry ~= nil and entry.text == "Only show usable gear", "menu has the usab
 check(entry.isSelected() == false, "menu toggle starts off")
 entry.setSelected()
 flush()
-check(TrainerUpgradesDB.onlyUsable == true, "menu toggle turns the filter on")
+check(TrainerCompareDB.onlyUsable == true, "menu toggle turns the filter on")
 check(entry.isSelected() == true, "menu toggle shows on")
 check(axe.button.alpha < 1, "gear you can't use is faded")
 check(highHelm.button.alpha < 1, "gear above your level is faded")
@@ -30,15 +38,15 @@ check(shirt.button.alpha == 1, "shirts stay visible")
 check(category.button.alpha == 1, "category rows stay visible")
 entry.setSelected()
 flush()
-check(TrainerUpgradesDB.onlyUsable == false, "menu toggle turns the filter off")
+check(TrainerCompareDB.onlyUsable == false, "menu toggle turns the filter off")
 check(axe.button.alpha == 1, "faded rows restored")
 
-SlashCmdList.TRAINERUPGRADES("filter")
+SlashCmdList.TRAINERCOMPARE("filter")
 flush()
-check(TrainerUpgradesDB.onlyUsable == true and axe.button.alpha < 1, "/tu filter turns it on")
-SlashCmdList.TRAINERUPGRADES("filter")
+check(TrainerCompareDB.onlyUsable == true and axe.button.alpha < 1, "/tc filter turns it on")
+SlashCmdList.TRAINERCOMPARE("filter")
 flush()
-check(TrainerUpgradesDB.onlyUsable == false and axe.button.alpha == 1, "/tu filter turns it off")
+check(TrainerCompareDB.onlyUsable == false and axe.button.alpha == 1, "/tc filter turns it off")
 
 -- Markers: facts only. A red X on gear you can't use; nothing else is marked.
 check(marker(mace) == "none", "usable gear: no marker")
@@ -180,14 +188,14 @@ equippedLinks[16] = wornMace
 fire("PLAYER_EQUIPMENT_CHANGED", 16, false)
 hover(1)
 check(not tooltipHas("Score"), "no score line by default")
-SlashCmdList.TRAINERUPGRADES("scoring statweights")
+SlashCmdList.TRAINERCOMPARE("scoring statweights")
 flush()
-check(TrainerUpgradesDB.scoring == "statWeights", "/tu scoring switches scorer")
+check(TrainerCompareDB.scoring == "statWeights", "/tc scoring switches scorer")
 hover(1)
 check(tooltipHas("(stat weights)"), "tooltip shows the weighted score once picked")
-SlashCmdList.TRAINERUPGRADES("scoring nope")
-check(TrainerUpgradesDB.scoring == "statWeights", "unknown scorer ignored")
-SlashCmdList.TRAINERUPGRADES("scoring itemlevel")
+SlashCmdList.TRAINERCOMPARE("scoring nope")
+check(TrainerCompareDB.scoring == "statWeights", "unknown scorer ignored")
+SlashCmdList.TRAINERCOMPARE("scoring itemlevel")
 
 -- Proficiency fallback --------------------------------------------------------
 -- If IsPlayerSpell can't see Cloth, proficiency spells don't work: don't hide gear.
@@ -207,8 +215,8 @@ end
 
 -- Silent failures ---------------------------------------------------------------
 output = {}
-TrainerUpgradesDB.debug = false
-SlashCmdList.TRAINERUPGRADES("debug") -- on
+TrainerCompareDB.debug = false
+SlashCmdList.TRAINERCOMPARE("debug") -- on
 local realInfo = GetTrainerServiceInfo
 GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
@@ -219,7 +227,7 @@ local sawFailure = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then sawFailure = true end end
 check(sawFailure, "failures reported with debug on")
 
-SlashCmdList.TRAINERUPGRADES("debug") -- off
+SlashCmdList.TRAINERCOMPARE("debug") -- off
 output = {}
 GetTrainerServiceInfo = function() error("boom") end
 ClassTrainerFrame_Update()
@@ -229,30 +237,30 @@ check(#output == 0, "failures silent with debug off")
 
 -- Dump runs without errors.
 output = {}
-SlashCmdList.TRAINERUPGRADES("dump")
-check(#output > 0, "/tu dump prints")
+SlashCmdList.TRAINERCOMPARE("dump")
+check(#output > 0, "/tc dump prints")
 local dumpFailed = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then dumpFailed = true end end
-check(not dumpFailed, "/tu dump has no failures")
+check(not dumpFailed, "/tc dump has no failures")
 
 -- Menu diagnostic runs, watches, and finishes in a copy window.
 output = {}
 openMenuTag = "MENU_TRAINER_FILTER"
-SlashCmdList.TRAINERUPGRADES("menus")
+SlashCmdList.TRAINERCOMPARE("menus")
 flush()
-local copy = TrainerUpgradesCopyWindow
-check(copy ~= nil and copy.shown, "/tu menus opens the copy window")
+local copy = TrainerCompareCopyWindow
+check(copy ~= nil and copy.shown, "/tc menus opens the copy window")
 local copyText = lastEditBox and lastEditBox.text or ""
 check(copyText:find("menu API present", 1, true) ~= nil, "copy window has our report")
 check(copyText:find("MENU_TRAINER_FILTER", 1, true) ~= nil, "copy window has Blizzard's printed menu tag")
 check(copyText:find("done.", 1, true) ~= nil, "copy window has the whole run")
 check(lastEditBox.highlighted, "copy window text is selected")
-local _, prefixCount = copyText:gsub("TrainerUpgrades|", "")
+local _, prefixCount = copyText:gsub("Trainer Compare|", "")
 check(prefixCount == 0, "our lines are not doubled by the chat capture")
-SlashCmdList.TRAINERUPGRADES("copy")
-check(copy.shown, "/tu copy reopens it")
+SlashCmdList.TRAINERCOMPARE("copy")
+check(copy.shown, "/tc copy reopens it")
 local menuFailed = false
 for _, l in ipairs(output) do if l:find("failed", 1, true) then menuFailed = true end end
-check(not menuFailed, "/tu menus has no failures")
+check(not menuFailed, "/tc menus has no failures")
 
 report("main")

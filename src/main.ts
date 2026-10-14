@@ -8,9 +8,15 @@ import { findScorer, SCORERS } from "./scoring";
 import { dumpState, installTrainerHooks, refreshHover, rescore, scheduleRefresh, setOnlyUsable } from "./trainerUI";
 import { resetUsableCache } from "./usable";
 
-const ADDON_NAME = "TrainerUpgrades";
+const ADDON_NAME = "TrainerCompare";
+/** This addon's old name. Both loaded at once would double every compare. */
+const OLD_ADDON_NAME = "TrainerUpgrades";
+
+function warnIfOldAddonLoaded(): void {
+  say(`The old ${OLD_ADDON_NAME} addon is still installed. Delete Interface/AddOns/${OLD_ADDON_NAME}, then /reload.`);
+}
 const TRAINER_UI = "Blizzard_TrainerUI";
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 
 /** Gear, level, or known spells changed: results are stale. */
 const STALE_EVENTS = ["PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "SPELLS_CHANGED", "LEARNED_SPELL_IN_TAB"];
@@ -25,6 +31,9 @@ function onEvent(event: string, args: any[]): void {
       debug(`loaded v${VERSION}, client interface ${iface}`);
       // The trainer UI may already be loaded by another addon.
       if (C_AddOns.IsAddOnLoaded(TRAINER_UI)[0]) installTrainerHooks();
+      if (C_AddOns.IsAddOnLoaded(OLD_ADDON_NAME)[0]) warnIfOldAddonLoaded();
+    } else if (name === OLD_ADDON_NAME) {
+      warnIfOldAddonLoaded();
     } else if (name === TRAINER_UI) {
       installTrainerHooks();
     }
@@ -77,12 +86,12 @@ function onSlash(msg: string): void {
     reopenCopyWindow();
   } else {
     say(`v${VERSION}`);
-    say("/tu filter - toggle only show usable gear");
-    say(`/tu scoring [${SCORERS.map((s) => s.id).join("|")}] - how upgrades are judged`);
-    say("/tu debug - toggle debug messages");
-    say("/tu dump - show hook status and what each visible row resolved to");
-    say("/tu menus - find how the trainer's dropdowns and compare tooltips work");
-    say("/tu copy - reopen the last copy window");
+    say("/tc filter - toggle only show usable gear");
+    say(`/tc scoring [${SCORERS.map((s) => s.id).join("|")}] - how gear is scored`);
+    say("/tc debug - toggle debug messages");
+    say("/tc dump - show hook status and what each visible row resolved to");
+    say("/tc menus - find how the trainer's dropdowns and compare tooltips work");
+    say("/tc copy - reopen the last copy window");
   }
 }
 
@@ -95,7 +104,7 @@ events.SetScript("OnEvent", (_frame, event, ...args: any[]) => {
   safe(`event ${event}`, () => onEvent(event, args));
 });
 
-SLASH_TRAINERUPGRADES1 = "/tu";
-SlashCmdList["TRAINERUPGRADES"] = (msg) => {
+SLASH_TRAINERCOMPARE1 = "/tc";
+SlashCmdList["TRAINERCOMPARE"] = (msg) => {
   safe("slash command", () => onSlash(msg));
 };

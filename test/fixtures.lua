@@ -62,8 +62,8 @@ rows[#rows + 1] = mismatch
 
 -- Load ----------------------------------------------------------------------
 -- An old saved file: tooltipLines was a setting in an earlier version.
-TrainerUpgradesDB = { debug = true, tooltipLines = false }
-fire("ADDON_LOADED", "TrainerUpgrades")
+TrainerCompareDB = { debug = true, tooltipLines = false }
+fire("ADDON_LOADED", "TrainerCompare")
 loadTrainerUI()
 fire("ADDON_LOADED", "Blizzard_TrainerUI")
 fire("TRAINER_SHOW")

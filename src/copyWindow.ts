@@ -1,6 +1,6 @@
 import { safe, say } from "./log";
 
-const NAME = "TrainerUpgradesCopyWindow";
+const NAME = "TrainerCompareCopyWindow";
 
 let edit: EditBox | undefined;
 let frame: Frame | undefined;
@@ -28,7 +28,7 @@ function build(): void {
 
   const title = f.CreateFontString(undefined, "OVERLAY", "GameFontNormal");
   title.SetPoint("TOP", 0, -14);
-  title.SetText("TrainerUpgrades  -  press Ctrl+C to copy, Esc to close");
+  title.SetText("Trainer Compare  -  press Ctrl+C to copy, Esc to close");
 
   const close = CreateFrame("Button", undefined, f, "UIPanelCloseButton");
   close.SetPoint("TOPRIGHT", -4, -4);
@@ -74,7 +74,7 @@ export function showCopyWindow(lines: string[]): void {
 /** Reopen the last copy window. */
 export function reopenCopyWindow(): void {
   if (lastText === "") {
-    say("nothing to copy yet. Run /tu menus first.");
+    say("nothing to copy yet. Run /tc menus first.");
     return;
   }
   open();

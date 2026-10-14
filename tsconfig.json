@@ -11,11 +11,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "rootDir": ".",
-    "outDir": "dist/TrainerUpgrades"
+    "outDir": "dist/TrainerCompare"
   },
   "tstl": {
     "luaTarget": "5.1",
-    "luaBundle": "TrainerUpgrades.lua",
+    "luaBundle": "TrainerCompare.lua",
     "luaBundleEntry": "src/main.ts",
     "luaLibImport": "require-minimal",
     "noImplicitSelf": true,

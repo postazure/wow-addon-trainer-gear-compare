@@ -9,5 +9,5 @@ if (!target || !existsSync(target)) {
   console.error("Set WOW_ADDONS_DIR to your Interface/AddOns folder.");
   process.exit(1);
 }
-cpSync("dist/TrainerUpgrades", join(target, "TrainerUpgrades"), { recursive: true, force: true });
-console.log(`deployed to ${join(target, "TrainerUpgrades")}`);
+cpSync("dist/TrainerCompare", join(target, "TrainerCompare"), { recursive: true, force: true });
+console.log(`deployed to ${join(target, "TrainerCompare")}`);

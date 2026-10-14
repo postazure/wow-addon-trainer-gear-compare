@@ -21,7 +21,7 @@ function suite(steps) {
   lualib.luaL_openlibs(L);
   runChunk(L, ...file("test/wow-mock.lua"));
   for (const [code, name] of steps.pre ?? []) runChunk(L, code, name);
-  runChunk(L, ...file("dist/TrainerUpgrades/TrainerUpgrades.lua"), ["TrainerUpgrades"]);
+  runChunk(L, ...file("dist/TrainerCompare/TrainerCompare.lua"), ["TrainerCompare"]);
   runChunk(L, ...file("test/fixtures.lua"));
   runChunk(L, ...file(steps.test));
 }

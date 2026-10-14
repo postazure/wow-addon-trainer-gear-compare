@@ -29,12 +29,12 @@ declare function hooksecurefunc<T extends object>(table: T, method: keyof T & st
 declare const _G: Record<string, unknown>;
 
 declare const SlashCmdList: Record<string, (msg: string) => void>;
-declare let SLASH_TRAINERUPGRADES1: string;
+declare let SLASH_TRAINERCOMPARE1: string;
 
 /** SavedVariables. Nil on first load, before ADDON_LOADED fills it in. */
-declare let TrainerUpgradesDB: TrainerUpgradesSaved | undefined;
+declare let TrainerCompareDB: TrainerCompareSaved | undefined;
 
-interface TrainerUpgradesSaved {
+interface TrainerCompareSaved {
   debug: boolean;
   /** Fade recipes for gear the player can't use. */
   onlyUsable: boolean;
@@ -254,7 +254,7 @@ declare const ChatFontNormal: unknown;
 declare const DEFAULT_CHAT_FRAME: Frame & { AddMessage(text: string, ...rest: unknown[]): void };
 
 // ---------------------------------------------------------------------------
-// Confirmed by /tu menus on 1.60.1
+// Confirmed by /tc menus on 1.60.1
 // ---------------------------------------------------------------------------
 
 interface Region {

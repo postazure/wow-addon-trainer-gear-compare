@@ -1,4 +1,4 @@
-export const PREFIX = "|cff33ff99TrainerUpgrades|r ";
+export const PREFIX = "|cff33ff99Trainer Compare|r ";
 
 let debugOn = false;
 
@@ -11,7 +11,7 @@ export function say(msg: string): void {
   print(PREFIX + msg);
 }
 
-/** Prints only when `/tu debug` is on. */
+/** Prints only when `/tc debug` is on. */
 export function debug(msg: string): void {
   if (debugOn) print(PREFIX + "|cff999999debug|r " + msg);
 }

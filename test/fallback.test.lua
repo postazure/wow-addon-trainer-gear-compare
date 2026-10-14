@@ -2,18 +2,18 @@
 -- run.mjs removes Menu and TooltipComparisonManager before fixtures.lua loads.
 
 -- Checkbox instead of the Settings dropdown ----------------------------------
-check(TrainerUpgradesUsableFilter ~= nil, "checkbox created when the menu API is missing")
-local cbPoint = TrainerUpgradesUsableFilter.point
+check(TrainerCompareUsableFilter ~= nil, "checkbox created when the menu API is missing")
+local cbPoint = TrainerCompareUsableFilter.point
 check(cbPoint[1] == "RIGHT" and cbPoint[2] == ClassTrainerTrainButton and cbPoint[3] == "LEFT",
   "checkbox sits left of the Train button")
 
-TrainerUpgradesUsableFilter.checked = true
-TrainerUpgradesUsableFilter.scripts.OnClick(TrainerUpgradesUsableFilter)
+TrainerCompareUsableFilter.checked = true
+TrainerCompareUsableFilter.scripts.OnClick(TrainerCompareUsableFilter)
 flush()
-check(TrainerUpgradesDB.onlyUsable == true and axe.button.alpha < 1, "checkbox turns the usable filter on")
-SlashCmdList.TRAINERUPGRADES("filter")
+check(TrainerCompareDB.onlyUsable == true and axe.button.alpha < 1, "checkbox turns the usable filter on")
+SlashCmdList.TRAINERCOMPARE("filter")
 flush()
-check(TrainerUpgradesUsableFilter.checked == false, "checkbox follows /tu filter")
+check(TrainerCompareUsableFilter.checked == false, "checkbox follows /tc filter")
 check(axe.button.alpha == 1, "faded rows restored")
 
 -- Compare filled in by us ---------------------------------------------------------

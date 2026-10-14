@@ -1,13 +1,13 @@
--- TrainerUpgrades Probe
+-- Trainer Compare Probe
 --
 -- A throwaway debug addon. It reports what this client's trainer API really
--- returns, so the real TrainerUpgrades addon is built on facts, not guesses.
+-- returns, so the real Trainer Compare addon is built on facts, not guesses.
 --
 -- Safe by design: it only calls read-only getters, wraps every call in pcall,
 -- and never buys, selects, expands, or changes filters on the trainer.
 
 local ADDON_NAME = ...
-local PREFIX = "|cff33ff99TUProbe|r "
+local PREFIX = "|cff33ff99TCProbe|r "
 local DETAIL_COUNT = 3      -- non-header services to dump in full
 local MAX_ROWS_SCANNED = 40 -- stop looking for non-header rows after this
 
@@ -28,9 +28,9 @@ local function out(text)
 end
 
 local function save()
-  TrainerUpgradesProbeDB = TrainerUpgradesProbeDB or {}
-  TrainerUpgradesProbeDB.lines = lines
-  TrainerUpgradesProbeDB.savedAt = date("%Y-%m-%d %H:%M:%S")
+  TrainerCompareProbeDB = TrainerCompareProbeDB or {}
+  TrainerCompareProbeDB.lines = lines
+  TrainerCompareProbeDB.savedAt = date("%Y-%m-%d %H:%M:%S")
 end
 
 local function fmt(v)
@@ -282,7 +282,7 @@ local tip -- hidden scanning tooltip, false if it could not be made
 
 local function scanTooltip(index)
   if tip == nil then
-    local r = try(CreateFrame, "GameTooltip", "TrainerUpgradesProbeTip", UIParent, "GameTooltipTemplate")
+    local r = try(CreateFrame, "GameTooltip", "TrainerCompareProbeTip", UIParent, "GameTooltipTemplate")
     tip = r.ok and r[1] or false
   end
   if not tip then return nil, "could not create tooltip" end
@@ -298,8 +298,8 @@ local function scanTooltip(index)
   }
   res.numLines = tip:NumLines() or 0
   for l = 1, math.min(res.numLines, 8) do
-    local left = _G["TrainerUpgradesProbeTipTextLeft" .. l]
-    local right = _G["TrainerUpgradesProbeTipTextRight" .. l]
+    local left = _G["TrainerCompareProbeTipTextLeft" .. l]
+    local right = _G["TrainerCompareProbeTipTextRight" .. l]
     local lt = left and left:GetText() or ""
     local rt = right and right:IsShown() and right:GetText() or nil
     res.text[#res.text + 1] = rt and (lt .. " <> " .. rt) or lt
@@ -489,7 +489,7 @@ end
 local function run(mode)
   lines, pending = {}, {}
   save()
-  out("==== TrainerUpgrades probe" .. (mode == "all" and " (all services)" or "") .. " ====")
+  out("==== Trainer Compare probe" .. (mode == "all" and " (all services)" or "") .. " ====")
 
   if mode ~= "all" then
     out("GetBuildInfo -> " .. show(try(GetBuildInfo)))
@@ -528,7 +528,7 @@ local function run(mode)
     end
   end
 
-  out("==== end. /tuprobe show = copy window. /reload saves it to SavedVariables. ====")
+  out("==== end. /tcprobe show = copy window. /reload saves it to SavedVariables. ====")
 end
 
 local function safeRun(mode)
@@ -545,7 +545,7 @@ local copyFrame
 
 local function buildWindow()
   local template = BackdropTemplateMixin and "BackdropTemplate" or nil
-  local f = CreateFrame("Frame", "TrainerUpgradesProbeCopy", UIParent, template)
+  local f = CreateFrame("Frame", "TrainerCompareProbeCopy", UIParent, template)
   f:SetSize(760, 440)
   f:SetPoint("CENTER")
   f:SetFrameStrata("DIALOG")
@@ -565,12 +565,12 @@ local function buildWindow()
 
   local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   title:SetPoint("TOP", 0, -14)
-  title:SetText("TrainerUpgrades probe  -  Ctrl+A, then Ctrl+C")
+  title:SetText("Trainer Compare probe  -  Ctrl+A, then Ctrl+C")
 
   local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   close:SetPoint("TOPRIGHT", -4, -4)
 
-  local scroll = CreateFrame("ScrollFrame", "TrainerUpgradesProbeCopyScroll", f, "UIPanelScrollFrameTemplate")
+  local scroll = CreateFrame("ScrollFrame", "TrainerCompareProbeCopyScroll", f, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", 16, -36)
   scroll:SetPoint("BOTTOMRIGHT", -34, 16)
 
@@ -583,7 +583,7 @@ local function buildWindow()
   scroll:SetScrollChild(edit)
 
   f.edit = edit
-  tinsert(UISpecialFrames, "TrainerUpgradesProbeCopy")
+  tinsert(UISpecialFrames, "TrainerCompareProbeCopy")
   return f
 end
 
@@ -618,7 +618,7 @@ events:SetScript("OnEvent", function(_, event, ...)
   if event == "ADDON_LOADED" then
     local name = ...
     if name == ADDON_NAME then
-      print(PREFIX .. "loaded. Open a profession trainer. /tuprobe for options.")
+      print(PREFIX .. "loaded. Open a profession trainer. /tcprobe for options.")
     elseif name == "Blizzard_TrainerUI" then
       print(PREFIX .. "Blizzard_TrainerUI just loaded.")
     end
@@ -643,8 +643,8 @@ events:SetScript("OnEvent", function(_, event, ...)
   end
 end)
 
-SLASH_TRAINERUPGRADESPROBE1 = "/tuprobe"
-SlashCmdList.TRAINERUPGRADESPROBE = function(msg)
+SLASH_TRAINERCOMPAREPROBE1 = "/tcprobe"
+SlashCmdList.TRAINERCOMPAREPROBE = function(msg)
   msg = (msg or ""):lower():match("^%s*(.-)%s*$")
   if msg == "show" then
     showWindow()
@@ -656,8 +656,8 @@ SlashCmdList.TRAINERUPGRADESPROBE = function(msg)
     end
     showWindow()
   else
-    print(PREFIX .. "/tuprobe - run again (trainer open) and show copy window")
-    print(PREFIX .. "/tuprobe all - one line per service, for the whole list")
-    print(PREFIX .. "/tuprobe show - show the last result")
+    print(PREFIX .. "/tcprobe - run again (trainer open) and show copy window")
+    print(PREFIX .. "/tcprobe all - one line per service, for the whole list")
+    print(PREFIX .. "/tcprobe show - show the last result")
   end
 end

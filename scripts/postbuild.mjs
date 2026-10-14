@@ -2,10 +2,10 @@
 import { copyFileSync, readFileSync } from "node:fs";
 import luaparse from "luaparse";
 
-const outDir = "dist/TrainerUpgrades";
-copyFileSync("addon/TrainerUpgrades.toc", `${outDir}/TrainerUpgrades.toc`);
+const outDir = "dist/TrainerCompare";
+copyFileSync("addon/TrainerCompare.toc", `${outDir}/TrainerCompare.toc`);
 
-const file = `${outDir}/TrainerUpgrades.lua`;
+const file = `${outDir}/TrainerCompare.lua`;
 try {
   luaparse.parse(readFileSync(file, "utf8"), { luaVersion: "5.1" });
 } catch (e) {

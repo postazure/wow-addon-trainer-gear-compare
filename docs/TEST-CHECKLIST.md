@@ -1,7 +1,7 @@
 # In-game test checklist
 
-Run these with only TrainerUpgrades enabled first. Then run them again with
-your usual addons. Turn on `/tu debug` for the first run, so silent failures
+Run these with only Trainer Compare enabled first. Then run them again with
+your usual addons. Turn on `/tc debug` for the first run, so silent failures
 show up in chat.
 
 Before you start, note your class, level, and what's in your main hand, off
@@ -9,20 +9,22 @@ hand, wrists, waist and both ring slots.
 
 ## 1. Load
 
+- [ ] The old `Interface/AddOns/TrainerUpgrades` folder is gone. If it's
+      still there, chat warns about it on login.
 - [ ] No Lua error on login or `/reload`.
-- [ ] `/tu` prints the version and the command list.
-- [ ] `/tu debug` prints "debug on". `/reload` keeps it on.
+- [ ] `/tc` prints the version and the command list.
+- [ ] `/tc debug` prints "debug on". `/reload` keeps it on.
 
 ## 2. Hooks
 
 Open a trainer that teaches gear (Blacksmithing, Leatherworking, Tailoring).
 
 - [ ] With debug on, chat shows `hooks: ...`. Most entries say `yes`.
-- [ ] `/tu dump` lists each visible row as `-> [n] <name>: <verdict>`.
+- [ ] `/tc dump` lists each visible row as `-> [n] <name>: <verdict>`.
       The names match what the window shows.
 - [ ] No row says `no index` unless it is a category row.
 
-If rows say `no index`, paste the `/tu dump` output back. It shows the row
+If rows say `no index`, paste the `/tc dump` output back. It shows the row
 data keys, which is what I need to fix it.
 
 ## 3. Markers
@@ -57,7 +59,7 @@ data keys, which is what I need to fix it.
 - [ ] Hover gear you can't use. No extra "can't use" line (the item's own
       red text shows it). The item level and stat changes still show.
 - [ ] No line anywhere says "upgrade".
-- [ ] Hover an enchant or a non-gear recipe. No TrainerUpgrades lines.
+- [ ] Hover an enchant or a non-gear recipe. No Trainer Compare lines.
 - [ ] Without "Always compare items", the compare shows only while you hold
       Shift.
 - [ ] The compare shows **"Currently Equipped"** and Blizzard's own stat
@@ -70,7 +72,7 @@ data keys, which is what I need to fix it.
 - [ ] Nothing equipped in that slot: no compare.
 - [ ] Move from a recipe to a bag item: the normal Blizzard compare still
       works and nothing is left over from the recipe.
-- [ ] With `/tu debug` on, chat says `compare: native, left`. If it says
+- [ ] With `/tc debug` on, chat says `compare: native, left`. If it says
       `manual`, the native compare didn't start; tell me.
 
 ## 6. Filter
@@ -81,7 +83,7 @@ data keys, which is what I need to fix it.
 - [ ] Ticking it fades gear you can't use (wrong armor, unlearned weapon,
       level too high). Gear you can use stays bright.
 - [ ] Enchants and other non-gear recipes are never faded.
-- [ ] `/tu filter` toggles it, and the dropdown shows the new state.
+- [ ] `/tc filter` toggles it, and the dropdown shows the new state.
 - [ ] The setting is kept after `/reload`.
 - [ ] Faded rows can still be selected, and you can still train them.
 
@@ -100,10 +102,10 @@ data keys, which is what I need to fix it.
 
 ## 9. Scoring
 
-- [ ] `/tu scoring` shows `itemLevel` and lists the options.
-- [ ] `/tu scoring statWeights`: markers update, and tooltips add a
+- [ ] `/tc scoring` shows `itemLevel` and lists the options.
+- [ ] `/tc scoring statWeights`: markers update, and tooltips add a
       "Score X vs Y (stat weights)" line.
-- [ ] `/tu scoring itemLevel` switches back.
+- [ ] `/tc scoring itemLevel` switches back.
 
 ## 10. Other addons and taint
 
@@ -111,6 +113,6 @@ data keys, which is what I need to fix it.
       tooltips still look right (bags, character sheet).
 - [ ] The trainer tooltip shows their lines (if any) and ours, without
       duplicates or errors.
-- [ ] Train a recipe with TrainerUpgrades on. No "action blocked" or
+- [ ] Train a recipe with Trainer Compare on. No "action blocked" or
       "interface action failed" messages.
-- [ ] `/tu debug` off: no TrainerUpgrades messages at all during normal use.
+- [ ] `/tc debug` off: no Trainer Compare messages at all during normal use.
