@@ -18,7 +18,7 @@ const dimmed = new Set<Frame>();
 let installed = false;
 let checkbox: CheckButton | undefined;
 const hookStatus: string[] = [];
-const counters = { initRow: 0, initCategory: 0, refresh: 0, tooltip: 0 };
+const counters = { initRow: 0, initCategory: 0, refresh: 0, tooltip: 0, compare: 0 };
 let loggedUnresolved = false;
 
 function field(obj: unknown, name: string): unknown {
@@ -159,6 +159,7 @@ export function scheduleRefresh(): void {
   C_Timer.After(0, () => {
     refreshQueued = false;
     safe("refresh", refreshVisible);
+    safe("refresh hover", refreshHover);
   });
 }
 
@@ -174,8 +175,88 @@ export function rescore(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Tooltip
+// Tooltip: built-in compare tooltips, plus optional lines of our own
 // ---------------------------------------------------------------------------
+
+// The trainer service GameTooltip is showing, if any.
+let hoveredIndex: number | undefined;
+// True only while the shopping tooltips show what we put there.
+let compareShown = false;
+
+function shoppingTooltips(): GameTooltip[] {
+  const tips: GameTooltip[] = [];
+  for (const name of ["ShoppingTooltip1", "ShoppingTooltip2"]) {
+    const tip = _G[name];
+    if (typeof tip === "object" && typeof field(tip, "SetInventoryItem") === "function") tips.push(tip as GameTooltip);
+  }
+  return tips;
+}
+
+/** Same trigger as the built-in compare: "always compare" or the compare modifier (Shift). */
+function wantsCompare(): boolean {
+  if (typeof GetCVarBool === "function" && GetCVarBool("alwaysCompareItems")) return true;
+  if (typeof IsModifiedClick === "function") return IsModifiedClick("COMPAREITEMS");
+  if (typeof IsShiftKeyDown === "function") return IsShiftKeyDown();
+  return true;
+}
+
+/** Hide the compare tooltips, but only if we are the ones showing them. */
+function hideCompare(): void {
+  if (!compareShown) return;
+  compareShown = false;
+  for (const tip of shoppingTooltips()) tip.Hide();
+}
+
+/**
+ * The trainer tooltip is a spell tooltip, so the built-in compare never
+ * starts. Show the equipped item(s) in the built-in compare tooltips.
+ */
+function showCompare(tooltip: GameTooltip, index: number): void {
+  hideCompare();
+  if (!wantsCompare()) return;
+  const link = GetTrainerServiceItemLink(index);
+  if (link === undefined) return;
+  const ev = evaluate(link);
+  const slots = ev.versus?.compareSlots ?? [];
+  if ((ev.verdict !== "upgrade" && ev.verdict !== "same") || slots.length === 0) return;
+  const tips = shoppingTooltips();
+  if (tips.length === 0) return;
+
+  // Open to the left when there's no room on the right, like the built-in compare.
+  const right = tooltip.GetRight() ?? 0;
+  const screen = UIParent.GetRight() ?? 0;
+  const toLeft = screen > 0 && right > screen * 0.6;
+  let anchor: Region = tooltip;
+  for (let i = 0; i < slots.length && i < tips.length; i++) {
+    const tip = tips[i];
+    tip.SetOwner(tooltip, "ANCHOR_NONE");
+    tip.ClearAllPoints();
+    const y = i === 0 ? -10 : 0;
+    if (toLeft) tip.SetPoint("TOPRIGHT", anchor, "TOPLEFT", 0, y);
+    else tip.SetPoint("TOPLEFT", anchor, "TOPRIGHT", 0, y);
+    tip.SetInventoryItem("player", slots[i]);
+    tip.Show();
+    anchor = tip;
+  }
+  compareShown = true;
+  counters.compare++;
+}
+
+/** Shift pressed or released, or data arrived, while a recipe is hovered. */
+export function refreshHover(): void {
+  if (hoveredIndex !== undefined && GameTooltip.IsShown()) showCompare(GameTooltip, hoveredIndex);
+}
+
+function onTrainerTooltip(tooltip: GameTooltip, index: number): void {
+  hoveredIndex = index;
+  if (settings().tooltipLines) addTooltipLines(tooltip, index);
+  showCompare(tooltip, index);
+}
+
+function onTooltipCleared(): void {
+  hoveredIndex = undefined;
+  hideCompare();
+}
 
 function addTooltipLines(tooltip: GameTooltip, index: number): void {
   const link = GetTrainerServiceItemLink(index);
@@ -281,8 +362,13 @@ export function installTrainerHooks(): void {
 
   tryHook("GameTooltip.SetTrainerService", () =>
     hooksecurefunc(GameTooltip, "SetTrainerService", (tooltip: GameTooltip, index: number) => {
-      safe("tooltip", () => addTooltipLines(tooltip, index));
+      safe("tooltip", () => onTrainerTooltip(tooltip, index));
     }));
+  // A new owner or a hidden tooltip means the recipe is no longer hovered.
+  tryHook("GameTooltip.SetOwner", () =>
+    hooksecurefunc(GameTooltip, "SetOwner", () => safe("tooltip owner", onTooltipCleared)));
+  tryHook("GameTooltip OnHide", () =>
+    GameTooltip.HookScript("OnHide", () => safe("tooltip hide", onTooltipCleared)));
 
   tryHook("checkbox", () => createCheckbox(frame));
   debug(`hooks: ${hookStatus.join(", ")}`);
@@ -291,7 +377,7 @@ export function installTrainerHooks(): void {
 /** For /tu dump: what is hooked and what each visible row resolved to. */
 export function dumpState(say: (msg: string) => void): void {
   say(`hooks: ${hookStatus.length > 0 ? hookStatus.join(", ") : "not installed"}`);
-  say(`calls: initRow=${counters.initRow} initCategory=${counters.initCategory} refresh=${counters.refresh} tooltip=${counters.tooltip}`);
+  say(`calls: initRow=${counters.initRow} initCategory=${counters.initCategory} refresh=${counters.refresh} tooltip=${counters.tooltip} compare=${counters.compare}`);
   const box = ClassTrainerFrame?.ScrollBox;
   if (!box?.ForEachFrame || !ClassTrainerFrame?.IsShown()) {
     say("open a trainer to see rows");

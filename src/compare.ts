@@ -13,6 +13,8 @@ export interface Versus {
   score: number | undefined;
   /** Equipped items in play: 0, 1, or 2 (main hand + off hand). */
   items: ItemData[];
+  /** Equipped slot ids to show in the compare tooltips. Can differ from items: rings show both. */
+  compareSlots: number[];
 }
 
 export interface Evaluation {
@@ -86,9 +88,9 @@ function equipped(key: SlotKey): Equipped {
 function single(key: SlotKey, scorer: Scorer): Versus | "pending" {
   const e = equipped(key);
   if (e.state === "pending") return "pending";
-  const label = slotInfo(key).label;
-  if (e.state === "empty") return { label, score: undefined, items: [] };
-  return { label, score: scorer.score(e.item), items: [e.item] };
+  const { label, id } = slotInfo(key);
+  if (e.state === "empty") return { label, score: undefined, items: [], compareSlots: [] };
+  return { label, score: scorer.score(e.item), items: [e.item], compareSlots: [id] };
 }
 
 /** Two slots that take the same item: compare against the weaker one. */
@@ -96,9 +98,11 @@ function weaker(a: SlotKey, b: SlotKey, scorer: Scorer): Versus | "pending" {
   const va = single(a, scorer);
   const vb = single(b, scorer);
   if (va === "pending" || vb === "pending") return "pending";
-  if (va.score === undefined) return va;
-  if (vb.score === undefined) return vb;
-  return vb.score < va.score ? vb : va;
+  // Show both equipped items, like the built-in compare does.
+  const compareSlots = [...va.compareSlots, ...vb.compareSlots];
+  if (va.score === undefined) return { ...va, compareSlots };
+  if (vb.score === undefined) return { ...vb, compareSlots };
+  return { ...(vb.score < va.score ? vb : va), compareSlots };
 }
 
 function canDualWield(): boolean {
@@ -125,13 +129,14 @@ function findVersus(placement: Placement, scorer: Scorer): Versus | "pending" {
   const off = equipped("SECONDARYHAND");
   if (off.state === "pending") return "pending";
   const items: ItemData[] = [];
-  if (main.state === "ready") items.push(main.item);
-  if (off.state === "ready") items.push(off.item);
+  const compareSlots: number[] = [];
+  if (main.state === "ready") { items.push(main.item); compareSlots.push(slotInfo("MAINHAND").id); }
+  if (off.state === "ready") { items.push(off.item); compareSlots.push(slotInfo("SECONDARYHAND").id); }
   const label = `${slotInfo("MAINHAND").label} + ${slotInfo("SECONDARYHAND").label}`;
-  if (items.length === 0) return { label, score: undefined, items };
+  if (items.length === 0) return { label, score: undefined, items, compareSlots };
   const score = scorer.pair(
     main.state === "ready" ? scorer.score(main.item) : undefined,
     off.state === "ready" ? scorer.score(off.item) : undefined,
   );
-  return { label, score, items };
+  return { label, score, items, compareSlots };
 }

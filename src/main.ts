@@ -4,7 +4,7 @@ import { diagnoseMenus } from "./diagnose";
 import { onItemInfoReceived } from "./items";
 import { debug, safe, say, setDebug } from "./log";
 import { findScorer, SCORERS } from "./scoring";
-import { dumpState, installTrainerHooks, rescore, scheduleRefresh, setOnlyUpgrades } from "./trainerUI";
+import { dumpState, installTrainerHooks, refreshHover, rescore, scheduleRefresh, setOnlyUpgrades } from "./trainerUI";
 import { resetUsableCache } from "./usable";
 
 const ADDON_NAME = "TrainerUpgrades";
@@ -35,6 +35,8 @@ function onEvent(event: string, args: any[]): void {
     scheduleRefresh();
   } else if (event === "GET_ITEM_INFO_RECEIVED") {
     if (onItemInfoReceived(args[0], args[1])) scheduleRefresh();
+  } else if (event === "MODIFIER_STATE_CHANGED") {
+    refreshHover();
   } else if (STALE_EVENTS.includes(event)) {
     resetUsableCache();
     rescore();
@@ -66,6 +68,9 @@ function onSlash(msg: string): void {
     db.scoring = scorer.id;
     rescore();
     say(`scoring: ${scorer.id}`);
+  } else if (cmd === "lines") {
+    db.tooltipLines = !db.tooltipLines;
+    say(`extra tooltip lines: ${db.tooltipLines ? "on" : "off"}`);
   } else if (cmd === "dump") {
     dumpState(say);
   } else if (cmd === "menus") {
@@ -74,14 +79,15 @@ function onSlash(msg: string): void {
     say(`v${VERSION}`);
     say("/tu filter - toggle only show upgrades");
     say(`/tu scoring [${SCORERS.map((s) => s.id).join("|")}] - how upgrades are judged`);
+    say("/tu lines - toggle item level and stat lines on the recipe tooltip");
     say("/tu debug - toggle debug messages");
     say("/tu dump - show hook status and what each visible row resolved to");
-    say("/tu menus - find how the trainer's dropdowns are built");
+    say("/tu menus - find how the trainer's dropdowns and compare tooltips work");
   }
 }
 
 const events = CreateFrame("Frame");
-for (const event of ["ADDON_LOADED", "TRAINER_SHOW", "TRAINER_UPDATE", "GET_ITEM_INFO_RECEIVED", ...STALE_EVENTS]) {
+for (const event of ["ADDON_LOADED", "TRAINER_SHOW", "TRAINER_UPDATE", "GET_ITEM_INFO_RECEIVED", "MODIFIER_STATE_CHANGED", ...STALE_EVENTS]) {
   // Unknown events throw in some clients. Skip them quietly.
   safe(`register ${event}`, () => events.RegisterEvent(event));
 }

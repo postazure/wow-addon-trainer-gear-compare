@@ -38,6 +38,8 @@ interface TrainerUpgradesSaved {
   debug: boolean;
   onlyUpgrades: boolean;
   scoring: string;
+  /** Our own lines on the trainer tooltip. Off: the built-in compare tooltips are used instead. */
+  tooltipLines: boolean;
 }
 
 /** Fourth value is the TOC interface number. Confirmed. */
@@ -59,6 +61,10 @@ declare function UnitLevel(unit: string): number;
 declare function IsPlayerSpell(spellID: number): boolean;
 /** Not probed. */
 declare const CanDualWield: (() => boolean) | undefined;
+/** Not probed. Built-in compare uses the COMPAREITEMS modifier (Shift by default). */
+declare const IsModifiedClick: ((action: string) => boolean) | undefined;
+declare const IsShiftKeyDown: (() => boolean) | undefined;
+declare const GetCVarBool: ((name: string) => boolean) | undefined;
 
 // ---------------------------------------------------------------------------
 // Trainer. All confirmed.
@@ -123,6 +129,8 @@ interface Region extends UIObject {
   SetPoint(point: string, x: number, y: number): void;
   ClearAllPoints(): void;
   SetSize(width: number, height: number): void;
+  GetRight(): number | undefined;
+  GetLeft(): number | undefined;
   SetAlpha(alpha: number): void;
   GetAlpha(): number;
 }
@@ -163,6 +171,8 @@ interface GameTooltip extends Frame {
   SetText(text: string, r?: number, g?: number, b?: number): void;
   AddLine(text: string, r?: number, g?: number, b?: number, wrap?: boolean): void;
   SetTrainerService(index: number): void;
+  SetInventoryItem(unit: string, slot: number): void;
+  HookScript(handler: string, fn: (...args: any[]) => void): void;
 }
 
 /** Blizzard ScrollBox. Shape inferred from retail; every method is feature-checked. */

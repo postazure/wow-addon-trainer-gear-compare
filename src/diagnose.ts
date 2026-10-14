@@ -28,6 +28,12 @@ const MENU_API = [
   "UIDropDownMenu_Initialize", "UIDropDownMenu_AddButton", "UIDropDownMenu_CreateInfo",
 ];
 
+const COMPARE_API = [
+  "GameTooltip_ShowCompareItem", "TooltipComparisonManager.CompareItem", "C_TooltipComparison.GetItemComparisonInfo",
+  "ShoppingTooltip1.SetInventoryItem", "ShoppingTooltip1.SetCompareItem", "ShoppingTooltip2.SetInventoryItem",
+  "IsModifiedClick", "GetCVarBool",
+];
+
 const DROPDOWN_METHODS = ["SetupMenu", "OpenMenu", "GenerateMenu", "SetMenuTag", "GetMenuDescription", "IsMenuOpen", "SetDefaultText"];
 
 function describe(name: string, widget: unknown): string {
@@ -46,6 +52,7 @@ export function diagnoseMenus(say: (msg: string) => void): void {
   const missing = MENU_API.filter((p) => typeof lookup(p) !== "function");
   say(`menu API present: ${have.length > 0 ? have.join(", ") : "none"}`);
   say(`menu API missing: ${missing.length > 0 ? missing.join(", ") : "none"}`);
+  reportCompare(say);
 
   const frame = ClassTrainerFrame;
   if (!frame) {
@@ -68,6 +75,23 @@ export function diagnoseMenus(say: (msg: string) => void): void {
   say("Now open the trainer's Settings dropdown and keep it open. Watching for 10 seconds...");
   for (const seconds of [2, 4, 6, 8, 10]) {
     C_Timer.After(seconds, () => safe("menu watch", () => watchTick(say, seconds)));
+  }
+}
+
+/** How the built-in compare tooltips work in this client. */
+function reportCompare(say: (msg: string) => void): void {
+  const have = COMPARE_API.filter((p) => typeof lookup(p) === "function");
+  const missing = COMPARE_API.filter((p) => typeof lookup(p) !== "function");
+  say(`compare API present: ${have.length > 0 ? have.join(", ") : "none"}`);
+  say(`compare API missing: ${missing.length > 0 ? missing.join(", ") : "none"}`);
+  const cvar = lookup("GetCVarBool");
+  if (typeof cvar === "function") {
+    say(`alwaysCompareItems: ${(cvar as (this: void, name: string) => boolean)("alwaysCompareItems")}`);
+  }
+  const tip = lookup("ShoppingTooltip1");
+  if (isWidget(tip)) {
+    const keys = Object.keys(tip as object).filter((k) => typeof k === "string").sort();
+    say(`ShoppingTooltip1 fields: ${keys.length > 0 ? keys.join(",") : "none"}`);
   }
 }
 

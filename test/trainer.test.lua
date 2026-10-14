@@ -99,22 +99,70 @@ fire("GET_ITEM_INFO_RECEIVED", 2851, true)
 flush()
 check(marker(belt) == "upgrade", "belt marked once its data arrives (waist slot empty)")
 
--- Tooltips ------------------------------------------------------------------
-GameTooltip:SetTrainerService(1)
+-- Compare tooltips ------------------------------------------------------------
+-- Built-in rule: only with Shift (or "always compare"). No extra lines by default.
+hover(1)
+check(compareSlots() == "", "no compare without Shift")
+check(not tooltipHas("TrainerUpgrades"), "no extra tooltip lines by default")
+
+shiftDown = true
+fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
+check(compareSlots() == "16", "Shift shows the equipped main hand")
+shiftDown = false
+fire("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
+check(compareSlots() == "", "releasing Shift hides it")
+
+alwaysCompare = true
+hover(1)
+check(compareSlots() == "16", "always-compare shows it without Shift")
+hover(10)
+check(compareSlots() == "11,12", "ring compares against both rings")
+hover(7)
+check(compareSlots() == "16", "2H compares against the main hand (off hand empty)")
+hover(2)
+check(compareSlots() == "", "no compare for gear you can't use")
+hover(6)
+check(compareSlots() == "", "no compare for a recipe with no item")
+hover(1)
+GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT")  -- moved to something else
+check(compareSlots() == "", "compare hidden when the tooltip gets a new owner")
+hover(1)
+GameTooltip:Hide()
+check(compareSlots() == "", "compare hidden with the tooltip")
+check(ShoppingTooltip1.point[1] == "TOPLEFT" and ShoppingTooltip1.point[3] == "TOPRIGHT", "compare opens to the right")
+GameTooltip.right = 900
+hover(1)
+check(ShoppingTooltip1.point[1] == "TOPRIGHT" and ShoppingTooltip1.point[3] == "TOPLEFT", "compare opens left near the screen edge")
+GameTooltip.right = nil
+alwaysCompare = false
+
+-- Blizzard's own compare (a bag item, say) is never hidden by us.
+GameTooltip:Hide()
+ShoppingTooltip1.shown = true
+ShoppingTooltip1.slot = 5
+GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT")
+GameTooltip:Hide()
+check(ShoppingTooltip1.shown and ShoppingTooltip1.slot == 5, "Blizzard's own compare left alone")
+ShoppingTooltip1:Hide()
+
+-- Optional tooltip lines (/tu lines) ------------------------------------------
+SlashCmdList.TRAINERUPGRADES("lines")
+check(TrainerUpgradesDB.tooltipLines == true, "/tu lines turns lines on")
+hover(1)
 check(tooltipHas("TrainerUpgrades: upgrade"), "mace tooltip says upgrade")
 check(tooltipHas("Item level 9 vs 2 (Main Hand)"), "mace tooltip shows item levels")
 check(tooltipHas("+2.2 Damage Per Second"), "mace tooltip shows DPS change")
 
-GameTooltip:SetTrainerService(2)
+hover(2)
 check(tooltipHas("can't use (you can't use One-Handed Axes)"), "axe tooltip gives the reason")
 
-GameTooltip:SetTrainerService(7)
+hover(7)
 check(tooltipHas("Item level 11 vs 2 (Main Hand + Off Hand)"), "maul tooltip compares against both hands")
 
-GameTooltip:SetTrainerService(10)
+hover(10)
 check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against the weaker ring")
 
-GameTooltip:SetTrainerService(6)
+hover(6)
 check(not tooltipHas("TrainerUpgrades"), "enchant tooltip unchanged")
 
 -- Filter --------------------------------------------------------------------
@@ -149,11 +197,13 @@ flush()
 check(TrainerUpgradesDB.scoring == "statWeights", "/tu scoring switches scorer")
 check(marker(mace) == "upgrade", "mace still an upgrade by stat weights (more DPS)")
 check(marker(bracers) == "same", "bracers with no stats lose to Old Bracers (+2 Stamina)")
-GameTooltip:SetTrainerService(1)
+hover(1)
 check(tooltipHas("(stat weights)"), "tooltip shows the weighted score")
 SlashCmdList.TRAINERUPGRADES("scoring nope")
 check(TrainerUpgradesDB.scoring == "statWeights", "unknown scorer ignored")
 SlashCmdList.TRAINERUPGRADES("scoring itemlevel")
+SlashCmdList.TRAINERUPGRADES("lines")
+check(TrainerUpgradesDB.tooltipLines == false, "/tu lines turns lines off")
 
 -- Proficiency fallback --------------------------------------------------------
 -- If IsPlayerSpell can't see Cloth, proficiency spells don't work: don't hide gear.

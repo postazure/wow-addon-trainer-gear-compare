@@ -54,6 +54,9 @@ local function newRegion()
   function r:Hide() self.shown = false end
   function r:IsShown() return self.shown end
   function r:SetPoint(point, rel, relPoint, x, y) self.point = { point, rel, relPoint, x, y } end
+  function r:ClearAllPoints() self.point = nil end
+  function r:GetRight() return self.right or 400 end
+  function r:GetLeft() return 0 end
   function r:SetSize() end
   function r:SetAlpha(a) self.alpha = a end
   function r:GetAlpha() return self.alpha end
@@ -87,7 +90,39 @@ UIParent = CreateFrame("Frame")
 
 GameTooltip = CreateFrame("Frame")
 GameTooltip.lines = {}
-function GameTooltip:SetOwner() self.lines = {} end
+function GameTooltip:SetOwner() self.lines = {}; self.shown = true end
+function GameTooltip:HookScript(name, fn)
+  local prev = self.scripts[name]
+  self.scripts[name] = function(...) if prev then prev(...) end fn(...) end
+end
+function GameTooltip:Hide() self.shown = false; if self.scripts.OnHide then self.scripts.OnHide(self) end end
+UIParent.right = 1000
+
+-- Built-in compare tooltips. Record which equipped slot each one shows.
+for i = 1, 2 do
+  local tip = CreateFrame("Frame", "ShoppingTooltip" .. i)
+  tip.shown = false
+  function tip:SetOwner() end
+  function tip:SetInventoryItem(unit, slot) self.slot = slot end
+  function tip:Hide() self.shown = false; self.slot = nil end
+end
+shiftDown = false
+alwaysCompare = false
+function IsModifiedClick(action) return action == "COMPAREITEMS" and shiftDown end
+function GetCVarBool(name) return name == "alwaysCompareItems" and alwaysCompare end
+-- Hover a trainer row the way Blizzard does: SetOwner, then SetTrainerService.
+function hover(index)
+  GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT")
+  GameTooltip:SetTrainerService(index)
+end
+function compareSlots()
+  local slots = {}
+  for i = 1, 2 do
+    local tip = _G["ShoppingTooltip" .. i]
+    if tip.shown and tip.slot then slots[#slots + 1] = tip.slot end
+  end
+  return table.concat(slots, ",")
+end
 function GameTooltip:SetText(t) self.lines = { t } end
 function GameTooltip:AddLine(t) self.lines[#self.lines + 1] = t end
 function GameTooltip:SetTrainerService(i) self.lines = { "service " .. i } end

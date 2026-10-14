@@ -2,6 +2,7 @@ const DEFAULTS: TrainerUpgradesSaved = {
   debug: false,
   onlyUpgrades: false,
   scoring: "itemLevel",
+  tooltipLines: false,
 };
 
 let current: TrainerUpgradesSaved = { ...DEFAULTS };

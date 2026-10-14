@@ -45,15 +45,24 @@ data keys, which is what I need to fix it.
 - [ ] Change Blizzard's filter dropdown (available / unavailable). Markers
       update and match.
 
-## 5. Tooltips
+## 5. Compare and tooltips
 
-- [ ] Hover an upgrade. The tooltip ends with "TrainerUpgrades: upgrade",
-      "Item level X vs Y (slot)", and a line of stat changes.
-- [ ] Hover a weapon you can't use. It says "can't use (...)" with the reason.
-- [ ] Hover an enchant or a non-gear recipe. No TrainerUpgrades lines.
-- [ ] Ring or trinket: it compares against your **weaker** one.
-- [ ] Two-hander while you hold a one-hander and an off hand: it says
-      "vs Main Hand + Off Hand".
+- [ ] Hover a gear recipe. No compare tooltips show until you hold Shift.
+- [ ] Hold Shift: your equipped item shows in the compare tooltip next to
+      the recipe tooltip. Let go: it hides.
+- [ ] With "Always compare items" turned on (Interface options), it shows
+      without Shift.
+- [ ] Ring or trinket: both equipped rings or trinkets show.
+- [ ] Two-hander while you hold a one-hander and an off hand: both show.
+- [ ] Hover a weapon you can't use, or an enchant: no compare.
+- [ ] Hover a recipe near the right edge of the screen: the compare opens
+      on the left instead of going off screen.
+- [ ] Move from a recipe to a bag item: the normal Blizzard compare still
+      works and nothing is left over from the recipe.
+- [ ] By default the recipe tooltip has no TrainerUpgrades lines.
+- [ ] `/tu lines`: the tooltip now ends with "TrainerUpgrades: upgrade",
+      "Item level X vs Y (slot)", and stat changes. For gear you can't use,
+      it says "can't use (...)". `/tu lines` again turns them off.
 
 ## 6. Filter
 

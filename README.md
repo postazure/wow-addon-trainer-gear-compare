@@ -6,8 +6,11 @@ an upgrade over your equipped gear.
 - **Green arrow** on the recipe icon: upgrade.
 - **Gray dash**: same or worse.
 - **No marker**: not gear, no item (enchants), or you can't use it.
-- **Tooltip**: item level vs your equipped item in that slot, and the stat
-  changes. If you can't use the item, it says why.
+- **Compare**: hover a recipe and hold Shift (or turn on "Always compare
+  items") to see your equipped item(s) in the built-in compare tooltips,
+  next to the recipe tooltip.
+- **Extra lines** (off by default, `/tu lines`): item level vs equipped,
+  stat changes, and why you can't use an item.
 - **"Upgrades"** checkbox next to the Train button: fades everything that isn't an upgrade.
 
 Built for WoW Forever 1.60.1 (interface 16001), from what the client
@@ -32,8 +35,10 @@ No other addon is needed.
 | `/tu scoring`               | Show the current scoring method                      |
 | `/tu scoring itemLevel`     | Higher item level wins (default)                     |
 | `/tu scoring statWeights`   | Simple per-class stat weights                        |
+| `/tu lines`                 | Toggle our extra lines on the recipe tooltip         |
 | `/tu debug`                 | Toggle debug messages (also shows silent failures)   |
 | `/tu dump`                  | Hook status and what each visible row resolved to    |
+| `/tu menus`                 | Diagnostic: how dropdowns and compare tooltips work  |
 
 Settings are saved per account in `TrainerUpgradesDB`.
 
@@ -73,15 +78,22 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
   (`skillIndex`, `index`, and so on). If a row's visible name does not match
   the recipe, it gets no marker. That way it fails safe and never shows a
   wrong result. `/tu dump` shows what each row resolved to.
-- **Loading tooltips don't update by themselves.** If an item is still
-  loading, the tooltip says so. Move the mouse off and back on.
+- **The compare is rebuilt, not native.** Blizzard's compare only starts
+  for item tooltips, and the trainer tooltip is a spell tooltip. So
+  TrainerUpgrades fills the built-in compare tooltips (`ShoppingTooltip1/2`)
+  with your equipped items itself. There's no "Currently Equipped" header
+  or stat-change summary there yet. `/tu lines` adds the stat changes to
+  the recipe tooltip.
+- **Compare shows only for gear you can use** (upgrade or same/worse).
+- **Loading lines don't update by themselves.** With `/tu lines` on, if an
+  item is still loading, the tooltip says so. Move the mouse off and back on.
 - **Stat weights are rough.** They are a tie-breaker, not a sim.
   Enchants on your equipped gear are not counted.
 - **Gear above your level is hidden,** even if you'll reach that level soon.
 - **ForeverGear and GearSetImprover:** neither was installed in the client
   the probe ran on, so their APIs couldn't be checked. There is no
-  integration. TrainerUpgrades only adds lines to the trainer tooltip, which
-  is a spell tooltip, so it doesn't touch item tooltips those addons use.
+  integration. TrainerUpgrades only uses the compare tooltips while a
+  recipe is hovered, and never hides a compare it didn't show.
 - Only the default Blizzard trainer UI is supported.
 
 ## Development
@@ -89,13 +101,14 @@ To add a scoring method, write a `Scorer` in `src/scoring.ts` and add it to
 ```
 addon/TrainerUpgrades.toc     TOC, copied into the build output
 src/main.ts                   Events and slash commands
-src/trainerUI.ts              Hooks, row markers, checkbox, tooltip hook
+src/trainerUI.ts              Hooks, row markers, checkbox, compare tooltips
 src/compare.ts                Upgrade decision and slot rules (cached)
 src/items.ts                  Item data cache; handles late-loading items
 src/usable.ts                 Level, proficiency, main-stat checks
 src/scoring.ts                Swappable scoring methods
 src/slots.ts                  Equip slot ids and placement rules
-src/tooltip.ts                Tooltip text
+src/tooltip.ts                Optional tooltip lines (/tu lines)
+src/diagnose.ts               /tu menus diagnostic
 src/db.ts, src/log.ts         Settings; debug log and safe() wrapper
 types/wow-forever.d.ts        Hand-written WoW API types
 test/                         Mock client + scenario tests
