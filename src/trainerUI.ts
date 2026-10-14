@@ -215,7 +215,7 @@ function createCheckbox(parent: Frame): void {
   }
   const text = cb.CreateFontString(undefined, "OVERLAY", "GameFontNormalSmall");
   text.SetPoint("RIGHT", cb, "LEFT", 0, 1);
-  text.SetText("Only show upgrades");
+  text.SetText("Upgrades");
   cb.SetChecked(settings().onlyUpgrades);
   cb.SetScript("OnClick", (self: CheckButton) => {
     safe("checkbox", () => setOnlyUpgrades(self.GetChecked()));

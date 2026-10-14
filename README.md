@@ -8,7 +8,7 @@ an upgrade over your equipped gear.
 - **No marker**: not gear, no item (enchants), or you can't use it.
 - **Tooltip**: item level vs your equipped item in that slot, and the stat
   changes. If you can't use the item, it says why.
-- **"Only show upgrades"** checkbox in the trainer window.
+- **"Upgrades"** checkbox next to the Train button: fades everything that isn't an upgrade.
 
 Built for WoW Forever 1.60.1 (interface 16001), from what the client
 actually returns. See [Probe findings](#probe-findings).
@@ -28,7 +28,7 @@ No other addon is needed.
 | Command                     | What it does                                         |
 | --------------------------- | ---------------------------------------------------- |
 | `/tu`                       | Version and help                                     |
-| `/tu filter`                | Toggle "Only show upgrades"                          |
+| `/tu filter`                | Toggle the "Upgrades" filter                         |
 | `/tu scoring`               | Show the current scoring method                      |
 | `/tu scoring itemLevel`     | Higher item level wins (default)                     |
 | `/tu scoring statWeights`   | Simple per-class stat weights                        |

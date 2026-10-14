@@ -57,7 +57,7 @@ data keys, which is what I need to fix it.
 
 ## 6. Filter
 
-- [ ] The "Only show upgrades" checkbox sits just left of the Train
+- [ ] The "Upgrades" checkbox sits just left of the Train
       button, with its label to its left. Nothing overlaps (the money
       display, the settings dropdown).
 - [ ] Hovering it shows an explanation.
