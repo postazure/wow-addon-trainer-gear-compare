@@ -10,7 +10,8 @@ claim anything is an "upgrade".
   left, the recipe on the right. Works for gear you can't use, too.
 - **Tooltip lines**: item level vs equipped, then the stat changes, one per
   line, under "If you replace this item, the following stat changes will
-  occur:". For gear you can't use, it says why.
+  occur:". The number is green or red; the stat name is white. Gear you
+  can't use gets the same lines, after a red "Can't use: ..." line.
 - **"Only show usable gear"** in the trainer's Settings dropdown: fades gear
   you can't use (armor type, weapon skill, level, class). Non-gear recipes
   are never faded.

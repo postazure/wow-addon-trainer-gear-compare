@@ -8,6 +8,9 @@ export interface TooltipLine {
   b: number;
 }
 
+const GREEN = "|cff20ff20";
+const RED = "|cffff4040";
+
 const GRAY_LINE = (text: string): TooltipLine => ({ text, r: 0.6, g: 0.6, b: 0.6 });
 
 function num(n: number): string {
@@ -64,9 +67,9 @@ function statLines(ev: Evaluation): TooltipLine[] {
   for (const key of keys) {
     const d = Math.floor(diff[key] * 10 + 0.5) / 10;
     if (d === 0) continue;
-    lines.push(d > 0
-      ? { text: `${signed(d)} ${statName(key)}`, r: 0.1, g: 1, b: 0.1 }
-      : { text: `${signed(d)} ${statName(key)}`, r: 1, g: 0.25, b: 0.25 });
+    // Like the built-in compare: the number is green or red, the stat name white.
+    const color = d > 0 ? GREEN : RED;
+    lines.push({ text: `${color}${signed(d)}|r ${statName(key)}`, r: 1, g: 1, b: 1 });
   }
   if (lines.length === 0) return [];
 
@@ -76,15 +79,18 @@ function statLines(ev: Evaluation): TooltipLine[] {
   return [{ text: " ", r: 1, g: 1, b: 1 }, { text: heading, r: 1, g: 0.82, b: 0 }, ...lines];
 }
 
-/** Facts only: item level vs equipped, stat changes, or why you can't use it. */
+/**
+ * Facts only: why you can't use it (if so), item level vs equipped, and the
+ * stat changes. The comparison shows for gear you can't use, too.
+ */
 export function tooltipLines(ev: Evaluation): TooltipLine[] {
   if (ev.verdict === "pending") return [GRAY_LINE("Loading item data...")];
-  if (ev.reason !== undefined) return [{ text: `Can't use: ${ev.reason}`, r: 1, g: 0.25, b: 0.25 }];
-  if (ev.verdict === "none" || !ev.item || !ev.versus) return [];
+  const lines: TooltipLine[] = [];
+  if (ev.reason !== undefined) lines.push({ text: `Can't use: ${ev.reason}`, r: 1, g: 0.25, b: 0.25 });
+  if (!ev.item || !ev.versus) return lines;
 
   const item = ev.item;
   const versus = ev.versus;
-  const lines: TooltipLine[] = [];
   const oldLevels = versus.items.length > 0
     ? versus.items.map((i) => num(i.itemLevel)).join(" / ")
     : "empty";

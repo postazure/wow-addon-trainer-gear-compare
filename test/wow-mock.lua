@@ -121,7 +121,7 @@ UIParent = CreateFrame("Frame")
 
 GameTooltip = CreateFrame("Frame")
 GameTooltip.lines = {}
-function GameTooltip:SetOwner() self.lines = {}; self.shown = true end
+function GameTooltip:SetOwner() self.lines = {}; self.colors = {}; self.shown = true end
 function GameTooltip:HookScript(name, fn)
   local prev = self.scripts[name]
   self.scripts[name] = function(...) if prev then prev(...) end fn(...) end
@@ -177,14 +177,22 @@ function compareSlots()
   return table.concat(slots, ",")
 end
 function GameTooltip:SetText(t) self.lines = { t } end
-function GameTooltip:AddLine(t) self.lines[#self.lines + 1] = t end
+function GameTooltip:AddLine(t, r, g, b)
+  self.lines[#self.lines + 1] = t
+  self.colors = self.colors or {}
+  self.colors[#self.lines] = { r, g, b }
+end
 function GameTooltip:SetTrainerService(i) self.lines = { "service " .. i } end
+local function plain(s) return (s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
+-- Index of a tooltip line, compared without color codes.
 function lineIndex(text)
-  for i, l in ipairs(GameTooltip.lines) do if l == text then return i end end
+  for i, l in ipairs(GameTooltip.lines) do if plain(l) == text then return i end end
   return nil
 end
+function rawLine(i) return GameTooltip.lines[i] end
+function lineColor(i) return GameTooltip.colors[i] end
 function tooltipHas(text)
-  for _, l in ipairs(GameTooltip.lines) do if l:find(text, 1, true) then return true end end
+  for _, l in ipairs(GameTooltip.lines) do if plain(l):find(text, 1, true) then return true end end
   return false
 end
 
