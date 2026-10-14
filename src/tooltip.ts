@@ -57,7 +57,7 @@ function statLines(ev: Evaluation): TooltipLine[] {
     for (const [k, v] of Object.entries(old.stats)) diff[k] = (diff[k] ?? 0) - v;
   }
 
-  // No `||` on numbers here: 0 is truthy in Lua.
+  /** Sorted in display order, then by name. No `||` on numbers here: 0 is truthy in Lua. */
   const keys = Object.keys(diff).sort((a, b) => {
     const byOrder = orderOf(a) - orderOf(b);
     if (byOrder !== 0) return byOrder;
@@ -67,7 +67,7 @@ function statLines(ev: Evaluation): TooltipLine[] {
   for (const key of keys) {
     const d = Math.floor(diff[key] * 10 + 0.5) / 10;
     if (d === 0) continue;
-    // Like the built-in compare: the number is green or red, the stat name white.
+    /** Like the built-in compare: the number is green or red, the stat name white. */
     const color = d > 0 ? GREEN : RED;
     lines.push({ text: `${color}${signed(d)}|r ${statName(key)}`, r: 1, g: 1, b: 1 });
   }
@@ -81,7 +81,9 @@ function statLines(ev: Evaluation): TooltipLine[] {
 
 /**
  * Facts only: item level vs equipped, and the stat changes. Shown for gear
- * you can't use, too; the item's own red text already says why.
+ * you can't use, too; the item's own red text already says why. A score line
+ * appears only when the player picked stat weights, since a score is a
+ * judgment, not a fact.
  */
 export function tooltipLines(ev: Evaluation): TooltipLine[] {
   if (ev.verdict === "pending") return [GRAY_LINE("Loading item data...")];
@@ -95,7 +97,6 @@ export function tooltipLines(ev: Evaluation): TooltipLine[] {
     : "empty";
   lines.push({ text: `Item level ${num(item.itemLevel)} vs ${oldLevels} (${versus.label})`, r: 1, g: 1, b: 1 });
 
-  // Only when the player picked stat weights: a score is a judgment, not a fact.
   if (ev.scorer && ev.scorer.id !== itemLevelScorer.id && ev.newScore !== undefined) {
     const old = versus.score === undefined ? "empty" : num(Math.floor(versus.score * 10 + 0.5) / 10);
     lines.push({ text: `Score ${num(Math.floor(ev.newScore * 10 + 0.5) / 10)} vs ${old} (${ev.scorer.label})`, r: 1, g: 1, b: 1 });

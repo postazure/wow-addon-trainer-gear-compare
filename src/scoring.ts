@@ -13,11 +13,11 @@ export interface Scorer {
   pair(mainHand: number | undefined, offHand: number | undefined): number;
 }
 
+/** Item level only. For two hands it averages them, counting an empty hand as 0. */
 export const itemLevelScorer: Scorer = {
   id: "itemLevel",
   label: "item level",
   score: (item) => item.itemLevel,
-  // Average, with an empty hand counted as 0.
   pair: (a, b) => ((a ?? 0) + (b ?? 0)) / 2,
 };
 

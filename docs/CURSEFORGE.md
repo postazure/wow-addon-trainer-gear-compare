@@ -7,8 +7,8 @@
 - [ ] Categories: Professions, Tooltip.
 - [ ] License: **MIT License**.
 - [ ] Summary (short line): see below.
-- [ ] Description: paste the text below.
-- [ ] Logo: square image (CurseForge shows it small; keep it simple).
+- [ ] Description: paste `docs/curseforge/description.md`.
+- [ ] Logo: upload `assets/curseforge-logo.png`.
 - [ ] Screenshots: the compare at a trainer, the stat lines, the Settings
       dropdown with "Only show usable gear".
 - [ ] Source link: this GitHub repo. Blizzard wants add-on code public and
@@ -36,43 +36,18 @@
 
 ## Summary (one line)
 
-Compare trainer recipe gear to what you wear, with Blizzard's own compare
-tooltips. Made for WoW Forever.
+Compare trainer recipe gear to what you wear, with Blizzard's own compare tooltips. Made for WoW Forever.
 
-## Description (paste into CurseForge)
+## Description
 
-**Trainer Compare** shows how the gear a profession trainer teaches compares
-to what you're wearing, right in the trainer window.
+Paste [curseforge/description.md](curseforge/description.md) into the
+project description. CurseForge's editor accepts Markdown.
 
-**What it does**
+## Images
 
-- Hover a recipe to see Blizzard's normal item compare: your equipped item on
-  the left, marked "Currently Equipped". Hold Shift, or turn on "Always
-  compare items" in the game's options.
-- The recipe tooltip adds the item level of the new item vs yours, then the
-  stat changes, one per line, in green and red.
-- Rings and trinkets compare against both of yours. Two-handers compare
-  against your main hand and off hand.
-- Works for gear you can't use yet, too.
-- **Only show usable gear**: a new option in the trainer's Settings dropdown.
-  It fades gear you can't use: wrong armor type, a weapon skill you don't
-  have, too high level, another class's relic, or only stats your class
-  doesn't use (like Spirit-only gear on a Paladin).
-
-**What it doesn't do**
-
-- It doesn't tell you what's an "upgrade". It shows the facts and lets you
-  decide.
-- It doesn't change the trainer window or the recipe rows. The filter fades
-  rows; it never hides or removes them.
-
-**Commands**
-
-- `/tc` — help
-- `/tc filter` — toggle "Only show usable gear"
-- `/tc debug` — show what failed, if something looks wrong
-
-No other addons needed. It only adds lines to the trainer's own tooltip,
-so item tooltips used by other gear addons are left alone.
-
-Source code: https://github.com/postazure/wow-addon-trainer-gear-compare
+- Logo: [assets/curseforge-logo.png](../assets/curseforge-logo.png) (400x400).
+  The source is [assets/icon.svg](../assets/icon.svg); rebuild both icon files
+  with `scripts/render-icon.sh` after changing it.
+- Screenshots (take these in game): a gear recipe with the compare open, the
+  stat lines up close, and the Settings dropdown showing "Only show usable
+  gear".

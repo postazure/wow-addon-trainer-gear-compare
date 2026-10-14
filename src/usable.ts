@@ -1,45 +1,64 @@
 import type { ItemData } from "./items";
 import { debug } from "./log";
 
+/** Item class ids (C_Item.GetItemInfo, 12th value). */
 const ITEM_CLASS_WEAPON = 2;
 const ITEM_CLASS_ARMOR = 4;
+
+/** Weapon subclass id of fishing poles: not compared. */
 const WEAPON_FISHING_POLE = 20;
 
-/** Proficiency spell per subclass. Classic spell ids; Forever keeps Classic data. */
-const ARMOR_SPELL: Record<number, number> = {
-  1: 9078, // Cloth
-  2: 9077, // Leather
-  3: 8737, // Mail
-  4: 750, // Plate
-  6: 9116, // Shield
-};
+/** An item subclass and the spell that lets you use it. */
+interface Proficiency {
+  subclass: number;
+  name: string;
+  spell: number;
+}
 
-const WEAPON_SPELL: Record<number, number> = {
-  0: 196, // One-Handed Axes
-  1: 197, // Two-Handed Axes
-  2: 264, // Bows
-  3: 266, // Guns
-  4: 198, // One-Handed Maces
-  5: 199, // Two-Handed Maces
-  6: 200, // Polearms
-  7: 201, // One-Handed Swords
-  8: 202, // Two-Handed Swords
-  10: 227, // Staves
-  13: 15590, // Fist Weapons
-  15: 1180, // Daggers
-  16: 2567, // Thrown
-  18: 5011, // Crossbows
-  19: 5009, // Wands
-};
+/** Index a list by subclass id. */
+function bySubclass<T extends { subclass: number }>(list: T[]): Record<number, T> {
+  const map: Record<number, T> = {};
+  for (const entry of list) map[entry.subclass] = entry;
+  return map;
+}
 
-/** Relics are class locked. */
-const RELIC_CLASS: Record<number, string> = {
-  7: "PALADIN", // Libram
-  8: "DRUID", // Idol
-  9: "SHAMAN", // Totem
-};
+/** Armor proficiency spells. Classic spell ids; Forever keeps Classic data. */
+const ARMOR_PROFICIENCY = bySubclass<Proficiency>([
+  { subclass: 1, name: "Cloth", spell: 9078 },
+  { subclass: 2, name: "Leather", spell: 9077 },
+  { subclass: 3, name: "Mail", spell: 8737 },
+  { subclass: 4, name: "Plate", spell: 750 },
+  { subclass: 6, name: "Shield", spell: 9116 },
+]);
 
-const CLOTH_SPELL = 9078;
+/** Weapon proficiency spells. Classic spell ids. */
+const WEAPON_PROFICIENCY = bySubclass<Proficiency>([
+  { subclass: 0, name: "One-Handed Axes", spell: 196 },
+  { subclass: 1, name: "Two-Handed Axes", spell: 197 },
+  { subclass: 2, name: "Bows", spell: 264 },
+  { subclass: 3, name: "Guns", spell: 266 },
+  { subclass: 4, name: "One-Handed Maces", spell: 198 },
+  { subclass: 5, name: "Two-Handed Maces", spell: 199 },
+  { subclass: 6, name: "Polearms", spell: 200 },
+  { subclass: 7, name: "One-Handed Swords", spell: 201 },
+  { subclass: 8, name: "Two-Handed Swords", spell: 202 },
+  { subclass: 10, name: "Staves", spell: 227 },
+  { subclass: 13, name: "Fist Weapons", spell: 15590 },
+  { subclass: 15, name: "Daggers", spell: 1180 },
+  { subclass: 16, name: "Thrown", spell: 2567 },
+  { subclass: 18, name: "Crossbows", spell: 5011 },
+  { subclass: 19, name: "Wands", spell: 5009 },
+]);
+
+/** Relics are armor subclasses locked to one class. */
+const RELIC_CLASS = bySubclass([
+  { subclass: 7, name: "Libram", playerClass: "PALADIN" },
+  { subclass: 8, name: "Idol", playerClass: "DRUID" },
+  { subclass: 9, name: "Totem", playerClass: "SHAMAN" },
+]);
+
+/** Every class knows Cloth, so it tells us whether IsPlayerSpell works for proficiencies. */
+const CLOTH_SPELL = ARMOR_PROFICIENCY[1].spell;
 
 export type MainStat = "STR" | "AGI" | "INT" | "SPI";
 
@@ -98,13 +117,14 @@ export function unusableReason(item: ItemData): string | undefined {
 
   const cls = playerClass();
   if (item.classID === ITEM_CLASS_ARMOR) {
-    const relicClass = RELIC_CLASS[item.subclassID];
-    if (relicClass !== undefined && relicClass !== cls) return `${item.subType} is for another class`;
+    const relic = RELIC_CLASS[item.subclassID];
+    if (relic !== undefined && relic.playerClass !== cls) return `${item.subType} is for another class`;
   }
 
-  const spell = item.classID === ITEM_CLASS_ARMOR ? ARMOR_SPELL[item.subclassID]
-    : item.classID === ITEM_CLASS_WEAPON ? WEAPON_SPELL[item.subclassID]
+  const proficiency = item.classID === ITEM_CLASS_ARMOR ? ARMOR_PROFICIENCY[item.subclassID]
+    : item.classID === ITEM_CLASS_WEAPON ? WEAPON_PROFICIENCY[item.subclassID]
     : undefined;
+  const spell = proficiency?.spell;
   if (spell !== undefined && canCheckProficiency() && !IsPlayerSpell(spell)) {
     return `${item.subType} not learned`;
   }

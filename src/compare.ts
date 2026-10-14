@@ -31,26 +31,36 @@ export interface Evaluation {
 const PENDING: Evaluation = { verdict: "pending" };
 const NONE: Evaluation = { verdict: "none" };
 
-// Results depend on gear, level, spells and scoring. invalidate() on change.
+/** Cached results. They depend on gear, level, spells and scoring: invalidate() on change. */
 const results = new Map<string, Evaluation>();
 
+/** Drop every cached result. */
 export function invalidate(): void {
   results.clear();
 }
 
+/** The scorer picked with /tc scoring; item level by default. */
 export function currentScorer(): Scorer {
   return findScorer(settings().scoring) ?? itemLevelScorer;
 }
 
+/**
+ * Compare a crafted item with what is equipped. Cached per link, except
+ * "pending": that must be looked at again once item data arrives.
+ */
 export function evaluate(link: string): Evaluation {
   const hit = results.get(link);
   if (hit) return hit;
   const result = compute(link);
-  // Never cache pending: it must be looked at again once data arrives.
   if (result.verdict !== "pending") results.set(link, result);
   return result;
 }
 
+/**
+ * The uncached comparison. Gear you can't use still gets what it would
+ * replace (versus), so the compare tooltips can show it; it just has a
+ * reason and no verdict.
+ */
 function compute(link: string): Evaluation {
   const look = lookupItem(link);
   if (look.state === "pending") return PENDING;
@@ -64,8 +74,6 @@ function compute(link: string): Evaluation {
   const versus = findVersus(placement, scorer);
   if (versus === "pending") return PENDING;
 
-  // Gear you can't use: no verdict, but keep what it would replace, so the
-  // compare tooltips can still show it.
   const reason = unusableReason(item);
   if (reason !== undefined) return { verdict: "none", reason, item, versus };
 
@@ -79,6 +87,7 @@ type Equipped =
   | { state: "pending" }
   | { state: "ready"; item: ItemData };
 
+/** What the player wears in one slot. */
 function equipped(key: SlotKey): Equipped {
   const link = GetInventoryItemLink("player", slotInfo(key).id);
   if (link === undefined) return { state: "empty" };
@@ -88,6 +97,7 @@ function equipped(key: SlotKey): Equipped {
   return { state: "empty" };
 }
 
+/** Compare against the item in one slot. */
 function single(key: SlotKey, scorer: Scorer): Versus | "pending" {
   const e = equipped(key);
   if (e.state === "pending") return "pending";
@@ -101,23 +111,31 @@ function weaker(a: SlotKey, b: SlotKey, scorer: Scorer): Versus | "pending" {
   const va = single(a, scorer);
   const vb = single(b, scorer);
   if (va === "pending" || vb === "pending") return "pending";
-  // Show both equipped items, like the built-in compare does.
+  /** Show both equipped items, like the built-in compare does. */
   const compareSlots = [...va.compareSlots, ...vb.compareSlots];
   if (va.score === undefined) return { ...va, compareSlots };
   if (vb.score === undefined) return { ...vb, compareSlots };
   return { ...(vb.score < va.score ? vb : va), compareSlots };
 }
 
+/** Classic spell id for Dual Wield. */
+const DUAL_WIELD_SPELL = 674;
+
 function canDualWield(): boolean {
   if (typeof CanDualWield === "function") return CanDualWield();
-  return IsPlayerSpell(674); // Dual Wield
+  return IsPlayerSpell(DUAL_WIELD_SPELL);
 }
 
+/**
+ * What a new item would replace, by where it can go: one slot, the weaker
+ * of two (rings, trinkets), or the weapon rules for one-hand, off-hand and
+ * two-hand items.
+ */
 function findVersus(placement: Placement, scorer: Scorer): Versus | "pending" {
   if (placement.type === "single") return single(placement.slot, scorer);
   if (placement.type === "either") return weaker(placement.slots[0], placement.slots[1], scorer);
 
-  // Weapons. A two-hander in the main hand blocks the off hand.
+  /** Weapons from here on. A two-hander in the main hand blocks the off hand. */
   const main = equipped("MAINHAND");
   if (main.state === "pending") return "pending";
   const wieldingTwoHander = main.state === "ready" && main.item.equipLoc === "INVTYPE_2HWEAPON";
@@ -128,7 +146,7 @@ function findVersus(placement: Placement, scorer: Scorer): Versus | "pending" {
     return canDualWield() ? weaker("MAINHAND", "SECONDARYHAND", scorer) : single("MAINHAND", scorer);
   }
 
-  // Two-hander against main hand + off hand.
+  /** A two-hander replaces both the main hand and the off hand. */
   const off = equipped("SECONDARYHAND");
   if (off.state === "pending") return "pending";
   const items: ItemData[] = [];

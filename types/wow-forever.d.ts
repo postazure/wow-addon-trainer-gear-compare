@@ -21,7 +21,6 @@
 // ---------------------------------------------------------------------------
 
 declare function print(...args: unknown[]): void;
-declare function date(format?: string): string;
 declare function hooksecurefunc(globalName: string, hook: (...args: any[]) => void): void;
 declare function hooksecurefunc<T extends object>(table: T, method: keyof T & string, hook: (...args: any[]) => void): void;
 
@@ -69,7 +68,6 @@ declare const GetCVarBool: ((name: string) => boolean) | undefined;
 // Trainer. All confirmed.
 // ---------------------------------------------------------------------------
 
-declare function GetNumTrainerServices(): number;
 /**
  * Forever order differs from Classic:
  * name, serviceType ("available" | "unavailable" | "used" | "header"),
@@ -128,18 +126,10 @@ interface Region extends UIObject {
   SetPoint(point: string, x: number, y: number): void;
   ClearAllPoints(): void;
   SetSize(width: number, height: number): void;
-  GetRight(): number | undefined;
   GetLeft(): number | undefined;
   SetAlpha(alpha: number): void;
-  GetAlpha(): number;
 }
 
-interface Texture extends Region {
-  SetTexture(path: string): void;
-  SetColorTexture(r: number, g: number, b: number, a?: number): void;
-  SetVertexColor(r: number, g: number, b: number, a?: number): void;
-  SetTexCoord(left: number, right: number, top: number, bottom: number): void;
-}
 
 interface FontString extends Region {
   SetText(text: string): void;
@@ -150,16 +140,12 @@ interface Frame extends Region {
   /** All regions (textures, font strings) of this frame. */
   GetRegions(): LuaMultiReturn<Region[]>;
   RegisterEvent(event: WowEvent): void;
-  UnregisterEvent(event: WowEvent): void;
   SetScript(handler: "OnEvent", fn: ((frame: Frame, event: WowEvent, ...args: any[]) => void) | undefined): void;
   SetScript(handler: string, fn: ((...args: any[]) => void) | undefined): void;
-  CreateTexture(name?: string, layer?: string): Texture;
   CreateFontString(name?: string, layer?: string, template?: string): FontString;
   GetID(): number;
   /** ScrollBox rows only. */
   GetElementData?(): unknown;
-  SetFrameLevel(level: number): void;
-  GetFrameLevel(): number;
 }
 
 interface CheckButton extends Frame {

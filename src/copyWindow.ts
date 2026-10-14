@@ -50,6 +50,7 @@ function build(): void {
   edit = box;
 }
 
+/** Show the window with all text selected, ready for Ctrl+C. */
 function open(): void {
   if (!edit) {
     safe("copy window", build);
@@ -61,12 +62,14 @@ function open(): void {
   edit.SetText(lastText);
   frame!.Show();
   edit.SetFocus();
-  edit.HighlightText(); // selected and ready for Ctrl+C
+  edit.HighlightText();
 }
 
-/** Show lines in a box the user can copy from. */
+/**
+ * Show lines in a box the user can copy from. Pipes are doubled so raw
+ * color and link codes stay visible instead of being drawn.
+ */
 export function showCopyWindow(lines: string[]): void {
-  // Double the pipes so raw color and link codes stay visible.
   lastText = lines.map((l) => l.replaceAll("|", "||")).join("\n");
   open();
 }

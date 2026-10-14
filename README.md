@@ -126,7 +126,9 @@ probe/TrainerCompareProbe/    Debug addon (plain Lua) that found the API
 scripts/                      Post-build (TOC version, Lua 5.1 check), deploy, package
 dist/TrainerCompare/          Build output. This folder is the addon.
 release/                      Zips from npm run package (not committed)
-docs/                         In-game checklist, CurseForge release guide
+docs/                         In-game checklist, CurseForge guide and description
+assets/                       Icon source (SVG) and CurseForge logo (PNG)
+addon/icon.tga                In-game addon list icon (from assets/icon.svg)
 CHANGELOG.md, LICENSE         Release notes; MIT license
 ```
 
@@ -143,6 +145,10 @@ Notes:
 - TypeScriptToLua 1.37 needs **TypeScript 6.0.2** exactly. TypeScript 7
   (the native Go port) doesn't work with it. Both are pinned.
 - The build fails if the output isn't valid Lua 5.1.
+- **Readable output.** The Lua is not minified. The build puts a header on
+  it that explains how it's generated and where the source is. TSTL keeps
+  only `/** */` doc comments that sit right above a declaration, so explain
+  things there; plain `//` comments don't reach the Lua.
 - No maintained TypeScript types exist for Classic-based clients, so
   `types/wow-forever.d.ts` is hand-written from the probe output. Anything not
   confirmed is typed as possibly `undefined`.
@@ -163,8 +169,9 @@ and `/tc` reads it from there.
 npm run package     # build, test, then release/TrainerCompare-<version>.zip
 ```
 
-The zip holds one `TrainerCompare/` folder: the TOC, the Lua, and the
-license. Upload it on CurseForge by hand for now. Steps, the upload
+The zip holds one `TrainerCompare/` folder: the TOC, the Lua, the icon,
+and the license. After changing `assets/icon.svg`, run
+`scripts/render-icon.sh` to rebuild the logo and the in-game icon. Upload it on CurseForge by hand for now. Steps, the upload
 settings, and a ready-to-paste project description are in
 [docs/CURSEFORGE.md](docs/CURSEFORGE.md). Changes go in
 [CHANGELOG.md](CHANGELOG.md).

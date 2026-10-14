@@ -3,6 +3,10 @@
   "version": "0.6.0",
   "private": true,
   "description": "Trainer Compare: a WoW Forever addon that compares trainer recipe gear to what you wear.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/postazure/wow-addon-trainer-gear-compare"
+  },
   "type": "module",
   "scripts": {
     "build": "tstl -p tsconfig.json && node scripts/postbuild.mjs",

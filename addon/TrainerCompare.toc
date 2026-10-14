@@ -2,6 +2,7 @@
 ## Title: Trainer Compare
 ## Notes: Shows how trainer recipe gear compares to what you wear, and whether you can use it.
 ## Author: postazure
+## IconTexture: Interface\AddOns\TrainerCompare\icon
 ## Version: @project-version@
 ## X-License: MIT
 ## SavedVariables: TrainerCompareDB

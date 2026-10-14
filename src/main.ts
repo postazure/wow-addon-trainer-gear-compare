@@ -5,7 +5,10 @@ import { diagnoseMenus } from "./diagnose";
 import { onItemInfoReceived } from "./items";
 import { debug, safe, say, setDebug } from "./log";
 import { findScorer, SCORERS } from "./scoring";
-import { dumpState, installTrainerHooks, refreshHover, rescore, scheduleRefresh, setOnlyUsable } from "./trainerUI";
+import { refreshHover } from "./compareTooltips";
+import { rescore, scheduleRefresh } from "./rows";
+import { setOnlyUsable } from "./settingsMenu";
+import { dumpState, installTrainerHooks } from "./trainerUI";
 import { resetUsableCache } from "./usable";
 
 const ADDON_NAME = "TrainerCompare";
@@ -28,8 +31,9 @@ function onEvent(event: string, args: any[]): void {
       setDebug(db.debug);
       const [, , , iface] = GetBuildInfo();
       debug(`loaded v${addonVersion()}, client interface ${iface}`);
-      // The trainer UI may already be loaded by another addon.
-      if (C_AddOns.IsAddOnLoaded(TRAINER_UI)[0]) installTrainerHooks();
+      /** The trainer UI may already be loaded by another addon. */
+      const trainerUILoaded = C_AddOns.IsAddOnLoaded(TRAINER_UI)[0];
+      if (trainerUILoaded) installTrainerHooks();
     } else if (name === TRAINER_UI) {
       installTrainerHooks();
     }
@@ -91,9 +95,9 @@ function onSlash(msg: string): void {
   }
 }
 
+/** Our event frame. Unknown events throw in some clients, so each is registered on its own and skipped quietly. */
 const events = CreateFrame("Frame");
 for (const event of ["ADDON_LOADED", "TRAINER_SHOW", "TRAINER_UPDATE", "GET_ITEM_INFO_RECEIVED", "MODIFIER_STATE_CHANGED", ...STALE_EVENTS]) {
-  // Unknown events throw in some clients. Skip them quietly.
   safe(`register ${event}`, () => events.RegisterEvent(event));
 }
 events.SetScript("OnEvent", (_frame, event, ...args: any[]) => {

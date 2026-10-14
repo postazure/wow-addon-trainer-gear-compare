@@ -22,7 +22,7 @@ export type ItemLookup =
 const PENDING: ItemLookup = { state: "pending" };
 const MISSING: ItemLookup = { state: "missing" };
 
-// Item data never changes in a session, so ready items are cached for good.
+/** Item data never changes in a session, so ready items are cached for good. */
 const cache = new Map<string, ItemData>();
 const pendingIDs = new Set<number>();
 const failedIDs = new Set<number>();

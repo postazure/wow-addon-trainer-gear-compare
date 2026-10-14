@@ -1,5 +1,6 @@
 import { showCopyWindow } from "./copyWindow";
 import { PREFIX, safe } from "./log";
+import { field, isWidget, keysOf } from "./widgets";
 
 /** Resolve "Name" or "Table.Func" from _G. */
 function lookup(path: string): unknown {
@@ -11,14 +12,7 @@ function lookup(path: string): unknown {
   return value;
 }
 
-function field(obj: unknown, name: string): unknown {
-  return (obj as Record<string, unknown>)[name];
-}
-
-function isWidget(value: unknown): boolean {
-  return typeof value === "object" && typeof field(value, "GetObjectType") === "function";
-}
-
+/** Widget names worth reporting: anything that sounds like a dropdown or menu. */
 function looksLikeMenu(name: string): boolean {
   const lower = name.toLowerCase();
   return ["drop", "filter", "setting", "menu"].some((word) => lower.includes(word));
@@ -44,7 +38,7 @@ function describe(name: string, widget: unknown): string {
   return `${name} (${type}) methods={${methods.join(",")}}${tag !== undefined ? ` menuTag=${tag}` : ""}`;
 }
 
-// Lines collected for the copy window while /tc menus runs.
+/** Lines collected for the copy window while /tc menus runs. */
 let captured: string[] | undefined;
 let chatHooked = false;
 
@@ -126,8 +120,8 @@ function reportCompare(say: (msg: string) => void): void {
   }
   const tip = lookup("ShoppingTooltip1");
   if (isWidget(tip)) {
-    const keys = Object.keys(tip as object).filter((k) => typeof k === "string").sort();
-    say(`ShoppingTooltip1 fields: ${keys.length > 0 ? keys.join(",") : "none"}`);
+    const keys = keysOf(tip);
+    say(`ShoppingTooltip1 fields: ${keys !== "" ? keys : "none"}`);
   }
 }
 
