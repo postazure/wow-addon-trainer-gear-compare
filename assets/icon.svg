@@ -1,51 +1,70 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Trainer Compare icon: a balance scale (compare) standing on an anvil (profession trainer). -->
+  <!-- Trainer Compare icon: two item tooltips side by side (equipped vs new, with
+       green and red stat changes), and a recipe scroll on top. -->
   <defs>
-    <radialGradient id="bg" cx="50%" cy="38%" r="70%">
-      <stop offset="0%" stop-color="#3a2a1a"/>
-      <stop offset="100%" stop-color="#140d07"/>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#2b2f3d"/>
+      <stop offset="100%" stop-color="#0e1016"/>
     </radialGradient>
     <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffe7a3"/>
       <stop offset="45%" stop-color="#e2b54f"/>
       <stop offset="100%" stop-color="#9c6b1f"/>
     </linearGradient>
-    <linearGradient id="iron" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#9aa3ad"/>
-      <stop offset="55%" stop-color="#5d656e"/>
-      <stop offset="100%" stop-color="#2f343a"/>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#141a2e"/>
+      <stop offset="100%" stop-color="#090c17"/>
     </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6e6bd"/>
+      <stop offset="100%" stop-color="#dcc28a"/>
+    </linearGradient>
+    <linearGradient id="roll" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e9d39c"/>
+      <stop offset="50%" stop-color="#c8a564"/>
+      <stop offset="100%" stop-color="#8a6a33"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity="0.65"/>
+    </filter>
   </defs>
 
   <!-- Frame -->
   <rect x="12" y="12" width="488" height="488" rx="72" fill="url(#bg)"/>
   <rect x="12" y="12" width="488" height="488" rx="72" fill="none" stroke="url(#gold)" stroke-width="16"/>
-  <rect x="34" y="34" width="444" height="444" rx="54" fill="none" stroke="#e2b54f" stroke-opacity="0.35" stroke-width="3"/>
 
-  <!-- Anvil -->
-  <path d="M120 352 H352 C356 370 376 380 402 380 V398 H300 L284 418 H310 V438 H196 V418 H222 L206 398 H140 C124 398 116 380 120 352 Z"
-        fill="url(#iron)" stroke="#1b1e22" stroke-width="5" stroke-linejoin="round"/>
-  <rect x="120" y="352" width="232" height="10" fill="#c3cad1" opacity="0.6"/>
-
-  <!-- Post and base of the scale -->
-  <rect x="246" y="118" width="20" height="236" rx="6" fill="url(#gold)" stroke="#5a3d10" stroke-width="4"/>
-  <rect x="206" y="332" width="100" height="22" rx="8" fill="url(#gold)" stroke="#5a3d10" stroke-width="4"/>
-
-  <!-- Beam -->
-  <rect x="104" y="128" width="304" height="18" rx="9" fill="url(#gold)" stroke="#5a3d10" stroke-width="4"/>
-  <circle cx="256" cy="137" r="22" fill="url(#gold)" stroke="#5a3d10" stroke-width="4"/>
-  <circle cx="256" cy="137" r="8" fill="#5a3d10"/>
-  <path d="M244 98 L256 78 L268 98 Z" fill="url(#gold)" stroke="#5a3d10" stroke-width="4" stroke-linejoin="round"/>
-
-  <!-- Chains -->
-  <g stroke="#e2b54f" stroke-width="5" stroke-linecap="round">
-    <line x1="118" y1="146" x2="80" y2="246"/>
-    <line x1="118" y1="146" x2="156" y2="246"/>
-    <line x1="394" y1="146" x2="356" y2="246"/>
-    <line x1="394" y1="146" x2="432" y2="246"/>
+  <!-- Left tooltip: what you have equipped -->
+  <g filter="url(#shadow)">
+    <rect x="58" y="78" width="190" height="250" rx="16" fill="url(#panel)" stroke="#a9b0bd" stroke-width="7"/>
+    <rect x="82" y="104" width="120" height="20" rx="10" fill="#f2f2f2"/>
+    <rect x="82" y="148" width="142" height="14" rx="7" fill="#8f96a3"/>
+    <rect x="82" y="182" width="112" height="14" rx="7" fill="#8f96a3"/>
+    <rect x="82" y="216" width="130" height="14" rx="7" fill="#8f96a3"/>
   </g>
 
-  <!-- Pans -->
-  <path d="M64 244 H172 C168 286 140 300 118 300 C96 300 68 286 64 244 Z" fill="url(#gold)" stroke="#5a3d10" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M340 244 H448 C444 286 416 300 394 300 C372 300 344 286 340 244 Z" fill="url(#gold)" stroke="#5a3d10" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Right tooltip: the recipe's item, with green and red stat changes -->
+  <g filter="url(#shadow)">
+    <rect x="264" y="58" width="190" height="250" rx="16" fill="url(#panel)" stroke="#a9b0bd" stroke-width="7"/>
+    <rect x="288" y="84" width="120" height="20" rx="10" fill="#f2f2f2"/>
+    <rect x="288" y="128" width="30" height="14" rx="7" fill="#2fe04a"/>
+    <rect x="326" y="128" width="104" height="14" rx="7" fill="#d7dbe2"/>
+    <rect x="288" y="162" width="30" height="14" rx="7" fill="#ff4545"/>
+    <rect x="326" y="162" width="80" height="14" rx="7" fill="#d7dbe2"/>
+    <rect x="288" y="196" width="30" height="14" rx="7" fill="#2fe04a"/>
+    <rect x="326" y="196" width="94" height="14" rx="7" fill="#d7dbe2"/>
+  </g>
+
+  <!-- Recipe scroll, on top of everything -->
+  <g filter="url(#shadow)" transform="rotate(-6 256 372)">
+    <rect x="132" y="300" width="248" height="150" fill="url(#paper)" stroke="#7a5a26" stroke-width="5"/>
+    <rect x="160" y="336" width="150" height="12" rx="6" fill="#8a6a33" opacity="0.75"/>
+    <rect x="160" y="364" width="190" height="12" rx="6" fill="#8a6a33" opacity="0.75"/>
+    <rect x="160" y="392" width="120" height="12" rx="6" fill="#8a6a33" opacity="0.75"/>
+    <!-- Rolled ends -->
+    <rect x="112" y="290" width="40" height="170" rx="20" fill="url(#roll)" stroke="#6b4d1e" stroke-width="5"/>
+    <rect x="360" y="290" width="40" height="170" rx="20" fill="url(#roll)" stroke="#6b4d1e" stroke-width="5"/>
+    <!-- Wax seal -->
+    <circle cx="334" cy="420" r="20" fill="#b3261e" stroke="#6e130e" stroke-width="4"/>
+    <circle cx="334" cy="420" r="8" fill="#d9483d"/>
+  </g>
 </svg>
