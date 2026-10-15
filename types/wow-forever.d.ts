@@ -69,8 +69,12 @@ declare const CanDualWield: (() => boolean) | undefined;
 declare function GetTrainerServiceInfo(index: number): LuaMultiReturn<[string | undefined, string | undefined, number | undefined, number | undefined, string | undefined, string | undefined]>;
 /** Link to the crafted item. Nil when the recipe makes no item. */
 declare function GetTrainerServiceItemLink(index: number): string | undefined;
-/** Not probed. Money as text with gold, silver and copper icons. */
+/** Not probed. Money as text with gold, silver and copper icons. Missing in game (we got our letters). */
 declare const GetCoinTextureString: ((this: void, copper: number) => string) | undefined;
+/** Not probed. Where retail keeps GetCoinTextureString. */
+declare const C_CurrencyInfo: { GetCoinTextureString?: (this: void, copper: number) => string } | undefined;
+/** Not probed. Retail's money formatter, with icons. */
+declare const GetMoneyString: ((this: void, copper: number) => string) | undefined;
 
 // ---------------------------------------------------------------------------
 // Items. Only C_Item exists; the old globals are gone. All confirmed.
@@ -131,7 +135,14 @@ interface FontString extends Region {
   GetText(): string | undefined;
 }
 
+interface Texture extends Region {
+  SetTexture(path: string): void;
+  SetAllPoints(): void;
+}
+
 interface Frame extends Region {
+  CreateTexture(name?: string, layer?: string): Texture;
+  SetFrameStrata(strata: string): void;
   /** All regions (textures, font strings) of this frame. */
   GetRegions(): LuaMultiReturn<Region[]>;
   RegisterEvent(event: WowEvent): void;

@@ -74,8 +74,9 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
   sell price and other addons' lines (Auctionator, Disenchantry) work as on
   any item. Blizzard's recipe tooltip moves to our own **recipe box**
   (`SetTrainerService` on our tooltip). Left to right: recipe list, recipe
-  box, item, equipped, tops lined up; the "Equipped" header sits above the
-  compare. Nothing may cover the recipe list.
+  box, a gold arrow (Blizzard's `ChatFrameExpandArrow` art, in a small gap),
+  item, equipped: `[] > [] []`. Tops lined up; the "Equipped" header sits
+  above the compare. Nothing may cover the recipe list.
   Recipes with no item keep Blizzard's tooltip untouched.
 - **Compare is always on** at the trainer: no Shift, whatever "Always
   compare items" says. If Blizzard starts its compare by itself, only move it.
@@ -127,6 +128,8 @@ Rules:
   returns. Diagnostics live in the probe, not the shipped addon.
 - WoW chat text can't be selected. Any diagnostic must end in a copy window
   (the probe's `/tcprobe show`) so the owner can paste the result.
+- Keep chat quiet. The probe records on its own but prints only in answer to
+  a `/tcprobe` command; the addon prints only with debug on.
 - Feature-detect everything that isn't confirmed. In `types/wow-forever.d.ts`,
   type unconfirmed APIs as possibly `undefined`, and note the source of each.
 - Keep `types/wow-forever.d.ts` to what the code uses. There are no

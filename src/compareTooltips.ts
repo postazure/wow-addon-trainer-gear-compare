@@ -13,6 +13,15 @@ let compareShown: "native" | "manual" | undefined;
 /** Our recipe box, left of the item. Made on first use; false if it can't be made. */
 let recipeBox: GameTooltip | false | undefined;
 
+/** A gold arrow in the gap from the recipe box to the item. Made on first use; false if it can't be made. */
+let arrow: Frame | false | undefined;
+
+/** The gap between the recipe box and the item, and the arrow in it. */
+const ARROW_GAP = 20;
+const ARROW_SIZE = 16;
+/** The chat frame's expand arrow: gold, pointing right, in the game files since Classic. */
+const ARROW_TEXTURE = "Interface\\ChatFrame\\ChatFrameExpandArrow";
+
 let lastCompareLog = "";
 let loggedHeader = false;
 
@@ -202,6 +211,23 @@ function getRecipeBox(): GameTooltip | undefined {
 
 function hideRecipeBox(): void {
   if (recipeBox !== undefined && recipeBox !== false) recipeBox.Hide();
+  if (arrow !== undefined && arrow !== false) arrow.Hide();
+}
+
+/** The arrow frame, made once. TOOLTIP strata so it shows with the tooltips. */
+function getArrow(): Frame | undefined {
+  if (arrow === undefined) {
+    arrow = safe("arrow", () => {
+      const frame = CreateFrame("Frame", "TrainerCompareArrow", UIParent);
+      frame.SetFrameStrata("TOOLTIP");
+      frame.SetSize(ARROW_SIZE, ARROW_SIZE);
+      const texture = frame.CreateTexture(undefined, "ARTWORK");
+      texture.SetAllPoints();
+      texture.SetTexture(ARROW_TEXTURE);
+      return frame;
+    }) ?? false;
+  }
+  return arrow === false ? undefined : arrow;
 }
 
 /** Our only lines: reagent cost and profit (with Auctionator). */
@@ -213,7 +239,8 @@ function recipeLines(index: number, link: string): TooltipLine[] {
 /**
  * Show the recipe box right of the hovered row: Blizzard's own recipe
  * tooltip (SetTrainerService on our tooltip), plus reagent cost and profit.
- * GameTooltip (the item) goes right of it. If the box can't be made, the
+ * GameTooltip (the item) goes right of it, past a gap with a gold arrow:
+ * [recipe] > [item] [equipped]. If the box can't be made, the
  * item sits right of the row and our lines go under it.
  */
 function showRecipeBox(tooltip: GameTooltip, index: number, link: string, owner: Region): void {
@@ -236,7 +263,13 @@ function showRecipeBox(tooltip: GameTooltip, index: number, link: string, owner:
   box.SetPoint("TOPLEFT", owner, "TOPRIGHT", 0, 0);
   box.Show();
   tooltip.ClearAllPoints();
-  tooltip.SetPoint("TOPLEFT", box, "TOPRIGHT", 0, 0);
+  tooltip.SetPoint("TOPLEFT", box, "TOPRIGHT", ARROW_GAP, 0);
+  const pointer = getArrow();
+  if (pointer === undefined) return;
+  pointer.ClearAllPoints();
+  /** Centered in the gap, and vertically on the recipe box. */
+  pointer.SetPoint("LEFT", box, "RIGHT", (ARROW_GAP - ARROW_SIZE) / 2, 0);
+  pointer.Show();
 }
 
 /** A modifier key changed, or data arrived, while a recipe is hovered: show the compare again if it went away. */

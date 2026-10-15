@@ -1,7 +1,7 @@
 ## Interface: 16000, 16001
 ## Title: Trainer Compare Probe
 ## Notes: Debug probe. Reports what the trainer API returns in this client. Not the real addon.
-## Version: 0.2.0
+## Version: 0.3.0
 ## SavedVariables: TrainerCompareProbeDB
 
 Probe.lua

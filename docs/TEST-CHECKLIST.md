@@ -55,8 +55,9 @@ With "Only show usable gear" on:
       off. Pressing and releasing Shift doesn't make it go away.
 - [ ] The compare shows **"Equipped"** and Blizzard's own stat
       summary, like a normal item compare.
-- [ ] Left to right: recipe tooltip, item, equipped. Their tops line up,
-      with "Equipped" above the compare. Nothing covers the recipe list.
+- [ ] Left to right: recipe tooltip, gold arrow, item, equipped. Their
+      tops line up, with "Equipped" above the compare. Nothing covers the
+      recipe list. The arrow looks like Blizzard's own art.
 - [ ] Gear you can't use (wrong weapon, too high level) still shows the
       compare.
 - [ ] Rings and trinkets show both of yours. A two-hander shows both hands.

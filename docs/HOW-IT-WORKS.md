@@ -35,8 +35,10 @@ Hovering a recipe that makes an item:
 2. Our **recipe box** (a tooltip of our own) shows Blizzard's normal recipe
    tooltip (`SetTrainerService`). Our only additions are reagent cost and
    profit.
-3. Left to right: recipe list, recipe box, item, equipped. Their tops line
-   up; the compare's "Equipped" header sits above it. Nothing covers the
+3. Left to right: recipe list, recipe box, a gold arrow, item, equipped.
+   The arrow (Blizzard's own `ChatFrameExpandArrow` art) sits in a small
+   gap, vertically centered on the recipe tooltip, and points from the
+   recipe to what it makes. Their tops line up; the compare's "Equipped" header sits above it. Nothing covers the
    recipe list. Only when the screen has no room on the right does the
    compare go left of the recipe box.
 
@@ -59,6 +61,11 @@ Only with Auctionator, and only for recipes that make an item.
   cut), minus the reagent cost. Green with a plus, or red with a minus.
   Gray "no auction price for the item yet" when Auctionator hasn't seen it.
   Never for items that bind on pickup.
+
+Money shows with coin icons: the client's own formatter if it has one
+(`GetCoinTextureString`, `C_CurrencyInfo.GetCoinTextureString` or
+`GetMoneyString`), else the icons drawn by Trainer Compare. In game, the
+first one was missing.
 
 Profit doesn't count the auction deposit or the cost to learn. There's no
 cost to learn line (the trainer window shows it), and no auction or vendor

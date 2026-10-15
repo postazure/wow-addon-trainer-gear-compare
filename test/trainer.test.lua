@@ -77,17 +77,24 @@ check(box.anchor == "ANCHOR_NONE" and box.point[1] == "TOPLEFT" and box.point[2]
 check(GameTooltip.anchor == "ANCHOR_NONE", "GameTooltip re-owned with ANCHOR_NONE so it can be placed")
 local gp = GameTooltip.point
 check(gp[1] == "TOPLEFT" and gp[2] == box and gp[3] == "TOPRIGHT" and gp[5] == 0, "item right of the recipe box, tops aligned")
+local arrow = TrainerCompareArrow
+check(gp[4] == 20, "a gap between the recipe box and the item")
+check(arrow.shown and arrow.strata == "TOOLTIP" and arrow.textures[1].texture == "Interface\\ChatFrame\\ChatFrameExpandArrow",
+  "a gold arrow shows with the tooltips")
+local ap = arrow.point
+check(ap[1] == "LEFT" and ap[2] == box and ap[3] == "RIGHT" and ap[4] == 2 and ap[5] == 0,
+  "the arrow sits in the gap, centered, and vertically centered on the recipe box")
 check(not tooltipHas("Item level") and not tooltipHas("upgrade"), "no lines of ours besides reagents and profit")
 hover(4)
 check(GameTooltip.link == items[2851].link and box.shown, "an item still loading shows too")
 hover(12)
 check(GameTooltip.link == items[2862].link and box.shown and box.lines[1] == "service 12", "non-gear: recipe box and item")
 hover(6)
-check(GameTooltip.link == nil and GameTooltip.lines[1] == "service 6" and not box.shown,
-  "recipe with no item: Blizzard's tooltip as it is")
+check(GameTooltip.link == nil and GameTooltip.lines[1] == "service 6" and not box.shown and not arrow.shown,
+  "recipe with no item: Blizzard's tooltip as it is, no arrow")
 hover(1)
 GameTooltip:Hide()
-check(not box.shown, "the recipe box hides with the tooltip")
+check(not box.shown and not arrow.shown, "the recipe box and arrow hide with the tooltip")
 
 -- Prices --------------------------------------------------------------------------
 -- Auctionator, shaped like its source (not probed). Bad input raises, like the
