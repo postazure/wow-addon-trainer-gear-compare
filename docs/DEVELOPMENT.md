@@ -20,7 +20,6 @@ src/trainerUI.ts              Installs the trainer hooks
 src/rows.ts                   Matches rows to recipes; fades the ones you can't use
 src/settingsMenu.ts           The filter toggle (Settings dropdown, or a fallback checkbox)
 src/compareTooltips.ts        Item in GameTooltip, the recipe box, and the compare
-src/tooltip.ts                Recipe box lines: item level and stat changes
 src/prices.ts                 Reagent cost and profit (Auctionator)
 src/recipes.ts                A recipe's reagents and count made (GetRecipeSchematic)
 src/compare.ts                What a recipe's item would replace (cached)

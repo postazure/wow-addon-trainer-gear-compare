@@ -1,8 +1,7 @@
 import { evaluate } from "./compare";
 import { lookupItem } from "./items";
 import { debug, safe } from "./log";
-import { craftLines } from "./prices";
-import { type TooltipLine, tooltipLines } from "./tooltip";
+import { craftLines, type TooltipLine } from "./prices";
 import { field, isRegion, keysOf } from "./widgets";
 
 /** The trainer service GameTooltip is showing, if any. */
@@ -119,7 +118,6 @@ function manualCompare(tooltip: GameTooltip, slots: number[]): void {
   }
 }
 
-const LINE = (text: string): TooltipLine => ({ text, r: 1, g: 1, b: 1 });
 
 /** The right edge of the screen, in the same units as GetRight() times scale. */
 function screenRight(): number | undefined {
@@ -143,12 +141,11 @@ function placeCompare(tooltip: GameTooltip): string {
   const side = room >= width ? "right" : "left";
   const box = recipeBox !== undefined && recipeBox !== false && recipeBox.IsShown() ? recipeBox : undefined;
   let anchor: Region = side === "right" ? tooltip : box ?? tooltip;
-  for (let i = 0; i < shown.length; i++) {
-    const t = shown[i];
-    const y = i === 0 ? -10 : 0;
+  /** Tops line up with the recipe box and the item; the "Equipped" header sits above. */
+  for (const t of shown) {
     t.ClearAllPoints();
-    if (side === "right") t.SetPoint("TOPLEFT", anchor, "TOPRIGHT", 0, y);
-    else t.SetPoint("TOPRIGHT", anchor, "TOPLEFT", 0, y);
+    if (side === "right") t.SetPoint("TOPLEFT", anchor, "TOPRIGHT", 0, 0);
+    else t.SetPoint("TOPRIGHT", anchor, "TOPLEFT", 0, 0);
     anchor = t;
   }
   return side;
@@ -216,45 +213,34 @@ function hideRecipeBox(): void {
   if (recipeBox !== undefined && recipeBox !== false) recipeBox.Hide();
 }
 
-/**
- * Our lines, in sections: item level vs equipped and stat changes (gear);
- * reagent cost and profit (with Auctionator). A blank line between them.
- * No cost to learn: the trainer window already shows it.
- */
+/** Our only lines: reagent cost and profit (with Auctionator). */
 function recipeLines(index: number, link: string): TooltipLine[] {
   const look = lookupItem(link);
-  const sections = [tooltipLines(evaluate(link))];
-  if (look.state === "ready") sections.push(craftLines(index, link, look.item));
-  const lines: TooltipLine[] = [];
-  for (const section of sections) {
-    if (section.length === 0) continue;
-    if (lines.length > 0) lines.push(LINE(" "));
-    lines.push(...section);
-  }
-  return lines;
+  return look.state === "ready" ? craftLines(index, link, look.item) : [];
 }
 
 /**
- * Show the recipe box right of the hovered row: the recipe's name, then our
- * lines. GameTooltip (the item) goes right of the box. With no lines, or no
- * box, the item sits right of the row; without a box our lines go under it.
+ * Show the recipe box right of the hovered row: Blizzard's own recipe
+ * tooltip (SetTrainerService on our tooltip), plus reagent cost and profit.
+ * GameTooltip (the item) goes right of it. If the box can't be made, the
+ * item sits right of the row and our lines go under it.
  */
 function showRecipeBox(tooltip: GameTooltip, index: number, link: string, owner: Region): void {
   const lines = recipeLines(index, link);
-  const box = lines.length > 0 ? getRecipeBox() : undefined;
+  const box = getRecipeBox();
+  const target = box ?? tooltip;
   if (box === undefined) {
-    hideRecipeBox();
     tooltip.ClearAllPoints();
     tooltip.SetPoint("TOPLEFT", owner, "TOPRIGHT", 0, 0);
-    if (lines.length === 0) return;
-    tooltip.AddLine(" ");
-    for (const line of lines) tooltip.AddLine(line.text, line.r, line.g, line.b, true);
-    return;
+  } else {
+    box.SetOwner(owner, "ANCHOR_NONE");
+    box.SetTrainerService(index);
   }
-  const [name] = GetTrainerServiceInfo(index);
-  box.SetOwner(owner, "ANCHOR_NONE");
-  box.SetText(name ?? "", 1, 1, 1);
-  for (const line of lines) box.AddLine(line.text, line.r, line.g, line.b, true);
+  if (lines.length > 0) {
+    target.AddLine(" ");
+    for (const line of lines) target.AddLine(line.text, line.r, line.g, line.b, true);
+  }
+  if (box === undefined) return;
   box.ClearAllPoints();
   box.SetPoint("TOPLEFT", owner, "TOPRIGHT", 0, 0);
   box.Show();
@@ -276,8 +262,8 @@ export function onCompareAnchored(): void {
  * GameTooltip:SetTrainerService ran: a recipe is hovered. If it makes an
  * item, GameTooltip switches to that item (SetHyperlink), so it is a normal
  * item tooltip: Blizzard's compare, sell price, and other addons' lines
- * (Auctionator, Disenchantry) work as they do anywhere. Our recipe box goes
- * on its left. Recipes with no item keep Blizzard's tooltip as it is.
+ * (Auctionator, Disenchantry) work as they do anywhere. The recipe tooltip
+ * moves to our recipe box, on its left. Recipes with no item keep Blizzard's tooltip as it is.
  * GameTooltip is re-owned with ANCHOR_NONE so we can place it; that runs
  * our SetOwner hook, which clears the old state.
  */

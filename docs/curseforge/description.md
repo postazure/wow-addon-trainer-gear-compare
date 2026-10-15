@@ -6,12 +6,7 @@ Made for **WoW Forever**.
 
 ## What it does
 
-**The real item, for trainer recipes.** Hover a recipe and you see the item it makes, like any item tooltip. Hold **Shift**, or turn on *Always compare items* in the game's options, to see Blizzard's normal compare next to it, marked **Equipped**. Nothing covers the recipe list.
-
-**Item level and stat changes in a small recipe box.** Beside the item you'll see:
-
-- the new item's item level vs yours, with the slot (for example *Item level 9 vs 2 (Main Hand)*)
-- *If you replace this item, the following stat changes will occur:*, then one stat per line, with the number in green (gain) or red (loss)
+**The real item, for trainer recipes.** Hover a recipe and you see the normal recipe tooltip, then the item it makes, like any item tooltip. Hold **Shift**, or turn on *Always compare items* in the game's options, to see Blizzard's normal compare next to it, marked **Equipped**, with the item level and stat changes. Nothing covers the recipe list.
 
 **It knows how slots work.**
 

@@ -48,8 +48,7 @@ alwaysCompare = false
 -- No recipe box: our lines go under the item --------------------------------
 hover(1)
 check(recipeBox() == nil and GameTooltip.link == items[2844].link, "the item still shows without a recipe box")
-check(GameTooltip.lines[1] == "item 2844" and tooltipHas("Item level 9 vs 2 (Main Hand)"), "our lines go under the item")
-check(not tooltipHas("Reagents"), "no reagent lines without Auctionator")
+check(GameTooltip.lines[1] == "item 2844" and #GameTooltip.lines == 1, "without Auctionator, nothing is added")
 -- Minimal Auctionator, for our own money format. 20 bars at 617 = 12340.
 -- Profit: floor(20000 * 0.95 - 12340) = 6660.
 Auctionator = { API = { v1 = {
@@ -57,7 +56,8 @@ Auctionator = { API = { v1 = {
   GetAuctionPriceByItemID = function(_, id) return ({ [COPPER_BAR] = 617 })[id] end,
 } } }
 hover(7)
-check(tooltipHas("Reagents: 1g 23s 40c"), "our money format: gold, silver, copper")
+check(GameTooltip.lines[1] == "item 2900" and tooltipHas("Reagents: 1g 23s 40c"),
+  "our lines go under the item; our money format: gold, silver, copper")
 check(tooltipHas("Profit: +66s 60c after the 5% auction house cut"), "profit in our money format")
 Auctionator = nil
 GameTooltip:Hide()

@@ -1,7 +1,14 @@
 import type { ItemData } from "./items";
 import { safe } from "./log";
 import { type Recipe, recipeFor } from "./recipes";
-import type { TooltipLine } from "./tooltip";
+
+/** One tooltip line: text and its base color. */
+export interface TooltipLine {
+  text: string;
+  r: number;
+  g: number;
+  b: number;
+}
 
 /** Auctionator wants a caller id: the name of the addon asking. */
 const CALLER_ID = "TrainerCompare";

@@ -60,8 +60,8 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
 
 ## Product rules (decided with the owner; don't undo without asking)
 
-- **Facts only.** Never say "upgrade" to the player. Show item level vs
-  equipped and stat changes; the player decides.
+- **Facts only.** Never say "upgrade" to the player. Blizzard's compare
+  shows item level and stat changes; the player decides.
 - **No marks on recipe rows.** The only row change is fading.
 - **Filter = "Only show usable gear".** It fades (never hides or removes)
   gear the player can't use. Non-gear and loading rows are never faded.
@@ -72,8 +72,10 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
 - **The item is in GameTooltip.** Hovering a recipe that makes an item
   switches GameTooltip to that item (`SetHyperlink`), so Blizzard's compare,
   sell price and other addons' lines (Auctionator, Disenchantry) work as on
-  any item. Our lines go in our own **recipe box**. Left to right: recipe
-  list, recipe box, item, equipped. Nothing may cover the recipe list.
+  any item. Blizzard's recipe tooltip moves to our own **recipe box**
+  (`SetTrainerService` on our tooltip). Left to right: recipe list, recipe
+  box, item, equipped, tops lined up; the "Equipped" header sits above the
+  compare. Nothing may cover the recipe list.
   Recipes with no item keep Blizzard's tooltip untouched.
 - **Compare:** if Blizzard starts its compare by itself, only move it.
   Otherwise start it (`TooltipComparisonManager`), and fall back to filling
@@ -81,9 +83,9 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
   recipe box only when the screen has no room. Show it for gear the player
   can't use, too. The header must have text: "Equipped" (the longer
   "Currently Equipped" overflowed it in game).
-- **Recipe box lines are always on** (no setting): "Item level X vs Y
-  (slot)", then the built-in "If you replace this item..." heading and one
-  stat per line. The number is green or red; the stat name is white.
+- **The recipe box stays Blizzard's normal recipe tooltip.** Our only
+  additions are the reagent cost and profit lines. No item level or stat
+  lines of our own (Blizzard's compare shows them).
 - No "can't use" line: the item's own red text already says it.
 - **Reagent cost and profit, for any crafted item** (always on, needs
   Auctionator), in the recipe box. Reagents come from
@@ -97,8 +99,7 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
 - **No slash commands.** Everything a player does has UI in the trainer
   window. Debug is a saved setting:
   `/run TrainerCompareDB.debug = true` (or `false`), at once and saved.
-- **No scores.** Item level and stat changes are facts; stat weights were
-  guesses and were removed. Rings, trinkets and dual-wield hands compare
+- **No scores.** Stat weights were guesses and were removed. Rings, trinkets and dual-wield hands compare
   against the one with the lower item level.
 
 ## Don't assume the WoW API

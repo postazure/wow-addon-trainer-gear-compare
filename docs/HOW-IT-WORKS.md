@@ -14,8 +14,8 @@ client API it's built on, see [PROBE-FINDINGS.md](PROBE-FINDINGS.md).
    - it's a relic for another class, or
    - it has only main stats your class doesn't use (for example, only
      Spirit on a Paladin).
-3. **What does it replace?** The equip slot picks the equipped item(s) for
-   the item level line and the stat changes:
+3. **What does it replace?** The equip slot picks the equipped item(s) the
+   compare shows (when Blizzard's compare doesn't start by itself):
    - Rings and trinkets: the one with the lower item level. The compare
      tooltips show both.
    - One-hand weapon: main hand. If you can dual wield, the hand with the
@@ -32,16 +32,17 @@ Hovering a recipe that makes an item:
    itself (`SetHyperlink`). It's now a normal item tooltip, so Blizzard's
    compare, its sell price, and other addons' item lines (Auctionator,
    Disenchantry) show the way they do on any item.
-2. Our **recipe box** (a tooltip of our own) shows the recipe's name and our
-   lines: item level vs equipped and stat changes for gear, then reagent
-   cost and profit.
-3. Left to right: recipe list, recipe box, item, equipped. Nothing covers
-   the recipe list. Only when the screen has no room on the right does the
+2. Our **recipe box** (a tooltip of our own) shows Blizzard's normal recipe
+   tooltip (`SetTrainerService`). Our only additions are reagent cost and
+   profit.
+3. Left to right: recipe list, recipe box, item, equipped. Their tops line
+   up; the compare's "Equipped" header sits above it. Nothing covers the
+   recipe list. Only when the screen has no room on the right does the
    compare go left of the recipe box.
 
 Recipes with no item (enchants and so on) keep Blizzard's tooltip as it is.
-If the recipe box has nothing to say, the item sits right of the row on its
-own. If the client can't make the box, our lines go under the item.
+If the client can't make the box, the item sits right of the row and our
+lines go under it.
 
 ## Reagent cost and profit
 
@@ -100,7 +101,6 @@ unknown. All are feature-checked, and every call runs inside `safe()`
 - **No compare when the slot is empty.** There's nothing to show.
 - **Loading lines don't update by themselves.** If an item is still
   loading, the tooltip says so. Move the mouse off and back on.
-- **Enchants on your equipped gear are not counted** in the stat changes.
 - **Gear above your level counts as not usable,** even if you'll reach that
   level soon.
 - **ForeverGear and GearSetImprover:** neither was installed in the client
