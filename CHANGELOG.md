@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- The compare header now says "Equipped". "Currently Equipped" didn't fit.
+- Hovering a recipe now shows the normal recipe tooltip and, beside it,
+  the real item it makes, like any item tooltip.
+- The compare now shows right of the item, lined up with it, so it no
+  longer covers the recipe list.
+- The compare is always on at the trainer. No need to hold Shift.
+- Trainer Compare's own item level and stat lines are gone. Blizzard's
+  compare shows the same facts.
+
 ## 0.6.0
 
 First public release, for WoW Forever 1.60.1.

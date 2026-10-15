@@ -7,14 +7,13 @@ trainer visit is a choice: which recipes make gear worth wearing? Trainer
 Compare shows the item level and stat changes right in the trainer window.
 You decide what each recipe is worth to you.
 
-Hover a recipe that makes gear and hold **Shift**. See it next to what you
-have on.
+Hover a recipe. See the item it makes next to what you have on. No key to
+hold.
 
-- **Side-by-side compare.** Like the game's item compare, now for trainer
-  recipes. Your equipped item on one side, the recipe on the other.
-- **Item level and stat changes at a glance.** *Item level 9 vs 2 (Main
-  Hand)*, then each stat change with a green number for a gain and a red
-  number for a loss.
+- **Side-by-side compare.** The recipe, the item it makes, and your
+  equipped item, in a row beside the trainer's list.
+- **Item level and stat changes at a glance.** The game's own compare,
+  with a green number for a gain and a red number for a loss.
 - **Fade what's not for you.** One checkbox in the trainer's Settings menu
   fades gear you can't use yet, so the rest stands out.
 - **No scores, no "upgrade" labels.** Just the numbers. You decide.
@@ -26,27 +25,24 @@ Forever**.
 
 ## How it works
 
-**The compare.** Hover a recipe that makes gear, then hold **Shift**. If your
-game is set to always compare items, it shows without Shift. Your equipped
-item shows next to the recipe, marked **Currently Equipped**. It goes on the
-left when there's room, and on the right when there isn't. If nothing is
-equipped in that slot, there's nothing to compare against, so no compare
-shows.
+**The tooltips.** Hover a recipe that makes an item. Left to right, next to
+the trainer's list:
 
-**The tooltip lines.** Under the recipe you'll see:
+- the normal recipe tooltip
+- the item it makes, as a normal item tooltip
+- for gear, your equipped item, marked **Equipped**, with the game's own
+  item level and stat changes
 
-- the item's item level vs yours, with the slot (or *vs empty* if the slot
-  is empty)
-- *If you replace this item, the following stat changes will occur:*, then
-  one stat per line, with a green number for a gain and a red number for a
-  loss
+Their tops line up, and nothing covers the recipe list. If there's no room
+on the right of your screen, the equipped item goes on the left instead. If
+nothing is equipped in that slot, there's nothing to compare against, so no
+compare shows. Recipes that don't make an item keep the game's normal
+tooltip.
 
 **What it compares against.**
 
-- Rings and trinkets: an empty slot if you have one, or else the one with
-  the lower item level.
-- One-hand weapons: your main hand. If you can dual wield, an empty hand if
-  you have one, or else the hand with the lower item level.
+- Rings and trinkets: both of yours.
+- One-hand weapons: your main hand. If you can dual wield, both hands.
 - Main-hand weapons: your main hand.
 - Off-hand weapons, shields and held items: your off hand.
 - Two-handers: your main hand and off hand together.
@@ -54,7 +50,7 @@ shows.
 - Shirts, tabards, bags, ammo and fishing poles aren't compared.
 
 **Plan ahead.** Gear above your level, or for a weapon skill you haven't
-learned, still gets the item level and stat lines, and the compare.
+learned, still gets the compare.
 
 **Only show usable gear.** A checkbox in the trainer's **Settings** dropdown.
 It's off until you tick it, and it's saved for your account. When it's on,
@@ -76,10 +72,6 @@ button instead.
 
 - Apart from the filter checkbox, the trainer window isn't changed. Recipe
   rows get no marks.
-- Item data sometimes loads late. If a tooltip says *Loading item data...*,
-  move the mouse off the recipe and back.
-- The stat changes use each item's own stats. Enchants on your equipped
-  gear may not be counted.
 - Only the default Blizzard trainer window is supported.
 
 ## Feedback and source

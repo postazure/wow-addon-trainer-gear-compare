@@ -1,4 +1,4 @@
-import { onTooltipCleared, onTrainerTooltip } from "./compareTooltips";
+import { onCompareAnchored, onTooltipCleared, onTrainerTooltip } from "./compareTooltips";
 import { debug, safe } from "./log";
 import { applyFilter, decorate, scheduleRefresh } from "./rows";
 import { installFilterToggle } from "./settingsMenu";
@@ -65,6 +65,13 @@ export function installTrainerHooks(): void {
     hooksecurefunc(GameTooltip, "SetOwner", () => safe("tooltip owner", onTooltipCleared)));
   tryHook("GameTooltip OnHide", () =>
     GameTooltip.HookScript("OnHide", () => safe("tooltip hide", onTooltipCleared)));
+  const manager = TooltipComparisonManager;
+  if (manager?.AnchorShoppingTooltips !== undefined) {
+    tryHook("TooltipComparisonManager.AnchorShoppingTooltips", () =>
+      hooksecurefunc(manager, "AnchorShoppingTooltips", () => safe("compare anchored", onCompareAnchored)));
+  } else {
+    hookStatus.push("TooltipComparisonManager.AnchorShoppingTooltips=missing");
+  }
 
   tryHook("filter toggle", () => {
     const where = installFilterToggle(frame);

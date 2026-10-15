@@ -65,70 +65,101 @@ check(rowState(category) == "shown", "category row shown")
 check(rowState(mismatch) == "shown", "row with a mismatched label is never faded")
 toggleFilter() -- off
 
--- Late item data ------------------------------------------------------------
-hover(4)
-check(tooltipHas("Loading item data..."), "tooltip says the item is loading")
-items[2851].cached = true
-fire("GET_ITEM_INFO_RECEIVED", 2851, true)
-flush()
-hover(4)
-check(tooltipHas("Item level 9 vs empty (Waist)"), "belt facts shown once its data arrives")
-
--- Tooltip lines (always on) -----------------------------------------------------
-local DELTA = "If you replace this item, the following stat changes will occur:"
+-- Layout: [recipe list] [recipe box] [item] [equipped] ----------------------------
 hover(1)
-check(not tooltipHas("upgrade"), "no upgrade claims in the tooltip")
-check(tooltipHas("Item level 9 vs 2 (Main Hand)"), "mace tooltip shows item levels")
-check(lineIndex(DELTA) ~= nil, "stat changes use the built-in heading")
-local dpsLine = lineIndex("+2.2 Damage Per Second")
-check(dpsLine == lineIndex(DELTA) + 1, "each stat on its own line, under the heading")
-check(rawLine(dpsLine) == "|cff20ff20+2.2|r Damage Per Second", "gain: green number, white stat name")
-local c = lineColor(dpsLine)
-check(c[1] == 1 and c[2] == 1 and c[3] == 1, "stat line base color is white")
-
-hover(7)
-local h = lineIndex(DELTA)
-check(h ~= nil
-  and lineIndex("+4.4 Damage Per Second") == h + 1
-  and lineIndex("+3 Strength") == h + 2
-  and lineIndex("+2 Stamina") == h + 3, "stats ordered like an item tooltip: DPS, Strength, Stamina")
-check(tooltipHas("Item level 11 vs 2 (Main Hand + Off Hand)"), "maul tooltip compares against both hands")
-
-hover(5)
-local staLine = lineIndex("-2 Stamina")
-check(staLine ~= nil, "a lost stat shows as its own negative line")
-check(rawLine(staLine) == "|cffff4040-2|r Stamina", "loss: red number, white stat name")
-
-hover(2)
-check(not tooltipHas("Can't use"), "no can't-use line; the item's own red text says it")
-check(tooltipHas("Item level 9 vs 2 (Main Hand)"), "unusable gear still shows the item level")
-check(lineIndex("+2.2 Damage Per Second") ~= nil, "unusable gear still shows the stat changes")
-check(not tooltipHas("Score"), "no score line for unusable gear")
-hover(9)
-check(tooltipHas("Item level 25 vs empty (Head)"), "unusable gear in an empty slot still shows its item level")
-hover(8)
-check(tooltipHas("Item level 12 vs empty (Hands)"), "spirit gloves show their item level")
-hover(10)
-check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against the weaker ring")
+local box = recipeBox()
+check(GameTooltip.link == items[2844].link and GameTooltip.lines[1] == "item 2844",
+  "GameTooltip shows the crafted item, so Blizzard and other addons treat it as an item")
+check(box.shown and box.lines[1] == "service 1" and #box.lines == 1,
+  "the recipe box is Blizzard's own recipe tooltip, with nothing added (no Auctionator)")
+check(box.anchor == "ANCHOR_NONE" and box.point[1] == "TOPLEFT" and box.point[2] == UIParent
+  and box.point[3] == "TOPRIGHT", "recipe box right of the hovered row")
+check(GameTooltip.anchor == "ANCHOR_NONE", "GameTooltip re-owned with ANCHOR_NONE so it can be placed")
+local gp = GameTooltip.point
+check(gp[1] == "TOPLEFT" and gp[2] == box and gp[3] == "TOPRIGHT" and gp[5] == 0, "item right of the recipe box, tops aligned")
+check(not tooltipHas("Item level") and not tooltipHas("upgrade"), "no lines of ours besides reagents and profit")
+hover(4)
+check(GameTooltip.link == items[2851].link and box.shown, "an item still loading shows too")
+hover(12)
+check(GameTooltip.link == items[2862].link and box.shown and box.lines[1] == "service 12", "non-gear: recipe box and item")
 hover(6)
-check(not tooltipHas("Item level"), "enchant tooltip unchanged")
+check(GameTooltip.link == nil and GameTooltip.lines[1] == "service 6" and not box.shown,
+  "recipe with no item: Blizzard's tooltip as it is")
+hover(1)
+GameTooltip:Hide()
+check(not box.shown, "the recipe box hides with the tooltip")
+
+-- Prices --------------------------------------------------------------------------
+-- Auctionator, shaped like its source (not probed). Bad input raises, like the
+-- real one; that would show up as a hidden "failed" line at the end.
+local ahPrices = { [2844] = 1234, [2862] = 30, [2902] = 5000, [2903] = 777, [2900] = 100,
+  [COPPER_BAR] = 10, [WEAK_FLUX] = 50, [ROUGH_STONE] = 3 }
+local ahAges = { [2844] = 2, [2862] = 0 }
+local vendorPrices = { [WEAK_FLUX] = 1 }
+local function ahItem(caller, link)
+  if type(caller) ~= "string" or caller == "" then error("Invalid callerID. Use the name of your add-on.") end
+  if type(link) ~= "string" then error("Usage Auctionator.API.v1.GetAuctionPriceByItemLink(string, string)") end
+  return tonumber(link:match("item:(%d+)"))
+end
+local function ahID(caller, id)
+  if type(caller) ~= "string" or caller == "" then error("Invalid callerID. Use the name of your add-on.") end
+  if type(id) ~= "number" then error("Usage Auctionator.API.v1.GetAuctionPriceByItemID(string, number)") end
+  return id
+end
+Auctionator = { API = { v1 = {
+  GetAuctionPriceByItemLink = function(caller, link) return ahPrices[ahItem(caller, link)] end,
+  GetAuctionAgeByItemLink = function(caller, link) return ahAges[ahItem(caller, link)] end,
+  GetAuctionPriceByItemID = function(caller, id) return ahPrices[ahID(caller, id)] end,
+  GetVendorPriceByItemID = function(caller, id) return vendorPrices[ahID(caller, id)] end,
+} } }
+
+hover(1)
+-- Reagents: 6 bars at 10 (auction) + 2 flux at 1 (merchant beats auction's 50) = 62.
+-- The optional slot isn't counted. Profit: floor(1234 * 0.95 - 62) = 1110.
+local reagentLine = lineIndex("Reagents: native:62")
+check(reagentLine == 3 and rawLine(1) == "service 1" and rawLine(2) == " ",
+  "reagent cost under the recipe tooltip, after a blank line; merchant price first, optional slots skipped")
+check(lineIndex("Profit: +native:1110 after AH cut (5%)") == reagentLine + 1, "profit after the 5% cut")
+check(rawLine(reagentLine + 1):find("|cff20ff20+|r", 1, true) ~= nil, "profit sign is green")
+check(not tooltipHas("Auction house") and not tooltipHas("Vendor price"), "the item's own prices are left to the item tooltip")
+hover(12)
+check(recipeBox().shown and rawLine(3) == "Reagents: native:3 (makes 2)", "non-gear gets reagents too")
+-- Makes 2 at 30: floor(60 * 0.95 - 3) = 54.
+check(tooltipHas("Profit: +native:54 after"), "profit counts every item made")
+hover(10)
+check(tooltipHas("Reagents: no price for 1 of 2"), "says when a reagent has no price")
+check(not tooltipHas("Profit"), "no profit when a reagent has no price")
+hover(5)
+local noSale = lineIndex("Profit: no auction price for the item yet")
+check(tooltipHas("Reagents: native:20") and noSale ~= nil, "reagents shown; profit waits for a sale price")
+check(lineColor(noSale)[1] == 0.6, "no sale price yet is gray")
+hover(9)
+check(tooltipHas("Reagents: native:10") and not tooltipHas("Profit"), "bind on pickup: reagent cost, no profit")
+hover(7)
+-- 20 bars = 200 against floor(100 * 0.95) = 95.
+local lossLine = lineIndex("Profit: -native:105 after AH cut (5%)")
+check(lossLine ~= nil, "a loss shows as a negative profit")
+check(rawLine(lossLine):find("|cffff4040-|r", 1, true) ~= nil, "loss sign is red")
+GameTooltip:Hide()
 
 -- Native compare ------------------------------------------------------------------
--- Built-in trigger: Shift, or "always compare items".
+-- Always on: no Shift, no "always compare items".
 hover(1)
-check(not ShoppingTooltip1.shown, "no compare without Shift")
-shiftDown = true
-fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
-check(ShoppingTooltip1.native == "Item-2844", "Shift starts Blizzard's own compare for the crafted item")
+check(ShoppingTooltip1.native == "Item-2844", "Blizzard's compare for the crafted item shows without Shift")
 local p = ShoppingTooltip1.point
-check(p[1] == "TOPRIGHT" and p[2] == GameTooltip and p[3] == "TOPLEFT", "equipped item on the left, recipe on the right")
-check(ShoppingTooltip1.CompareHeader.Label.text == "Currently Equipped", "empty native header gets its text")
-shiftDown = false
-local cleared = compareCleared
+check(p[1] == "TOPLEFT" and p[2] == GameTooltip and p[3] == "TOPRIGHT", "equipped right of the item, clear of the recipe list")
+check(p[5] == 0, "compare top lines up with the item; its Equipped header sits above")
+TooltipComparisonManager:AnchorShoppingTooltips() -- Blizzard places it again, on the left
+p = ShoppingTooltip1.point
+check(p[1] == "TOPLEFT" and p[2] == GameTooltip and p[3] == "TOPRIGHT", "moved back right when Blizzard places it")
+check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped", "empty native header gets its text")
+-- Blizzard may hide its compare when Shift is released. Ours comes back a frame later.
+ShoppingTooltip1:Hide()
 fire("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
-check(not ShoppingTooltip1.shown and compareCleared == cleared + 1, "releasing Shift clears the native compare")
+check(not ShoppingTooltip1.shown, "waits a frame after a key change, so Blizzard goes first")
+flush()
+check(ShoppingTooltip1.native == "Item-2844", "then the compare comes back")
 
-alwaysCompare = true
 hover(2)
 check(ShoppingTooltip1.native == "Item-2845", "compare shows for gear you can't use, too")
 hover(9)
@@ -144,17 +175,28 @@ check(not ShoppingTooltip1.shown, "no compare for a recipe with no item")
 hover(11)
 check(not ShoppingTooltip1.shown, "no compare for non-gear (shirt)")
 
-GameTooltip.left = 100 -- no room on the left
+GameTooltip.right = 1950 -- no room on the right
 hover(1)
 p = ShoppingTooltip1.point
-check(p[1] == "TOPLEFT" and p[3] == "TOPRIGHT", "flips to the right only when the left has no room")
-GameTooltip.left = nil
+check(p[1] == "TOPRIGHT" and p[2] == recipeBox() and p[3] == "TOPLEFT", "flips left of the recipe box only when the right has no room")
+GameTooltip.right = nil
+
+-- Blizzard starts the compare by itself for the item: we only move it.
+GameTooltip:Hide()
+blizzardAutoCompare = true
+hover(1)
+p = ShoppingTooltip1.point
+check(ShoppingTooltip1.native == "Blizzard" and p[1] == "TOPLEFT" and p[2] == GameTooltip,
+  "Blizzard's own compare is kept and moved right of the item")
+GameTooltip:Hide()
+check(ShoppingTooltip1.native == "Blizzard", "and left for Blizzard to hide")
+blizzardAutoCompare = false
+ShoppingTooltip1:Hide()
 
 -- Native compare can't start (no GUID): fill the compare tooltips ourselves.
 -- Text Blizzard already set is left alone.
 GameTooltip:Hide()
 ShoppingTooltip1.CompareHeader.Label.text = "Equipped (set by Blizzard)"
-alwaysCompare = true
 hover(1)
 check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped (set by Blizzard)", "never overwrites header text")
 ShoppingTooltip1.CompareHeader.Label.text = nil
@@ -162,8 +204,8 @@ ShoppingTooltip1.CompareHeader.Label.text = nil
 noGuid[2844] = true
 hover(1)
 check(ShoppingTooltip1.native == nil and ShoppingTooltip1.slot == 16, "falls back to showing the equipped main hand")
-check(ShoppingTooltip1.CompareHeader.shown, "fallback shows the Currently Equipped header")
-check(ShoppingTooltip1.CompareHeader.Label.text == "Currently Equipped", "fallback header has its text")
+check(ShoppingTooltip1.CompareHeader.shown, "fallback shows the Equipped header")
+check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped", "fallback header has its text")
 
 -- No Label field: find the font string among the header's regions.
 GameTooltip:Hide()
@@ -177,7 +219,7 @@ function text:SetText(t) self.text = t end
 function text:GetText() return self.text end
 function header:GetRegions() return bg, text end
 hover(1)
-check(text.text == "Currently Equipped", "header text found through GetRegions")
+check(text.text == "Equipped", "header text found through GetRegions")
 header.Label = savedLabel
 header.GetRegions = nil
 GameTooltip:Hide()
@@ -187,7 +229,6 @@ noGuid[2844] = nil
 hover(1)
 GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT") -- moved to something else
 check(not ShoppingTooltip1.shown, "compare hidden when the tooltip gets a new owner")
-alwaysCompare = false
 
 -- Blizzard's own compare (a bag item, say) is never hidden by us.
 GameTooltip:Hide()
@@ -204,15 +245,16 @@ local goodMace = addItem(103, { name = "Good Mace", ilvl = 20, minLevel = 10, su
 equippedLinks[16] = goodMace
 fire("PLAYER_EQUIPMENT_CHANGED", 16, false)
 flush()
+noGuid[2844], noGuid[2900] = true, true -- our filled-in compare, which records the slots
 hover(1)
-check(tooltipHas("Item level 9 vs 20 (Main Hand)"), "1H mace compared against the equipped 2H")
+check(compareSlots() == "16", "1H mace compared against the equipped 2H")
 hover(7)
-check(tooltipHas("Item level 11 vs 20 (Main Hand)"), "2H maul compared against the equipped 2H")
+check(compareSlots() == "16", "2H maul compared against the equipped 2H")
+noGuid[2844], noGuid[2900] = nil, nil
+GameTooltip:Hide()
 
 equippedLinks[16] = wornMace
 fire("PLAYER_EQUIPMENT_CHANGED", 16, false)
-hover(1)
-check(not tooltipHas("Score"), "no score line, even from an old saved scoring setting")
 
 -- Proficiency fallback --------------------------------------------------------
 -- If IsPlayerSpell can't see Cloth, proficiency spells don't work: don't hide gear.

@@ -56,10 +56,6 @@ declare function UnitLevel(unit: string): number;
 declare function IsPlayerSpell(spellID: number): boolean;
 /** Not probed. */
 declare const CanDualWield: (() => boolean) | undefined;
-/** Not probed. Built-in compare uses the COMPAREITEMS modifier (Shift by default). */
-declare const IsModifiedClick: ((action: string) => boolean) | undefined;
-declare const IsShiftKeyDown: (() => boolean) | undefined;
-declare const GetCVarBool: ((name: string) => boolean) | undefined;
 
 // ---------------------------------------------------------------------------
 // Trainer. All confirmed.
@@ -73,6 +69,8 @@ declare const GetCVarBool: ((name: string) => boolean) | undefined;
 declare function GetTrainerServiceInfo(index: number): LuaMultiReturn<[string | undefined, string | undefined, number | undefined, number | undefined, string | undefined, string | undefined]>;
 /** Link to the crafted item. Nil when the recipe makes no item. */
 declare function GetTrainerServiceItemLink(index: number): string | undefined;
+/** Not probed. Money as text with gold, silver and copper icons. */
+declare const GetCoinTextureString: ((this: void, copper: number) => string) | undefined;
 
 // ---------------------------------------------------------------------------
 // Items. Only C_Item exists; the old globals are gone. All confirmed.
@@ -81,13 +79,14 @@ declare function GetTrainerServiceItemLink(index: number): string | undefined;
 declare namespace C_Item {
   /**
    * Retail order: name, link, quality, itemLevel, minLevel, type, subType,
-   * stackCount, equipLoc, texture, sellPrice, classID, subclassID, ...
-   * All nil while the item is not cached.
+   * stackCount, equipLoc, texture, sellPrice, classID, subclassID,
+   * bindType (1 = binds when picked up), ... All nil while the item is not
+   * cached. Values past subclassID are not probed.
    */
   function GetItemInfo(item: string | number): LuaMultiReturn<[
     string | undefined, string | undefined, number | undefined, number | undefined, number | undefined,
     string | undefined, string | undefined, number | undefined, string | undefined, number | undefined,
-    number | undefined, number | undefined, number | undefined,
+    number | undefined, number | undefined, number | undefined, number | undefined,
   ]>;
   /** id, type, subType, equipLoc, icon, classID, subclassID. Works before the item is cached. */
   function GetItemInfoInstant(item: string | number): LuaMultiReturn<[
@@ -155,6 +154,10 @@ interface GameTooltip extends Frame {
   AddLine(text: string, r?: number, g?: number, b?: number, wrap?: boolean): void;
   SetTrainerService(index: number): void;
   SetInventoryItem(unit: string, slot: number): void;
+  /** Not probed; on every client we know of. Feature-checked. */
+  SetHyperlink(link: string): void;
+  /** Not probed; on every client we know of. Feature-checked. */
+  GetOwner(): Region | undefined;
   HookScript(handler: string, fn: (...args: any[]) => void): void;
 }
 
@@ -170,6 +173,9 @@ interface TrainerFrame extends Frame {
 
 declare function CreateFrame(frameType: "Frame", name?: string, parent?: Frame, template?: string): Frame;
 declare function CreateFrame(frameType: "CheckButton", name?: string, parent?: Frame, template?: string): CheckButton;
+declare function CreateFrame(frameType: "GameTooltip", name?: string, parent?: Frame, template?: string): GameTooltip;
+
+declare const UIParent: Frame;
 
 declare const GameTooltip: GameTooltip;
 
@@ -204,6 +210,8 @@ declare namespace string {
 interface Region {
   GetEffectiveScale(): number;
   GetWidth(): number;
+  /** Not probed. Nil before the frame has a position. */
+  GetRight(): number | undefined;
 }
 
 /** Modern menu builder passed to Menu.ModifyMenu callbacks. */
@@ -221,9 +229,65 @@ declare const TooltipComparisonManager: {
   CompareItem?(comparisonItem: unknown, tooltip: GameTooltip, anchorFrame?: Region): void;
   CreateComparisonItem?(tooltipData: unknown): unknown;
   Clear?(tooltip: GameTooltip): void;
+  /** Retail name, not probed. Blizzard places its compare tooltips here; we post-hook it to move them. */
+  AnchorShoppingTooltips?(...args: unknown[]): void;
 } | undefined;
 
 /** Hyperlink tooltip data carries an item GUID the native compare can use. Not probed. */
 declare const C_TooltipInfo: {
   GetHyperlink?: (this: void, link: string) => { guid?: string } | undefined;
+  /**
+   * Confirmed present; reports type Spell for trainer services. That the id
+   * is the recipe's spell id is from retail, not probed.
+   */
+  GetTrainerService?: (this: void, index: number) => { type?: number; id?: number } | undefined;
 } | undefined;
+
+/** Not probed. Retail enums, read at run time instead of hard-coding numbers. */
+declare const Enum: {
+  TooltipDataType?: { Spell?: number };
+  CraftingReagentType?: { Basic?: number };
+} | undefined;
+
+/** One reagent slot of a recipe. Retail shape, not probed. */
+interface ReagentSlotSchematic {
+  /** Items that fill the slot. Classic recipes have one. */
+  reagents?: { itemID?: number }[];
+  quantityRequired?: number;
+  reagentType?: number;
+}
+
+/** Retail shape, not probed. */
+interface RecipeSchematic {
+  /** How many items one craft makes (the low end). */
+  quantityMin?: number;
+  reagentSlotSchematics?: ReagentSlotSchematic[];
+}
+
+/**
+ * Not probed. Auctionator 341 loads its retail crafting code on Forever and
+ * calls GetRecipeSchematic there, so it likely exists. Whether it works for
+ * recipes the player hasn't learned is not known.
+ */
+declare const C_TradeSkillUI: {
+  GetRecipeSchematic?: (this: void, recipeSpellID: number, isRecraft: boolean) => RecipeSchematic | undefined;
+} | undefined;
+
+// ---------------------------------------------------------------------------
+// Other addons. Not probed: from reading their source.
+// ---------------------------------------------------------------------------
+
+/**
+ * Auctionator's public API (Source/API/v1 in Auctionator 341, which lists
+ * interface 16001). Prices are in copper, nil when unknown. Every function
+ * raises a Lua error on bad input, so calls go through safe().
+ */
+interface AuctionatorAPIv1 {
+  /** Last scanned auction price for one item. */
+  GetAuctionPriceByItemLink?: (this: void, callerID: string, itemLink: string) => number | undefined;
+  GetAuctionPriceByItemID?: (this: void, callerID: string, itemID: number) => number | undefined;
+  /** What a merchant charges, from Auctionator's cache of merchants the player has seen. */
+  GetVendorPriceByItemID?: (this: void, callerID: string, itemID: number) => number | undefined;
+}
+/** Nil unless Auctionator is installed and loaded. */
+declare const Auctionator: { API?: { v1?: AuctionatorAPIv1 } } | undefined;

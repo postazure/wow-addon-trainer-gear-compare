@@ -9,6 +9,8 @@ export interface ItemData {
   subclassID: number;
   /** ITEM_MOD_* keys from C_Item.GetItemStats. Empty when the item has none. */
   stats: Record<string, number>;
+  /** Binds when picked up, so it can't be sold at the auction house. */
+  bindOnPickup: boolean;
 }
 
 type ItemLookup =
@@ -35,7 +37,7 @@ export function lookupItem(link: string): ItemLookup {
   const [itemID, , , equipLoc, , classID, subclassID] = C_Item.GetItemInfoInstant(link);
   if (itemID === undefined || failedIDs.has(itemID)) return MISSING;
 
-  const [name, , , baseLevel, minLevel, , subType] = C_Item.GetItemInfo(link);
+  const [name, , , baseLevel, minLevel, , subType, , , , , , , bindType] = C_Item.GetItemInfo(link);
   if (name === undefined) {
     if (!pendingIDs.has(itemID)) {
       pendingIDs.add(itemID);
@@ -60,6 +62,7 @@ export function lookupItem(link: string): ItemLookup {
     classID: classID ?? -1,
     subclassID: subclassID ?? -1,
     stats,
+    bindOnPickup: bindType === 1,
   };
   cache.set(link, item);
   return { state: "ready", item };

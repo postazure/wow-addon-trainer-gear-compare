@@ -29,7 +29,13 @@ function suite(steps) {
 try {
   suite({ test: "test/trainer.test.lua" });
   suite({
-    pre: [["Menu = nil; TooltipComparisonManager = nil", "no modern APIs"]],
+    pre: [[
+      "Menu = nil; TooltipComparisonManager = nil; GetCoinTextureString = nil\n" +
+      // No GameTooltipTemplate: our recipe box can't be made, so our lines go under the item.
+      "local createFrame = CreateFrame\n" +
+      "CreateFrame = function(kind, ...) if kind == 'GameTooltip' then return nil end return createFrame(kind, ...) end",
+      "no modern APIs",
+    ]],
     test: "test/fallback.test.lua",
   });
 } catch (e) {

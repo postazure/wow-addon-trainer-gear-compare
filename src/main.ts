@@ -41,7 +41,8 @@ function onEvent(event: string, args: any[]): void {
   } else if (event === "GET_ITEM_INFO_RECEIVED") {
     if (onItemInfoReceived(args[0], args[1])) scheduleRefresh();
   } else if (event === "MODIFIER_STATE_CHANGED") {
-    refreshHover();
+    /** Next frame, after Blizzard: it may hide its own compare when Shift is released. */
+    C_Timer.After(0, () => safe("refresh hover", refreshHover));
   } else if (STALE_EVENTS.includes(event)) {
     resetUsableCache();
     recheck();

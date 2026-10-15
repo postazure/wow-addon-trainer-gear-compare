@@ -14,8 +14,8 @@ client API it's built on, see [PROBE-FINDINGS.md](PROBE-FINDINGS.md).
    - it's a relic for another class, or
    - it has only main stats your class doesn't use (for example, only
      Spirit on a Paladin).
-3. **What does it replace?** The equip slot picks the equipped item(s) for
-   the item level line and the stat changes:
+3. **What does it replace?** The equip slot picks the equipped item(s) the
+   compare shows (when Blizzard's compare doesn't start by itself):
    - Rings and trinkets: the one with the lower item level. The compare
      tooltips show both.
    - One-hand weapon: main hand. If you can dual wield, the hand with the
@@ -23,6 +23,57 @@ client API it's built on, see [PROBE-FINDINGS.md](PROBE-FINDINGS.md).
    - Two-hander: your main hand and off hand together.
    - Anything while you wield a two-hander: the two-hander.
    - Shirts, tabards, bags, ammo and fishing poles: not compared.
+
+## Tooltips
+
+Hovering a recipe that makes an item:
+
+1. GameTooltip switches from Blizzard's recipe (spell) tooltip to the item
+   itself (`SetHyperlink`). It's now a normal item tooltip, so Blizzard's
+   compare, its sell price, and other addons' item lines (Auctionator,
+   Disenchantry) show the way they do on any item.
+2. Our **recipe box** (a tooltip of our own) shows Blizzard's normal recipe
+   tooltip (`SetTrainerService`). Our only additions are reagent cost and
+   profit.
+3. Left to right: recipe list, recipe box, item, equipped. Their tops line
+   up; the compare's "Equipped" header sits above it. Nothing covers the
+   recipe list. Only when the screen has no room on the right does the
+   compare go left of the recipe box.
+
+Recipes with no item (enchants and so on) keep Blizzard's tooltip as it is.
+If the client can't make the box, the item sits right of the row and our
+lines go under it.
+
+## Reagent cost and profit
+
+Only with Auctionator, and only for recipes that make an item.
+
+- **Reagents**: what one craft's reagents cost, and how many items it makes
+  if more than one. The recipe's spell id comes from
+  `C_TooltipInfo.GetTrainerService`, and its reagents from
+  `C_TradeSkillUI.GetRecipeSchematic` (required slots only). Each reagent is
+  priced like Auctionator's own crafting info: the merchant price if
+  Auctionator has seen it at a merchant, else the auction price. If a
+  reagent has no price, it says so in gray and there is no profit line.
+- **Profit**: auction price x number made x 0.95 (the 5% auction house
+  cut), minus the reagent cost. Green with a plus, or red with a minus.
+  Gray "no auction price for the item yet" when Auctionator hasn't seen it.
+  Never for items that bind on pickup.
+
+Profit doesn't count the auction deposit or the cost to learn. There's no
+cost to learn line (the trainer window shows it), and no auction or vendor
+price line (the item tooltip shows those).
+
+Why no Disenchantry data in the recipe box: its data is private to the
+addon (no public API). Its own lines show on the item tooltip.
+
+None of this is confirmed in game yet. `SetHyperlink` on GameTooltip at the
+trainer, `GetCoinTextureString`, `GetRecipeSchematic`,
+`TooltipComparisonManager.AnchorShoppingTooltips` and the Auctionator calls
+come from retail docs and Auctionator's source. Whether
+`GetRecipeSchematic` works for recipes you haven't learned is the big
+unknown. All are feature-checked, and every call runs inside `safe()`
+(Auctionator's API raises errors on bad input).
 
 ## Known limits
 
@@ -39,17 +90,17 @@ client API it's built on, see [PROBE-FINDINGS.md](PROBE-FINDINGS.md).
   (`skillIndex`, `index`, and so on). If a row's visible name does not match
   the recipe, it is never faded. That way it fails safe and never shows a
   wrong result. With debug on, a skipped row is reported in chat.
-- **The compare is started by hand.** Blizzard's compare only starts for
-  item tooltips, and the trainer tooltip is a spell tooltip. So
-  Trainer Compare feeds the crafted item to `TooltipComparisonManager`
-  itself, then moves the compare to the left. If that doesn't show
-  anything, it fills `ShoppingTooltip1/2` with your equipped items and
-  shows their "Currently Equipped" header. With debug on, chat says which
-  one ran.
+- **The compare may be started by hand.** With the item in GameTooltip,
+  Blizzard's compare may start by itself; then Trainer Compare only moves
+  it right of the item (also each time Blizzard places it again). If it
+  doesn't start, Trainer Compare feeds the item to
+  `TooltipComparisonManager` itself. If that doesn't show anything, it
+  fills `ShoppingTooltip1/2` with your equipped items and shows their
+  header, with the text "Equipped" when Blizzard left it empty. With debug
+  on, chat says which one ran (`compare: native, right` and so on).
 - **No compare when the slot is empty.** There's nothing to show.
 - **Loading lines don't update by themselves.** If an item is still
   loading, the tooltip says so. Move the mouse off and back on.
-- **Enchants on your equipped gear are not counted** in the stat changes.
 - **Gear above your level counts as not usable,** even if you'll reach that
   level soon.
 - **ForeverGear and GearSetImprover:** neither was installed in the client

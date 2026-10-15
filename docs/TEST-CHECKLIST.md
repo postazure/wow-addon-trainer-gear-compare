@@ -42,30 +42,28 @@ With "Only show usable gear" on:
 
 ## 5. Compare and tooltips
 
-- [ ] Hover a gear recipe. The tooltip ends with "Item level X vs Y (slot)",
-      then the heading
-      "If you replace this item, the following stat changes will occur:"
-      with **one stat per line**. The number is green (gain) or red
-      (loss); the stat name is white.
-- [ ] Stats are in item tooltip order: DPS, Armor, Strength, Agility,
-      Stamina, Intellect, Spirit.
+- [ ] Hover a gear recipe. Left: the normal recipe tooltip, unchanged
+      except for Reagents and Profit (with Auctionator). Right of it: the
+      item, like any item tooltip.
 - [ ] Hover gear you can't use. No extra "can't use" line (the item's own
-      red text shows it). The item level and stat changes still show.
+      red text shows it).
 - [ ] No line anywhere says "upgrade".
-- [ ] Hover an enchant or a non-gear recipe. No Trainer Compare lines.
-- [ ] Without "Always compare items", the compare shows only while you hold
-      Shift.
-- [ ] The compare shows **"Currently Equipped"** and Blizzard's own stat
+- [ ] Hover an enchant. Blizzard's own tooltip, no recipe box.
+- [ ] Hover a non-gear recipe (a potion, a sharpening stone). The item
+      tooltip shows, with Auctionator's and Blizzard's own lines if any.
+- [ ] The compare shows without Shift, even with "Always compare items"
+      off. Pressing and releasing Shift doesn't make it go away.
+- [ ] The compare shows **"Equipped"** and Blizzard's own stat
       summary, like a normal item compare.
-- [ ] Your equipped item is on the **left**. The recipe tooltip is on the
-      right.
+- [ ] Left to right: recipe tooltip, item, equipped. Their tops line up,
+      with "Equipped" above the compare. Nothing covers the recipe list.
 - [ ] Gear you can't use (wrong weapon, too high level) still shows the
       compare.
 - [ ] Rings and trinkets show both of yours. A two-hander shows both hands.
 - [ ] Nothing equipped in that slot: no compare.
 - [ ] Move from a recipe to a bag item: the normal Blizzard compare still
       works and nothing is left over from the recipe.
-- [ ] With debug on, chat says `compare: native, left`. If it says
+- [ ] With debug on, chat says `compare: native, right`. If it says
       `manual`, the native compare didn't start; tell me.
 
 ## 6. Filter
