@@ -2,68 +2,83 @@
 
 **Before you buy a recipe, see how its gear compares to what you wear.**
 
-In WoW Forever, your professions level with you. Every trainer visit is a
-choice: which recipes make gear you'll actually wear? Trainer Compare shows
-you right in the trainer window, so you can spot the recipes that improve
-your gear and skip the ones that don't.
+In WoW Forever, professions matter all the way through leveling. Every
+trainer visit is a choice: which recipes make gear worth wearing? Trainer
+Compare shows the item level and stat changes right in the trainer window.
+You decide what's worth the gold.
 
-Hover a recipe. See the item next to what you have on. That's it.
+Hover a recipe that makes gear and hold **Shift**. See it next to what you
+have on.
 
-- **Side-by-side compare.** The game's own compare tooltip, now for trainer
-  recipes. Your equipped item on the left, the recipe on the right.
+- **Side-by-side compare.** Like the game's item compare, now for trainer
+  recipes. Your equipped item on one side, the recipe on the other.
 - **Item level and stat changes at a glance.** *Item level 9 vs 2 (Main
-  Hand)*, then each stat you gain in green and each stat you lose in red.
-- **Fade what you can't use.** One checkbox in the trainer's Settings menu
-  fades gear you can't wear or wield, so the useful recipes stand out.
-- **Facts, not guesses.** No scores and no "upgrade" labels. You see the
-  numbers and you decide.
+  Hand)*, then each stat change with a green number for a gain and a red
+  number for a loss.
+- **Fade what's not for you.** One checkbox in the trainer's Settings menu
+  fades gear you can't use yet, so the rest stands out.
+- **No scores, no "upgrade" labels.** Just the numbers. You decide.
 
-No setup. No slash commands. No other addons needed. Made for **WoW Forever**.
+Nothing to install alongside it, and nothing to type. Made for **WoW
+Forever**.
 
 ---
 
 ## How it works
 
 **The compare.** Hover a recipe that makes gear, then hold **Shift** (or turn
-on *Always compare items* in the game's options). You get the same compare
-you see on any item, with your gear marked **Currently Equipped**.
+on *Always compare items* in the game's options). Your equipped item shows
+next to the recipe, marked **Currently Equipped**. It goes on the left when
+there's room, and on the right when there isn't. If nothing is equipped in
+that slot, there's nothing to compare against, so no compare shows.
 
 **The tooltip lines.** Under the recipe you'll see:
 
-- the item's item level vs yours, with the slot
+- the item's item level vs yours, with the slot (or *vs empty* if the slot
+  is empty)
 - *If you replace this item, the following stat changes will occur:*, then
-  one stat per line, green for a gain and red for a loss
+  one stat per line, with a green number for a gain and a red number for a
+  loss
 
-**Slots are handled for you.**
+**What it compares against.**
 
-- Rings and trinkets: compared against the one with the lower item level.
-  The compare shows both.
-- Two-handers: compared against your main hand and off hand together.
-- One-handers: compared against your main hand, or the hand with the lower
-  item level if you can dual wield.
+- Rings and trinkets: an empty slot if you have one, or else the one with
+  the lower item level.
+- One-hand weapons: your main hand. If you can dual wield, an empty hand if
+  you have one, or else the hand with the lower item level.
+- Main-hand weapons: your main hand.
+- Off-hand weapons, shields and held items: your off hand.
+- Two-handers: your main hand and off hand together.
+- Anything else in your hands while you wield a two-hander: the two-hander.
+- Shirts, tabards, bags, ammo and fishing poles aren't compared.
 
 **Plan ahead.** Gear above your level, or for a weapon skill you haven't
-learned, still gets the full compare. The item's own red text tells you why
-you can't use it yet.
+learned, still gets the item level and stat lines, and the compare.
 
-**Only show usable gear.** Find it at the bottom of the trainer's
-**Settings** dropdown. It fades gear with:
+**Only show usable gear.** A checkbox in the trainer's **Settings** dropdown.
+It's off until you tick it, and it's saved for your account. When it's on,
+it fades:
 
-- the wrong armor type
-- a weapon skill you don't have
-- a level above yours
-- another class's relic
-- only stats your class doesn't use (like Spirit-only gear on a Paladin)
+- armor types you haven't learned to wear
+- weapon types you haven't learned
+- gear above your level, even by one level
+- relics for another class
+- gear with only stats your class doesn't use (like Spirit-only gear on a
+  Paladin). This one is a judgment call: you might still want the item.
 
-Faded rows stay in the list and stay clickable. Enchants and other non-gear
-recipes are never faded.
+Faded rows stay in the list and you can still click them. Enchants and
+other non-gear recipes are never faded. If your game client can't add to
+the Settings dropdown, a small "Usable" checkbox shows next to the Train
+button instead.
 
 ## Good to know
 
-- The trainer window isn't changed otherwise. No marks on recipe rows.
+- Apart from the filter checkbox, the trainer window isn't changed. Recipe
+  rows get no marks.
 - Item data sometimes loads late. If a tooltip says *Loading item data...*,
   move the mouse off the recipe and back.
-- Enchants on your equipped gear aren't counted in the stat changes.
+- The stat changes use each item's own stats. Enchants on your equipped
+  gear may not be counted.
 - Only the default Blizzard trainer window is supported.
 
 ## Feedback and source
