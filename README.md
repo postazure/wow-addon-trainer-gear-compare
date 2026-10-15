@@ -9,6 +9,10 @@ claim anything is an "upgrade".
 - **Compare**: always on, no Shift needed. Blizzard's normal compare,
   right of the item, with its item level and stat changes. Works for gear
   you can't use, too. The item's own red text says why you can't.
+- **Reagent cost and profit** (with Auctionator): the recipe tooltip also
+  shows what one craft's reagents cost, and the profit after the 5%
+  auction house cut. Profit shows only when every price is known, and
+  never for items that bind on pickup.
 - **"Only show usable gear"** in the trainer's Settings dropdown: fades gear
   you can't use (armor type, weapon skill, level, class). Non-gear recipes
   are never faded.
@@ -21,7 +25,8 @@ actually returns. See [how it works](docs/HOW-IT-WORKS.md).
 
 ## Install
 
-Install from CurseForge. No other addon is needed. If the addon list says
+Install from CurseForge. No other addon is needed; with Auctionator you
+also get reagent cost and profit. If the addon list says
 "Out of date", tick **Load out of date AddOns**.
 
 To build it yourself, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).

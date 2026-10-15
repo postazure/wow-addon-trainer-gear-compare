@@ -16,10 +16,13 @@ hold.
   with a green number for a gain and a red number for a loss.
 - **Fade what's not for you.** One checkbox in the trainer's Settings menu
   fades gear you can't use yet, so the rest stands out.
+- **Reagent cost and profit.** With Auctionator, the recipe tooltip shows
+  what one craft's reagents cost, and the profit after the auction house
+  cut.
 - **No scores, no "upgrade" labels.** Just the numbers. You decide.
 
-Nothing to install alongside it, and nothing to type. Made for **WoW
-Forever**.
+Nothing to install alongside it (Auctionator is optional, for prices), and
+nothing to type. Made for **WoW Forever**.
 
 ---
 
@@ -28,7 +31,8 @@ Forever**.
 **The tooltips.** Hover a recipe that makes an item. Left to right, next to
 the trainer's list:
 
-- the normal recipe tooltip
+- the normal recipe tooltip, with reagent cost and profit at the bottom
+  when Auctionator is loaded
 - a gold arrow
 - the item it makes, as a normal item tooltip
 - for gear, your equipped item, marked **Equipped**, with the game's own
@@ -52,6 +56,17 @@ tooltip.
 
 **Plan ahead.** Gear above your level, or for a weapon skill you haven't
 learned, still gets the compare.
+
+**Reagent cost and profit.** Needs Auctionator. At the bottom of the recipe
+tooltip, for any recipe that makes an item:
+
+- **Reagents:** what one craft's reagents cost. Each reagent is priced the
+  way Auctionator prices it: the vendor price if Auctionator has seen one,
+  else the auction price.
+- **Profit:** the item's auction price, times how many one craft makes,
+  minus the 5% auction house cut and the reagent cost.
+- There's no profit line when a price is missing, or for items that bind
+  on pickup. Profit doesn't count the auction deposit or the cost to learn.
 
 **Only show usable gear.** A checkbox in the trainer's **Settings** dropdown.
 It's off until you tick it, and it's saved for your account. When it's on,
