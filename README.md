@@ -4,15 +4,17 @@ Shows, in the profession trainer window, how each recipe's item compares to
 your equipped gear, and whether you can use it. Facts only: it doesn't
 claim anything is an "upgrade".
 
-- **Compare**: hover a recipe and hold Shift (or turn on "Always compare
-  items") to see Blizzard's normal compare: your equipped item(s) on the
-  left, the recipe on the right. Works for gear you can't use, too.
-- **Tooltip lines**: item level vs equipped, then the stat changes, one per
-  line, under "If you replace this item, the following stat changes will
-  occur:". The number is green or red; the stat name is white. Gear you
-  can't use gets the same lines. The item's own red text already says why.
-- **Prices**: for any crafted item, the cost to learn and the vendor
-  price. Stackable items are priced each.
+- **The real item**: hover a recipe and the tooltip shows the item it
+  makes, like any item tooltip. Next to it, toward the recipe list, a small
+  recipe box holds Trainer Compare's lines. Nothing covers the list.
+- **Compare**: hold Shift (or turn on "Always compare items") to see
+  Blizzard's normal compare, right of the item. Works for gear you can't
+  use, too.
+- **Recipe box lines**: item level vs equipped, then the stat changes, one
+  per line, under "If you replace this item, the following stat changes
+  will occur:". The number is green or red; the stat name is white. Gear
+  you can't use gets the same lines. The item's own red text already says
+  why.
 - **"Only show usable gear"** in the trainer's Settings dropdown: fades gear
   you can't use (armor type, weapon skill, level, class). Non-gear recipes
   are never faded.

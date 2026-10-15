@@ -69,23 +69,31 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
   `Menu.ModifyMenu("MENU_TRAINER_FILTER", ...)`: just the checkbox, no header,
   no divider. The "Usable" checkbox by the Train button is only a fallback
   for clients without the Menu API.
-- **Compare:** use Blizzard's native compare first
-  (`TooltipComparisonManager`), fall back to filling `ShoppingTooltip1/2`.
-  Equipped item on the **left**, recipe on the right. Show it for gear the
-  player can't use, too. The header must have text: "Equipped" (the longer
+- **The item is in GameTooltip.** Hovering a recipe that makes an item
+  switches GameTooltip to that item (`SetHyperlink`), so Blizzard's compare,
+  sell price and other addons' lines (Auctionator, Disenchantry) work as on
+  any item. Our lines go in our own **recipe box**. Left to right: recipe
+  list, recipe box, item, equipped. Nothing may cover the recipe list.
+  Recipes with no item keep Blizzard's tooltip untouched.
+- **Compare:** if Blizzard starts its compare by itself, only move it.
+  Otherwise start it (`TooltipComparisonManager`), and fall back to filling
+  `ShoppingTooltip1/2`. Equipped goes **right of the item**; left of the
+  recipe box only when the screen has no room. Show it for gear the player
+  can't use, too. The header must have text: "Equipped" (the longer
   "Currently Equipped" overflowed it in game).
-- **Tooltip lines are always on** (no setting): "Item level X vs Y (slot)",
-  then the built-in "If you replace this item..." heading and one stat per
-  line. The number is green or red; the stat name is white.
+- **Recipe box lines are always on** (no setting): "Item level X vs Y
+  (slot)", then the built-in "If you replace this item..." heading and one
+  stat per line. The number is green or red; the stat name is white.
 - No "can't use" line: the item's own red text already says it.
-- **Prices, for any crafted item** (always on): cost to learn, auction house
-  price and age, reagent cost, profit, vendor price. Auction, reagent and
-  profit lines need Auctionator. Reagents come from
+- **Reagent cost and profit, for any crafted item** (always on, needs
+  Auctionator), in the recipe box. Reagents come from
   `C_TradeSkillUI.GetRecipeSchematic`; each is priced like Auctionator does
   (merchant price if known, else auction price). Profit = auction price x
   number made x 0.95 (the AH cut) - reagent cost, shown only when every
-  price is known. No auction line or profit for items that bind on pickup.
-  Disenchantry has no public API, so it's skipped.
+  price is known. No profit for items that bind on pickup. No cost to
+  learn (the trainer window shows it), and no auction or vendor price lines
+  (the item tooltip shows them). Disenchantry has no public API; its lines
+  show on the item tooltip by themselves.
 - **No slash commands.** Everything a player does has UI in the trainer
   window. Debug is a saved setting:
   `/run TrainerCompareDB.debug = true` (or `false`), at once and saved.
@@ -106,8 +114,8 @@ retail docs are both wrong in places. What we learned (more in
 - No skill-line API. Proficiency is checked with `IsPlayerSpell` and Classic
   spell ids, with a Cloth canary: if `IsPlayerSpell(Cloth)` is false, skip
   the check instead of hiding everything.
-- The trainer list is a ScrollBox. The trainer tooltip is a **spell**
-  tooltip with the item embedded, so item-tooltip hooks and the built-in
+- The trainer list is a ScrollBox. Blizzard's trainer tooltip is a **spell**
+  tooltip with the item embedded (we switch it to the item), so item-tooltip hooks and the built-in
   compare never fire for it.
 
 Rules:
@@ -144,7 +152,9 @@ Rules:
 
 - Only post-hooks (`hooksecurefunc`, `HookScript`) and Blizzard-supported
   callbacks (`Menu.ModifyMenu`, `ScrollUtil`). Never replace Blizzard
-  functions or edit Blizzard data (ScrollBox data providers included).
+  functions or edit Blizzard data (ScrollBox data providers included). The
+  one exception, decided with the owner: at the trainer, GameTooltip is
+  switched to the crafted item.
 - Never write fields onto Blizzard frames; keep our own tables keyed by frame.
 - Only hide tooltips we showed. Never hide a compare Blizzard showed itself.
 - Every event and hook handler runs inside `safe()`: errors stay silent

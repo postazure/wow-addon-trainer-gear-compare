@@ -1,8 +1,8 @@
 import { evaluate } from "./compare";
 import { lookupItem } from "./items";
 import { debug, safe } from "./log";
-import { priceLines } from "./prices";
-import { tooltipLines } from "./tooltip";
+import { craftLines } from "./prices";
+import { type TooltipLine, tooltipLines } from "./tooltip";
 import { field, isRegion, keysOf } from "./widgets";
 
 /** The trainer service GameTooltip is showing, if any. */
@@ -10,6 +10,9 @@ let hoveredIndex: number | undefined;
 
 /** Which compare we are showing: Blizzard's own, our filled-in copy, or none. */
 let compareShown: "native" | "manual" | undefined;
+
+/** Our recipe box, left of the item. Made on first use; false if it can't be made. */
+let recipeBox: GameTooltip | false | undefined;
 
 let lastCompareLog = "";
 let loggedHeader = false;
@@ -48,8 +51,8 @@ function hideCompare(): void {
 }
 
 /**
- * Blizzard's own compare, fed the crafted item. The trainer tooltip is a
- * spell tooltip, so it never starts by itself. Returns true if it showed.
+ * Blizzard's own compare, fed the crafted item, for when it doesn't start
+ * by itself. Returns true if it showed.
  */
 function nativeCompare(tooltip: GameTooltip, link: string): boolean {
   const manager = TooltipComparisonManager;
@@ -116,37 +119,68 @@ function manualCompare(tooltip: GameTooltip, slots: number[]): void {
   }
 }
 
+const LINE = (text: string): TooltipLine => ({ text, r: 1, g: 1, b: 1 });
+
+/** The right edge of the screen, in the same units as GetRight() times scale. */
+function screenRight(): number | undefined {
+  const right = UIParent.GetRight();
+  return right !== undefined ? right * UIParent.GetEffectiveScale() : undefined;
+}
+
 /**
- * Equipped item(s) on the left, recipe tooltip on the right.
- * Flips to the right only when there's no room on the left of the screen.
+ * Compare tooltips go right of the item, so nothing covers the trainer's
+ * recipe list: [recipe box] [item] [equipped]. Only when there's no room on
+ * the right do they go left of the whole group.
  */
 function placeCompare(tooltip: GameTooltip): string {
   const shown = shoppingTooltips().filter((t) => t.IsShown());
   if (shown.length === 0) return "none";
   let width = 0;
   for (const t of shown) width += t.GetWidth() * t.GetEffectiveScale();
-  const room = (tooltip.GetLeft() ?? 0) * tooltip.GetEffectiveScale();
-  const side = room >= width ? "left" : "right";
-  let anchor: Region = tooltip;
+  const right = tooltip.GetRight();
+  const screen = screenRight();
+  const room = right !== undefined && screen !== undefined ? screen - right * tooltip.GetEffectiveScale() : width;
+  const side = room >= width ? "right" : "left";
+  const box = recipeBox !== undefined && recipeBox !== false && recipeBox.IsShown() ? recipeBox : undefined;
+  let anchor: Region = side === "right" ? tooltip : box ?? tooltip;
   for (let i = 0; i < shown.length; i++) {
     const t = shown[i];
     const y = i === 0 ? -10 : 0;
     t.ClearAllPoints();
-    if (side === "left") t.SetPoint("TOPRIGHT", anchor, "TOPLEFT", 0, y);
-    else t.SetPoint("TOPLEFT", anchor, "TOPRIGHT", 0, y);
+    if (side === "right") t.SetPoint("TOPLEFT", anchor, "TOPRIGHT", 0, y);
+    else t.SetPoint("TOPRIGHT", anchor, "TOPLEFT", 0, y);
     anchor = t;
   }
   return side;
 }
 
+/** Give each shown compare header its text, if Blizzard left it empty. */
+function fillHeaders(): void {
+  for (const tip of shoppingTooltips()) {
+    const header = field(tip, "CompareHeader");
+    if (tip.IsShown() && isRegion(header) && header.IsShown()) showEquippedHeader(tip);
+  }
+}
+
+/** Blizzard showed a compare by itself, for the item now in GameTooltip. */
+function blizzardCompareShown(): boolean {
+  return compareShown === undefined && shoppingTooltips().some((t) => t.IsShown());
+}
+
 /**
  * Compare the recipe's item with what is equipped. Any gear, usable or not,
- * like the built-in compare; never for non-gear or an empty slot. Tries
- * Blizzard's native compare first, then our own.
+ * like the built-in compare; never for non-gear or an empty slot. With the
+ * item in GameTooltip, Blizzard may start its compare by itself; then we
+ * only move it. Otherwise we start Blizzard's, then fall back to our own.
  */
 function showCompare(tooltip: GameTooltip, index: number): void {
   hideCompare();
   if (!wantsCompare()) return;
+  if (blizzardCompareShown()) {
+    fillHeaders();
+    placeCompare(tooltip);
+    return;
+  }
   const link = GetTrainerServiceItemLink(index);
   if (link === undefined) return;
   const ev = evaluate(link);
@@ -156,10 +190,7 @@ function showCompare(tooltip: GameTooltip, index: number): void {
 
   if (safe("native compare", () => nativeCompare(tooltip, link)) === true) {
     compareShown = "native";
-    for (const tip of shoppingTooltips()) {
-      const header = field(tip, "CompareHeader");
-      if (tip.IsShown() && isRegion(header) && header.IsShown()) showEquippedHeader(tip);
-    }
+    fillHeaders();
   } else {
     for (const tip of shoppingTooltips()) tip.Hide();
     manualCompare(tooltip, slots);
@@ -173,23 +204,62 @@ function showCompare(tooltip: GameTooltip, index: number): void {
   }
 }
 
+/** Our recipe box, made once. GameTooltipTemplate gives it the normal tooltip look. */
+function getRecipeBox(): GameTooltip | undefined {
+  if (recipeBox === undefined) {
+    recipeBox = safe("recipe box", () => CreateFrame("GameTooltip", "TrainerCompareRecipeTooltip", UIParent, "GameTooltipTemplate")) ?? false;
+  }
+  return recipeBox === false ? undefined : recipeBox;
+}
+
+function hideRecipeBox(): void {
+  if (recipeBox !== undefined && recipeBox !== false) recipeBox.Hide();
+}
+
 /**
- * Add our lines to the recipe tooltip: item level vs equipped and stat
- * changes for gear, then prices for any item. Then Show() it again so it
- * resizes to fit them.
+ * Our lines, in sections: item level vs equipped and stat changes (gear);
+ * reagent cost and profit (with Auctionator). A blank line between them.
+ * No cost to learn: the trainer window already shows it.
  */
-function addTooltipLines(tooltip: GameTooltip, index: number): void {
-  const link = GetTrainerServiceItemLink(index);
-  if (link === undefined) return;
-  const lines = tooltipLines(evaluate(link));
+function recipeLines(index: number, link: string): TooltipLine[] {
   const look = lookupItem(link);
-  const prices = look.state === "ready" ? priceLines(index, link, look.item) : [];
-  if (lines.length > 0 && prices.length > 0) lines.push({ text: " ", r: 1, g: 1, b: 1 });
-  lines.push(...prices);
-  if (lines.length === 0) return;
-  tooltip.AddLine(" ");
-  for (const line of lines) tooltip.AddLine(line.text, line.r, line.g, line.b, true);
-  tooltip.Show();
+  const sections = [tooltipLines(evaluate(link))];
+  if (look.state === "ready") sections.push(craftLines(index, link, look.item));
+  const lines: TooltipLine[] = [];
+  for (const section of sections) {
+    if (section.length === 0) continue;
+    if (lines.length > 0) lines.push(LINE(" "));
+    lines.push(...section);
+  }
+  return lines;
+}
+
+/**
+ * Show the recipe box right of the hovered row: the recipe's name, then our
+ * lines. GameTooltip (the item) goes right of the box. With no lines, or no
+ * box, the item sits right of the row; without a box our lines go under it.
+ */
+function showRecipeBox(tooltip: GameTooltip, index: number, link: string, owner: Region): void {
+  const lines = recipeLines(index, link);
+  const box = lines.length > 0 ? getRecipeBox() : undefined;
+  if (box === undefined) {
+    hideRecipeBox();
+    tooltip.ClearAllPoints();
+    tooltip.SetPoint("TOPLEFT", owner, "TOPRIGHT", 0, 0);
+    if (lines.length === 0) return;
+    tooltip.AddLine(" ");
+    for (const line of lines) tooltip.AddLine(line.text, line.r, line.g, line.b, true);
+    return;
+  }
+  const [name] = GetTrainerServiceInfo(index);
+  box.SetOwner(owner, "ANCHOR_NONE");
+  box.SetText(name ?? "", 1, 1, 1);
+  for (const line of lines) box.AddLine(line.text, line.r, line.g, line.b, true);
+  box.ClearAllPoints();
+  box.SetPoint("TOPLEFT", owner, "TOPRIGHT", 0, 0);
+  box.Show();
+  tooltip.ClearAllPoints();
+  tooltip.SetPoint("TOPLEFT", box, "TOPRIGHT", 0, 0);
 }
 
 /** Shift pressed or released, or data arrived, while a recipe is hovered. */
@@ -197,10 +267,34 @@ export function refreshHover(): void {
   if (hoveredIndex !== undefined && GameTooltip.IsShown()) showCompare(GameTooltip, hoveredIndex);
 }
 
-/** GameTooltip:SetTrainerService ran: a recipe is hovered. */
+/** Blizzard placed its compare tooltips. While a recipe is hovered, move them right of the item. */
+export function onCompareAnchored(): void {
+  if (hoveredIndex !== undefined && GameTooltip.IsShown()) placeCompare(GameTooltip);
+}
+
+/**
+ * GameTooltip:SetTrainerService ran: a recipe is hovered. If it makes an
+ * item, GameTooltip switches to that item (SetHyperlink), so it is a normal
+ * item tooltip: Blizzard's compare, sell price, and other addons' lines
+ * (Auctionator, Disenchantry) work as they do anywhere. Our recipe box goes
+ * on its left. Recipes with no item keep Blizzard's tooltip as it is.
+ * GameTooltip is re-owned with ANCHOR_NONE so we can place it; that runs
+ * our SetOwner hook, which clears the old state.
+ */
 export function onTrainerTooltip(tooltip: GameTooltip, index: number): void {
   hoveredIndex = index;
-  addTooltipLines(tooltip, index);
+  const link = GetTrainerServiceItemLink(index);
+  const owner = typeof field(tooltip, "GetOwner") === "function" ? tooltip.GetOwner() : undefined;
+  if (link === undefined || owner === undefined || typeof field(tooltip, "SetHyperlink") !== "function") {
+    hideRecipeBox();
+    hideCompare();
+    return;
+  }
+  tooltip.SetOwner(owner, "ANCHOR_NONE");
+  hoveredIndex = index;
+  tooltip.SetHyperlink(link);
+  showRecipeBox(tooltip, index, link, owner);
+  tooltip.Show();
   showCompare(tooltip, index);
 }
 
@@ -208,4 +302,5 @@ export function onTrainerTooltip(tooltip: GameTooltip, index: number): void {
 export function onTooltipCleared(): void {
   hoveredIndex = undefined;
   hideCompare();
+  hideRecipeBox();
 }

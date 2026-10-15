@@ -1,13 +1,7 @@
 import type { ItemData } from "./items";
 import { safe } from "./log";
 import { type Recipe, recipeFor } from "./recipes";
-
-interface PriceLine {
-  text: string;
-  r: number;
-  g: number;
-  b: number;
-}
+import type { TooltipLine } from "./tooltip";
 
 /** Auctionator wants a caller id: the name of the addon asking. */
 const CALLER_ID = "TrainerCompare";
@@ -18,11 +12,11 @@ const AFTER_AH_CUT = 0.95;
 const GREEN = "|cff20ff20";
 const RED = "|cffff4040";
 
-const WHITE = (text: string): PriceLine => ({ text, r: 1, g: 1, b: 1 });
-const GRAY = (text: string): PriceLine => ({ text, r: 0.6, g: 0.6, b: 0.6 });
+const WHITE = (text: string): TooltipLine => ({ text, r: 1, g: 1, b: 1 });
+const GRAY = (text: string): TooltipLine => ({ text, r: 0.6, g: 0.6, b: 0.6 });
 
 /** Gold, silver and copper, like the rest of the UI. Our own format if the client has no helper. */
-export function money(copper: number): string {
+function money(copper: number): string {
   const c = Math.floor(copper);
   const native = GetCoinTextureString;
   if (native !== undefined) {
@@ -48,29 +42,11 @@ function auctionator(): AuctionatorAPIv1 | undefined {
   return Auctionator?.API?.v1;
 }
 
-/** What the trainer charges to learn the recipe. */
-function learnCost(index: number): number | undefined {
-  const getCost = GetTrainerServiceCost;
-  if (getCost === undefined) return undefined;
-  return copperOrNone(safe("learn cost", () => getCost(index)[0]));
-}
-
-function ageText(days: number | undefined): string {
-  if (days === undefined) return "";
-  if (days === 0) return ", seen today";
-  if (days === 1) return ", seen 1 day ago";
-  return `, seen ${days} days ago`;
-}
-
-/** Auctionator's last scanned price for one item, and how many days ago it was seen. */
-function auctionPrice(api: AuctionatorAPIv1, link: string): { price?: number; days?: number } {
+/** Auctionator's last scanned price for one item. */
+function auctionPrice(api: AuctionatorAPIv1, link: string): number | undefined {
   const getPrice = api.GetAuctionPriceByItemLink;
-  if (getPrice === undefined) return {};
-  const price = copperOrNone(safe("auction price", () => getPrice(CALLER_ID, link)));
-  if (price === undefined) return {};
-  const getAge = api.GetAuctionAgeByItemLink;
-  const age = getAge !== undefined ? safe("auction age", () => getAge(CALLER_ID, link)) : undefined;
-  return { price, days: typeof age === "number" && age >= 0 ? Math.floor(age) : undefined };
+  if (getPrice === undefined) return undefined;
+  return copperOrNone(safe("auction price", () => getPrice(CALLER_ID, link)));
 }
 
 /** One reagent's price, like Auctionator's own crafting info: the merchant price if known, else the auction price. */
@@ -106,46 +82,28 @@ function signedMoney(copper: number): string {
 }
 
 /**
- * Auction house lines: the item's last price, what the reagents cost, and
- * the profit after the 5% cut. Only with Auctionator. No sale price for
- * items that bind on pickup, so no profit either.
+ * What one craft's reagents cost and the profit after the 5% auction house
+ * cut. Only with Auctionator, and only when the client gives the recipe's
+ * reagents. The item's own auction and vendor prices are left to the item
+ * tooltip (Auctionator and Blizzard show them there). No profit for items
+ * that bind on pickup: they can't be sold at the auction house.
  */
-function auctionLines(api: AuctionatorAPIv1, index: number, link: string, item: ItemData, each: string): PriceLine[] {
-  const lines: PriceLine[] = [];
-  const sale = item.bindOnPickup ? {} : auctionPrice(api, link);
-  if (!item.bindOnPickup) {
-    lines.push(sale.price !== undefined
-      ? WHITE(`Auction house: ${money(sale.price)}${each}${ageText(sale.days)}`)
-      : GRAY("Auction house: no price yet"));
-  }
-
+export function craftLines(index: number, link: string, item: ItemData): TooltipLine[] {
+  const api = auctionator();
+  if (api === undefined) return [];
   const recipe = recipeFor(index);
-  if (recipe === undefined) return lines;
-  const makes = recipe.makes > 1 ? ` (makes ${recipe.makes})` : "";
+  if (recipe === undefined) return [];
   const cost = reagentCost(api, recipe);
-  if (cost.missing > 0) {
-    lines.push(GRAY(`Reagents: no price for ${cost.missing} of ${recipe.slots.length}`));
-    return lines;
-  }
-  lines.push(WHITE(`Reagents: ${money(cost.total)}${makes}`));
-  if (sale.price !== undefined) {
-    const profit = Math.floor(sale.price * recipe.makes * AFTER_AH_CUT - cost.total);
+  if (cost.missing > 0) return [GRAY(`Reagents: no price for ${cost.missing} of ${recipe.slots.length}`)];
+  const makes = recipe.makes > 1 ? ` (makes ${recipe.makes})` : "";
+  const lines = [WHITE(`Reagents: ${money(cost.total)}${makes}`)];
+  if (item.bindOnPickup) return lines;
+  const sale = auctionPrice(api, link);
+  if (sale === undefined) {
+    lines.push(GRAY("Profit: no auction price for the item yet"));
+  } else {
+    const profit = Math.floor(sale * recipe.makes * AFTER_AH_CUT - cost.total);
     lines.push(WHITE(`Profit: ${signedMoney(profit)} after the 5% auction house cut`));
   }
-  return lines;
-}
-
-/**
- * Money facts for any crafted item, gear or not: the cost to learn, the
- * auction house lines (with Auctionator), and what a vendor pays.
- */
-export function priceLines(index: number, link: string, item: ItemData): PriceLine[] {
-  const each = item.maxStack > 1 ? " each" : "";
-  const lines: PriceLine[] = [];
-  const cost = learnCost(index);
-  if (cost !== undefined) lines.push(WHITE(`Cost to learn: ${money(cost)}`));
-  const api = auctionator();
-  if (api !== undefined) lines.push(...auctionLines(api, index, link, item, each));
-  if (item.sellPrice > 0) lines.push(WHITE(`Vendor price: ${money(item.sellPrice)}${each}`));
   return lines;
 }

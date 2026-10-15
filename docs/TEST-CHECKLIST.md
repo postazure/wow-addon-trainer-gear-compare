@@ -52,20 +52,22 @@ With "Only show usable gear" on:
 - [ ] Hover gear you can't use. No extra "can't use" line (the item's own
       red text shows it). The item level and stat changes still show.
 - [ ] No line anywhere says "upgrade".
-- [ ] Hover an enchant or a non-gear recipe. No Trainer Compare lines.
+- [ ] Hover an enchant. Blizzard's own tooltip, no recipe box.
+- [ ] Hover a non-gear recipe (a potion, a sharpening stone). The item
+      tooltip shows, with Auctionator's and Blizzard's own lines if any.
 - [ ] Without "Always compare items", the compare shows only while you hold
       Shift.
 - [ ] The compare shows **"Equipped"** and Blizzard's own stat
       summary, like a normal item compare.
-- [ ] Your equipped item is on the **left**. The recipe tooltip is on the
-      right.
+- [ ] Left to right: recipe box, item, equipped. Nothing covers the recipe
+      list.
 - [ ] Gear you can't use (wrong weapon, too high level) still shows the
       compare.
 - [ ] Rings and trinkets show both of yours. A two-hander shows both hands.
 - [ ] Nothing equipped in that slot: no compare.
 - [ ] Move from a recipe to a bag item: the normal Blizzard compare still
       works and nothing is left over from the recipe.
-- [ ] With debug on, chat says `compare: native, left`. If it says
+- [ ] With debug on, chat says `compare: native, right`. If it says
       `manual`, the native compare didn't start; tell me.
 
 ## 6. Filter

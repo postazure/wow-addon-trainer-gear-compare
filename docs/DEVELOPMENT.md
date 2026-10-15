@@ -19,8 +19,10 @@ src/main.ts                   Entry point: registers the events
 src/trainerUI.ts              Installs the trainer hooks
 src/rows.ts                   Matches rows to recipes; fades the ones you can't use
 src/settingsMenu.ts           The filter toggle (Settings dropdown, or a fallback checkbox)
-src/compareTooltips.ts        Native compare, with a filled-in fallback
-src/tooltip.ts                Tooltip lines: item level and stat changes
+src/compareTooltips.ts        Item in GameTooltip, the recipe box, and the compare
+src/tooltip.ts                Recipe box lines: item level and stat changes
+src/prices.ts                 Reagent cost and profit (Auctionator)
+src/recipes.ts                A recipe's reagents and count made (GetRecipeSchematic)
 src/compare.ts                What a recipe's item would replace (cached)
 src/usable.ts                 Level, proficiency, relic and main-stat checks
 src/items.ts                  Item data cache; handles late-loading items

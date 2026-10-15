@@ -68,7 +68,7 @@ toggleFilter() -- off
 -- Late item data ------------------------------------------------------------
 hover(4)
 check(tooltipHas("Loading item data..."), "tooltip says the item is loading")
-check(not tooltipHas("Cost to learn") and not tooltipHas("Vendor price"), "no prices while the item loads")
+check(GameTooltip.link == items[2851].link, "the item tooltip shows the crafted item, even while it loads")
 items[2851].cached = true
 fire("GET_ITEM_INFO_RECEIVED", 2851, true)
 flush()
@@ -114,6 +114,28 @@ check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against t
 hover(6)
 check(not tooltipHas("Item level"), "enchant tooltip unchanged")
 
+-- Layout: [recipe list] [recipe box] [item] [equipped] ----------------------------
+hover(1)
+local box = recipeBox()
+check(GameTooltip.link == items[2844].link and GameTooltip.lines[1] == "item 2844",
+  "GameTooltip shows the crafted item, so Blizzard and other addons treat it as an item")
+check(box.shown and box.lines[1] == "Copper Mace", "the recipe box starts with the recipe's name")
+check(box.point[1] == "TOPLEFT" and box.point[2] == UIParent and box.point[3] == "TOPRIGHT", "recipe box right of the hovered row")
+check(GameTooltip.anchor == "ANCHOR_NONE", "GameTooltip re-owned with ANCHOR_NONE so it can be placed")
+local gp = GameTooltip.point
+check(gp[1] == "TOPLEFT" and gp[2] == box and gp[3] == "TOPRIGHT", "item right of the recipe box")
+check(not tooltipHas("Cost to learn"), "no cost to learn: the trainer window shows it")
+hover(12)
+check(GameTooltip.link == items[2862].link and not box.shown, "non-gear with nothing to add: just the item")
+gp = GameTooltip.point
+check(gp[1] == "TOPLEFT" and gp[2] == UIParent and gp[3] == "TOPRIGHT", "then the item sits right of the row")
+hover(6)
+check(GameTooltip.link == nil and GameTooltip.lines[1] == "service 6" and not box.shown,
+  "recipe with no item: Blizzard's tooltip as it is")
+hover(1)
+GameTooltip:Hide()
+check(not box.shown, "the recipe box hides with the tooltip")
+
 -- Prices --------------------------------------------------------------------------
 -- Auctionator, shaped like its source (not probed). Bad input raises, like the
 -- real one; that would show up as a hidden "failed" line at the end.
@@ -139,43 +161,33 @@ Auctionator = { API = { v1 = {
 } } }
 
 hover(1)
-local costLine = lineIndex("Cost to learn: native:50")
-check(costLine ~= nil and costLine > lineIndex("+2.2 Damage Per Second"), "gear: prices come after the stat changes")
-check(rawLine(costLine - 1) == " ", "a blank line before the prices")
-check(lineIndex("Auction house: native:1234, seen 2 days ago") == costLine + 1, "auction price and its age from Auctionator")
 -- Reagents: 6 bars at 10 (auction) + 2 flux at 1 (merchant beats auction's 50) = 62.
 -- The optional slot isn't counted. Profit: floor(1234 * 0.95 - 62) = 1110.
-check(lineIndex("Reagents: native:62") == costLine + 2, "reagent cost: merchant price first, optional slots skipped")
-check(lineIndex("Profit: +native:1110 after the 5% auction house cut") == costLine + 3, "profit after the 5% cut")
-check(rawLine(costLine + 3):find("|cff20ff20+|r", 1, true) ~= nil, "profit sign is green")
-check(lineIndex("Vendor price: native:41") == costLine + 4, "vendor price from the item")
+local reagentLine = lineIndex("Reagents: native:62")
+check(reagentLine ~= nil and reagentLine > lineIndex("+2.2 Damage Per Second"),
+  "reagent cost after the stat changes; merchant price first, optional slots skipped")
+check(rawLine(reagentLine - 1) == " ", "a blank line before the reagents")
+check(lineIndex("Profit: +native:1110 after the 5% auction house cut") == reagentLine + 1, "profit after the 5% cut")
+check(rawLine(reagentLine + 1):find("|cff20ff20+|r", 1, true) ~= nil, "profit sign is green")
+check(not tooltipHas("Auction house") and not tooltipHas("Vendor price"), "the item's own prices are left to the item tooltip")
 hover(12)
-check(not tooltipHas("Item level"), "non-gear: no item level line")
-check(rawLine(2) == " " and lineIndex("Cost to learn: native:100") == 3, "non-gear: prices right under the recipe")
-check(tooltipHas("Auction house: native:30 each, seen today"), "stackable items are priced each; age 0 is today")
-check(tooltipHas("Vendor price: native:2 each"), "vendor price each")
+check(recipeBox().shown and rawLine(2) == "Reagents: native:3 (makes 2)", "non-gear: reagents right under the recipe name")
 -- Makes 2 at 30: floor(60 * 0.95 - 3) = 54.
-check(tooltipHas("Reagents: native:3 (makes 2)"), "reagents say how many one craft makes")
 check(tooltipHas("Profit: +native:54 after"), "profit counts every item made")
 hover(10)
-check(tooltipHas("Auction house: native:777") and not tooltipHas("seen"), "no age when Auctionator has none")
 check(tooltipHas("Reagents: no price for 1 of 2"), "says when a reagent has no price")
 check(not tooltipHas("Profit"), "no profit when a reagent has no price")
 hover(5)
-local noPrice = lineIndex("Auction house: no price yet")
-check(noPrice ~= nil, "Auctionator has no price yet")
-check(tooltipHas("Reagents: native:20") and not tooltipHas("Profit"), "reagents shown, but no profit without a sale price")
-check(lineColor(noPrice)[1] == 0.6, "no price yet is gray")
-check(not tooltipHas("Vendor price"), "no vendor line when vendors pay nothing")
-check(not tooltipHas("Cost to learn"), "no learn cost when the trainer charges nothing")
+local noSale = lineIndex("Profit: no auction price for the item yet")
+check(tooltipHas("Reagents: native:20") and noSale ~= nil, "reagents shown; profit waits for a sale price")
+check(lineColor(noSale)[1] == 0.6, "no sale price yet is gray")
 hover(9)
-check(not tooltipHas("Auction house"), "no auction line for items that bind on pickup")
 check(tooltipHas("Reagents: native:10") and not tooltipHas("Profit"), "bind on pickup: reagent cost, no profit")
 hover(7)
-check(tooltipHas("Vendor price: native:12345"), "money goes through the client's GetCoinTextureString")
 -- 20 bars = 200 against floor(100 * 0.95) = 95.
-check(tooltipHas("Profit: -native:105 after"), "a loss shows as a negative profit")
-check(rawLine(lineIndex("Profit: -native:105 after the 5% auction house cut")):find("|cffff4040-|r", 1, true) ~= nil, "loss sign is red")
+local lossLine = lineIndex("Profit: -native:105 after the 5% auction house cut")
+check(lossLine ~= nil, "a loss shows as a negative profit")
+check(rawLine(lossLine):find("|cffff4040-|r", 1, true) ~= nil, "loss sign is red")
 GameTooltip:Hide()
 
 -- Native compare ------------------------------------------------------------------
@@ -186,7 +198,10 @@ shiftDown = true
 fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
 check(ShoppingTooltip1.native == "Item-2844", "Shift starts Blizzard's own compare for the crafted item")
 local p = ShoppingTooltip1.point
-check(p[1] == "TOPRIGHT" and p[2] == GameTooltip and p[3] == "TOPLEFT", "equipped item on the left, recipe on the right")
+check(p[1] == "TOPLEFT" and p[2] == GameTooltip and p[3] == "TOPRIGHT", "equipped right of the item, clear of the recipe list")
+TooltipComparisonManager:AnchorShoppingTooltips() -- Blizzard places it again, on the left
+p = ShoppingTooltip1.point
+check(p[1] == "TOPLEFT" and p[2] == GameTooltip and p[3] == "TOPRIGHT", "moved back right when Blizzard places it")
 check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped", "empty native header gets its text")
 shiftDown = false
 local cleared = compareCleared
@@ -209,11 +224,25 @@ check(not ShoppingTooltip1.shown, "no compare for a recipe with no item")
 hover(11)
 check(not ShoppingTooltip1.shown, "no compare for non-gear (shirt)")
 
-GameTooltip.left = 100 -- no room on the left
+GameTooltip.right = 1950 -- no room on the right
 hover(1)
 p = ShoppingTooltip1.point
-check(p[1] == "TOPLEFT" and p[3] == "TOPRIGHT", "flips to the right only when the left has no room")
-GameTooltip.left = nil
+check(p[1] == "TOPRIGHT" and p[2] == recipeBox() and p[3] == "TOPLEFT", "flips left of the recipe box only when the right has no room")
+GameTooltip.right = nil
+
+-- Blizzard starts the compare by itself for the item: we only move it.
+alwaysCompare = false
+hover(1)
+ShoppingTooltip1.shown, ShoppingTooltip1.native = true, "Blizzard"
+shiftDown = true
+fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
+p = ShoppingTooltip1.point
+check(ShoppingTooltip1.native == "Blizzard" and p[1] == "TOPLEFT" and p[2] == GameTooltip,
+  "Blizzard's own compare is kept and moved right of the item")
+shiftDown = false
+fire("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
+check(ShoppingTooltip1.native == "Blizzard", "and left for Blizzard to hide")
+ShoppingTooltip1:Hide()
 
 -- Native compare can't start (no GUID): fill the compare tooltips ourselves.
 -- Text Blizzard already set is left alone.

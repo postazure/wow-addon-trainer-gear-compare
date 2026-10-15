@@ -49,19 +49,20 @@ Lua errors first: `/console scriptErrors 1`.
 all of it for a big change, and at least this for a small one)
 
 - [ ] A gear trainer (Blacksmithing, Leatherworking or Tailoring): hovering a
-      recipe shows the compare with your equipped item on the **left**,
-      headed **Equipped** (with visible text).
-- [ ] The recipe tooltip shows "Item level X vs Y (slot)" and the stat
+      recipe shows, left to right, the recipe box, the item, and (with
+      Shift) your equipped item headed **Equipped** (with visible text).
+      Nothing covers the recipe list.
+- [ ] The recipe box shows "Item level X vs Y (slot)" and the stat
       changes, one per line, green or red numbers with white names.
 - [ ] Gear you can't use still shows the compare and the lines.
-- [ ] A non-gear trainer (Enchanting or Alchemy): no Trainer Compare lines,
-      no compare, no errors.
+- [ ] A non-gear trainer (Enchanting or Alchemy): no item level lines, no
+      compare, no errors. Enchants keep Blizzard's own tooltip.
 - [ ] Settings dropdown: **Only show usable gear** is there (no header, no
       divider). Ticking it fades only gear you can't use.
 - [ ] No marks on any recipe row.
 - [ ] Rings or trinkets: the compare shows both of yours.
 - [ ] Train a recipe. No "action blocked" or "interface action failed".
-- [ ] With debug on, chat says `compare: native, left`. (`manual` still
+- [ ] With debug on, chat says `compare: native, right`. (`manual` still
       works, but note it in the release notes.)
 - [ ] With debug off (`/run TrainerCompareDB.debug = false`), Trainer Compare prints nothing
       during normal play.
@@ -91,8 +92,8 @@ it looks different from the current version.
 
 | File | What it must show | Retake when |
 | --- | --- | --- |
-| `01-compare.png` | A gear recipe hovered at a trainer: the recipe tooltip on the right, the compare on the left with **Equipped**, and our item level + stat lines. | The compare, its header, its side, or the tooltip lines change. |
-| `02-stat-lines.png` | Close-up of the recipe tooltip's lines: "Item level X vs Y (slot)", the "If you replace this item..." heading, and a mix of green and red stat numbers. | Line wording, colors, or order change. |
+| `01-compare.png` | A gear recipe hovered at a trainer: the recipe box, the item, and the compare with **Equipped**, left to right. | The layout, the compare, its header, or the recipe box lines change. |
+| `02-stat-lines.png` | Close-up of the recipe box's lines: "Item level X vs Y (slot)", the "If you replace this item..." heading, and a mix of green and red stat numbers. | Line wording, colors, or order change. |
 | `03-two-slots.png` | A ring or trinket recipe with both equipped rings or trinkets in the compare. | Two-slot or weapon rules change. |
 | `04-settings-menu.png` | The trainer's Settings dropdown open, showing **Only show usable gear**. | The menu entry's text or place changes. |
 | `05-filter.png` | The recipe list with the filter on: some rows faded (gear you can't use), the rest normal. | Fading or the filter's rules change. |

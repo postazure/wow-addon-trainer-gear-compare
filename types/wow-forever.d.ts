@@ -73,13 +73,6 @@ declare const GetCVarBool: ((name: string) => boolean) | undefined;
 declare function GetTrainerServiceInfo(index: number): LuaMultiReturn<[string | undefined, string | undefined, number | undefined, number | undefined, string | undefined, string | undefined]>;
 /** Link to the crafted item. Nil when the recipe makes no item. */
 declare function GetTrainerServiceItemLink(index: number): string | undefined;
-/**
- * Not probed. Classic order: money cost in copper, then talent and
- * profession costs. Forever may order values differently (it does for
- * GetTrainerServiceInfo), so callers check the first value is a number.
- */
-declare const GetTrainerServiceCost: ((this: void, index: number) => LuaMultiReturn<[unknown]>) | undefined;
-
 /** Not probed. Money as text with gold, silver and copper icons. */
 declare const GetCoinTextureString: ((this: void, copper: number) => string) | undefined;
 
@@ -165,6 +158,10 @@ interface GameTooltip extends Frame {
   AddLine(text: string, r?: number, g?: number, b?: number, wrap?: boolean): void;
   SetTrainerService(index: number): void;
   SetInventoryItem(unit: string, slot: number): void;
+  /** Not probed; on every client we know of. Feature-checked. */
+  SetHyperlink(link: string): void;
+  /** Not probed; on every client we know of. Feature-checked. */
+  GetOwner(): Region | undefined;
   HookScript(handler: string, fn: (...args: any[]) => void): void;
 }
 
@@ -180,6 +177,9 @@ interface TrainerFrame extends Frame {
 
 declare function CreateFrame(frameType: "Frame", name?: string, parent?: Frame, template?: string): Frame;
 declare function CreateFrame(frameType: "CheckButton", name?: string, parent?: Frame, template?: string): CheckButton;
+declare function CreateFrame(frameType: "GameTooltip", name?: string, parent?: Frame, template?: string): GameTooltip;
+
+declare const UIParent: Frame;
 
 declare const GameTooltip: GameTooltip;
 
@@ -214,6 +214,8 @@ declare namespace string {
 interface Region {
   GetEffectiveScale(): number;
   GetWidth(): number;
+  /** Not probed. Nil before the frame has a position. */
+  GetRight(): number | undefined;
 }
 
 /** Modern menu builder passed to Menu.ModifyMenu callbacks. */
@@ -231,6 +233,8 @@ declare const TooltipComparisonManager: {
   CompareItem?(comparisonItem: unknown, tooltip: GameTooltip, anchorFrame?: Region): void;
   CreateComparisonItem?(tooltipData: unknown): unknown;
   Clear?(tooltip: GameTooltip): void;
+  /** Retail name, not probed. Blizzard places its compare tooltips here; we post-hook it to move them. */
+  AnchorShoppingTooltips?(...args: unknown[]): void;
 } | undefined;
 
 /** Hyperlink tooltip data carries an item GUID the native compare can use. Not probed. */
@@ -285,8 +289,6 @@ declare const C_TradeSkillUI: {
 interface AuctionatorAPIv1 {
   /** Last scanned auction price for one item. */
   GetAuctionPriceByItemLink?: (this: void, callerID: string, itemLink: string) => number | undefined;
-  /** Days since the price was seen. Nil if never, or over 21 days ago. */
-  GetAuctionAgeByItemLink?: (this: void, callerID: string, itemLink: string) => number | undefined;
   GetAuctionPriceByItemID?: (this: void, callerID: string, itemID: number) => number | undefined;
   /** What a merchant charges, from Auctionator's cache of merchants the player has seen. */
   GetVendorPriceByItemID?: (this: void, callerID: string, itemID: number) => number | undefined;

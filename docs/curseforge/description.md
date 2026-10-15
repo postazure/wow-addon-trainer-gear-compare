@@ -6,9 +6,9 @@ Made for **WoW Forever**.
 
 ## What it does
 
-**Blizzard's normal item compare, for trainer recipes.** Hover a recipe that makes gear and you get the same compare tooltip you see on any item: your equipped item on the left, marked **Equipped**. Hold **Shift**, or turn on *Always compare items* in the game's options.
+**The real item, for trainer recipes.** Hover a recipe and you see the item it makes, like any item tooltip. Hold **Shift**, or turn on *Always compare items* in the game's options, to see Blizzard's normal compare next to it, marked **Equipped**. Nothing covers the recipe list.
 
-**Item level and stat changes on the recipe tooltip.** Under the recipe you'll see:
+**Item level and stat changes in a small recipe box.** Beside the item you'll see:
 
 - the new item's item level vs yours, with the slot (for example *Item level 9 vs 2 (Main Hand)*)
 - *If you replace this item, the following stat changes will occur:*, then one stat per line, with the number in green (gain) or red (loss)

@@ -92,6 +92,29 @@ local function newRegion()
   return r
 end
 
+-- Tooltips: GameTooltip, and ours from CreateFrame("GameTooltip"). Lines are recorded.
+local function makeTooltip(t)
+  t.lines, t.colors = {}, {}
+  function t:SetOwner(owner, anchor)
+    self.owner, self.anchor = owner, anchor
+    self.lines, self.colors, self.link, self.point, self.shown = {}, {}, nil, nil, true
+  end
+  function t:GetOwner() return self.owner end
+  function t:SetText(text, r, g, b) self.lines = { text }; self.colors = { { r, g, b } } end
+  function t:AddLine(text, r, g, b)
+    self.lines[#self.lines + 1] = text
+    self.colors[#self.lines] = { r, g, b }
+  end
+  -- An item tooltip, the way Blizzard fills it.
+  function t:SetHyperlink(link) self.link = link; self.lines = { "item " .. link:match("item:(%d+)") }; self.colors = {} end
+  function t:SetTrainerService(i) self.link = nil; self.lines = { "service " .. i } end
+  function t:HookScript(name, fn)
+    local prev = self.scripts[name]
+    self.scripts[name] = function(...) if prev then prev(...) end fn(...) end
+  end
+  function t:Hide() self.shown = false; if self.scripts.OnHide then self.scripts.OnHide(self) end end
+end
+
 handlers = {}
 function CreateFrame(kind, name, parent)
   local f = newRegion()
@@ -106,20 +129,14 @@ function CreateFrame(kind, name, parent)
   function f:GetID() return 0 end
   function f:SetChecked(v) self.checked = v end
   function f:GetChecked() return self.checked end
+  if kind == "GameTooltip" then makeTooltip(f) end
   if name then _G[name] = f end
   return f
 end
 UIParent = CreateFrame("Frame")
+UIParent.right = 2000
 
-GameTooltip = CreateFrame("Frame")
-GameTooltip.lines = {}
-function GameTooltip:SetOwner() self.lines = {}; self.colors = {}; self.shown = true end
-function GameTooltip:HookScript(name, fn)
-  local prev = self.scripts[name]
-  self.scripts[name] = function(...) if prev then prev(...) end fn(...) end
-end
-function GameTooltip:Hide() self.shown = false; if self.scripts.OnHide then self.scripts.OnHide(self) end end
-UIParent.right = 1000
+GameTooltip = CreateFrame("GameTooltip", "GameTooltip")
 
 -- Built-in compare tooltips. Record which equipped slot each one shows.
 for i = 1, 2 do
@@ -146,6 +163,12 @@ function TooltipComparisonManager:CompareItem(item, tooltip)
   ShoppingTooltip1.native = item.guid
   ShoppingTooltip1.shown = true
   ShoppingTooltip1.CompareHeader.shown = true -- shown, but its text may be left empty
+  self:AnchorShoppingTooltips()
+end
+-- Like retail, Blizzard puts its compare left of the tooltip. Not probed.
+function TooltipComparisonManager:AnchorShoppingTooltips()
+  ShoppingTooltip1:ClearAllPoints()
+  ShoppingTooltip1:SetPoint("TOPRIGHT", GameTooltip, "TOPLEFT", 0, -10)
 end
 function TooltipComparisonManager:Clear() compareCleared = compareCleared + 1 end
 C_TooltipInfo = {
@@ -188,23 +211,23 @@ function compareSlots()
   end
   return table.concat(slots, ",")
 end
-function GameTooltip:SetText(t) self.lines = { t } end
-function GameTooltip:AddLine(t, r, g, b)
-  self.lines[#self.lines + 1] = t
-  self.colors = self.colors or {}
-  self.colors[#self.lines] = { r, g, b }
-end
-function GameTooltip:SetTrainerService(i) self.lines = { "service " .. i } end
 local function plain(s) return (s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
--- Index of a tooltip line, compared without color codes.
+-- Our lines: in the recipe box when it's shown, else under the item in GameTooltip.
+function recipeBox() return TrainerCompareRecipeTooltip end
+local function ourLines()
+  local box = recipeBox()
+  if box and box.shown then return box end
+  return GameTooltip
+end
+-- Index of a line, compared without color codes.
 function lineIndex(text)
-  for i, l in ipairs(GameTooltip.lines) do if plain(l) == text then return i end end
+  for i, l in ipairs(ourLines().lines) do if plain(l) == text then return i end end
   return nil
 end
-function rawLine(i) return GameTooltip.lines[i] end
-function lineColor(i) return GameTooltip.colors[i] end
+function rawLine(i) return ourLines().lines[i] end
+function lineColor(i) return ourLines().colors[i] end
 function tooltipHas(text)
-  for _, l in ipairs(GameTooltip.lines) do if plain(l):find(text, 1, true) then return true end end
+  for _, l in ipairs(ourLines().lines) do if plain(l):find(text, 1, true) then return true end end
   return false
 end
 
@@ -267,7 +290,7 @@ function GetInventorySlotInfo(name) return SLOT_IDS[name] end
 function GetBuildInfo() return "1.60.1", "70374", "Oct 12 2026", 16001 end
 
 -- Trainer -----------------------------------------------------------------
--- services[i] = { name, type, link or nil, category, cost, spell }
+-- services[i] = { name, type, link or nil, category, spell }
 services = {}
 function GetNumTrainerServices() return #services end
 function GetTrainerServiceInfo(i)
@@ -276,8 +299,6 @@ function GetTrainerServiceInfo(i)
   return s.name, s.type, 133476, 0, "", s.category  -- Forever order, from the probe
 end
 function GetTrainerServiceItemLink(i) return services[i] and services[i].link end
--- Not probed: Classic order (money, talent, profession).
-function GetTrainerServiceCost(i) return services[i] and services[i].cost or 0, 0, 0 end
 -- Not probed. Marked so tests can tell it from our own formatting.
 function GetCoinTextureString(copper) return "native:" .. copper end
 

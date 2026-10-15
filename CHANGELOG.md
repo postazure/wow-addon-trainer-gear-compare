@@ -3,8 +3,10 @@
 ## Unreleased
 
 - The compare header now says "Equipped". "Currently Equipped" didn't fit.
-- Recipe tooltips show prices for any crafted item, not just gear: the
-  cost to learn and the vendor price, each item for stackable items.
+- Hovering a recipe now shows the real item it makes, like any item
+  tooltip. Trainer Compare's lines move to a small box beside it.
+- The compare now shows right of the item, so it no longer covers the
+  recipe list.
 
 ## 0.6.0
 
