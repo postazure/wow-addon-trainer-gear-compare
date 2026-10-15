@@ -1,42 +1,95 @@
 # Trainer Compare
 
-**See how the gear a profession trainer teaches compares to what you wear, right in the trainer window.**
+**Before you buy a recipe, see how its gear compares to what you wear.**
 
-Made for **WoW Forever**.
+In WoW Forever, crafted gear can help at every stage of leveling. Every
+trainer visit is a choice: which recipes make gear worth wearing? Trainer
+Compare shows the item level and stat changes right in the trainer window.
+You decide what each recipe is worth to you.
 
-## What it does
+Hover a recipe that makes gear and hold **Shift**. See it next to what you
+have on.
 
-**Blizzard's normal item compare, for trainer recipes.** Hover a recipe that makes gear and you get the same compare tooltip you see on any item: your equipped item on the left, marked **Currently Equipped**. Hold **Shift**, or turn on *Always compare items* in the game's options.
+- **Side-by-side compare.** Like the game's item compare, now for trainer
+  recipes. Your equipped item on one side, the recipe on the other.
+- **Item level and stat changes at a glance.** *Item level 9 vs 2 (Main
+  Hand)*, then each stat change with a green number for a gain and a red
+  number for a loss.
+- **Fade what's not for you.** One checkbox in the trainer's Settings menu
+  fades gear you can't use yet, so the rest stands out.
+- **No scores, no "upgrade" labels.** Just the numbers. You decide.
 
-**Item level and stat changes on the recipe tooltip.** Under the recipe you'll see:
+Nothing to install alongside it, and nothing to type. Made for **WoW
+Forever**.
 
-- the new item's item level vs yours, with the slot (for example *Item level 9 vs 2 (Main Hand)*)
-- *If you replace this item, the following stat changes will occur:*, then one stat per line, with the number in green (gain) or red (loss)
+---
 
-**It knows how slots work.**
+## How it works
 
-- Rings and trinkets: compared against the weaker of your two, and the compare shows both.
-- Two-handers: compared against your main hand and off hand together.
-- One-handers: compared against your main hand, or the weaker hand if you can dual wield.
+**The compare.** Hover a recipe that makes gear, then hold **Shift**. If your
+game is set to always compare items, it shows without Shift. Your equipped
+item shows next to the recipe, marked **Currently Equipped**. It goes on the
+left when there's room, and on the right when there isn't. If nothing is
+equipped in that slot, there's nothing to compare against, so no compare
+shows.
 
-**Works for gear you can't use yet, too.** Plan ahead for gear above your level or a weapon skill you haven't learned. The item's own red text tells you why you can't use it.
+**The tooltip lines.** Under the recipe you'll see:
 
-**Only show usable gear.** A new option at the bottom of the trainer's **Settings** dropdown. Turn it on to fade gear you can't use: the wrong armor type, a weapon skill you don't have, too high a level, another class's relic, or only stats your class doesn't use (like Spirit-only gear on a Paladin). Enchants and other recipes are never faded.
+- the item's item level vs yours, with the slot (or *vs empty* if the slot
+  is empty)
+- *If you replace this item, the following stat changes will occur:*, then
+  one stat per line, with a green number for a gain and a red number for a
+  loss
 
-## What it doesn't do
+**What it compares against.**
 
-- It doesn't tell you what's an "upgrade". It shows the facts and lets you decide.
-- It doesn't change the trainer window. No marks are drawn on recipe rows, and the filter only fades rows; it never hides or removes them.
-- It doesn't need any other addon.
+- Rings and trinkets: an empty slot if you have one, or else the one with
+  the lower item level.
+- One-hand weapons: your main hand. If you can dual wield, an empty hand if
+  you have one, or else the hand with the lower item level.
+- Main-hand weapons: your main hand.
+- Off-hand weapons, shields and held items: your off hand.
+- Two-handers: your main hand and off hand together.
+- Anything else in your hands while you wield a two-hander: the two-hander.
+- Shirts, tabards, bags, ammo and fishing poles aren't compared.
+
+**Plan ahead.** Gear above your level, or for a weapon skill you haven't
+learned, still gets the item level and stat lines, and the compare.
+
+**Only show usable gear.** A checkbox in the trainer's **Settings** dropdown.
+It's off until you tick it, and it's saved for your account. When it's on,
+it fades:
+
+- armor types you haven't learned to wear
+- weapon types you haven't learned
+- gear above your level, even by one level
+- relics for another class
+- gear with only stats your class doesn't use (like Spirit-only gear on a
+  Paladin). This one is a judgment call: you might still want the item.
+
+Faded rows stay in the list and you can still click them. Enchants and
+other non-gear recipes are never faded. If your game client can't add to
+the Settings dropdown, a small "Usable" checkbox shows next to the Train
+button instead.
 
 ## Good to know
 
-- Item data sometimes loads late. If a tooltip says *Loading item data...*, move the mouse off the recipe and back.
+- Apart from the filter checkbox, the trainer window isn't changed. Recipe
+  rows get no marks.
+- Item data sometimes loads late. If a tooltip says *Loading item data...*,
+  move the mouse off the recipe and back.
+- The stat changes use each item's own stats. Enchants on your equipped
+  gear may not be counted.
 - Only the default Blizzard trainer window is supported.
 
 ## Feedback and source
 
-Trainer Compare is open source under the MIT license. It's written in TypeScript and compiled to plain, readable Lua.
+Trainer Compare is open source under the MIT license. It's written in
+TypeScript and compiled to plain, readable Lua.
 
-- Source, issues and bug reports: https://github.com/postazure/wow-addon-trainer-gear-compare
-- For a bug report, turn on debug messages with `/run TrainerCompareDB.debug = true`, reproduce the problem, and include a screenshot of what it prints. `/run TrainerCompareDB.debug = false` turns them off.
+- Source, issues and bug reports:
+  https://github.com/postazure/wow-addon-trainer-gear-compare
+- For a bug report, turn on debug messages with
+  `/run TrainerCompareDB.debug = true`, reproduce the problem, and include a
+  screenshot of what it prints. `/run TrainerCompareDB.debug = false` turns
+  them off.
