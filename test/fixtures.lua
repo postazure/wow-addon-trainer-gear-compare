@@ -65,6 +65,21 @@ items[2844].sellPrice = 41     -- Copper Mace
 items[2900].sellPrice = 12345  -- Copper Maul
 items[2902].bind = 1           -- Iron Helm binds on pickup
 
+-- Recipes. Not probed: made-up reagents.
+local function basic(itemID, count) return { reagents = { { itemID = itemID } }, quantityRequired = count, reagentType = 1 } end
+local function recipe(index, spell, makes, slots)
+  services[index].spell = spell
+  recipes[spell] = { quantityMin = makes, quantityMax = makes, reagentSlotSchematics = slots }
+end
+COPPER_BAR, WEAK_FLUX, ROUGH_STONE, MALACHITE = 2840, 2880, 2835, 774
+recipe(1, 2737, 1, { basic(COPPER_BAR, 6), basic(WEAK_FLUX, 2),
+  { reagents = { { itemID = 9999 } }, quantityRequired = 1, reagentType = 0 } })  -- optional: not counted
+recipe(5, 2663, 1, { basic(COPPER_BAR, 2) })
+recipe(7, 2741, 1, { basic(COPPER_BAR, 20) })
+recipe(9, 3504, 1, { basic(COPPER_BAR, 1) })
+recipe(10, 3505, 1, { basic(COPPER_BAR, 1), basic(MALACHITE, 1) })
+recipe(12, 2660, 2, { basic(ROUGH_STONE, 1) })
+
 -- A category row, and a row whose label does not match its service.
 category = makeRow({ categoryName = "Maces" }, "Maces")
 rows[#rows + 1] = category

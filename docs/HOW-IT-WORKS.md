@@ -35,19 +35,30 @@ not. Facts only, no profit:
   it was seen (`GetAuctionAgeByItemLink`). Only when Auctionator is loaded.
   "No price yet" in gray when Auctionator hasn't seen the item. No line for
   items that bind on pickup: they can't be sold there.
+- **Reagents**: what one craft's reagents cost, and how many items it makes
+  if more than one. Only with Auctionator. The recipe's spell id comes from
+  `C_TooltipInfo.GetTrainerService`, and its reagents from
+  `C_TradeSkillUI.GetRecipeSchematic` (required slots only). Each reagent is
+  priced like Auctionator's own crafting info: the merchant price if
+  Auctionator has seen it at a merchant, else the auction price. If a
+  reagent has no price, it says so in gray and there is no profit line.
+- **Profit**: auction price x number made x 0.95 (the 5% auction house
+  cut), minus the reagent cost. Green with a plus, or red with a minus.
+  Only when every price is known, and never for items that bind on pickup.
 - **Vendor price**, from the item (`C_Item.GetItemInfo`). Skipped when
   vendors pay nothing.
 - Stackable items are priced each.
 
-Why no profit: the trainer doesn't say what reagents a recipe needs before
-you learn it, so the cost to craft isn't known.
+Profit doesn't count the auction deposit or the cost to learn.
 
 Why no Disenchantry: its data is private to the addon (no public API).
 
 None of this is confirmed in game yet. `GetTrainerServiceCost`,
-`GetCoinTextureString` and the Auctionator calls come from Classic docs and
-Auctionator's source. All are feature-checked, and Auctionator's calls
-(which raise errors on bad input) run inside `safe()`.
+`GetCoinTextureString`, `GetRecipeSchematic` and the Auctionator calls come
+from Classic or retail docs and Auctionator's source. Whether
+`GetRecipeSchematic` works for recipes you haven't learned is the big
+unknown. All are feature-checked, and every call runs inside `safe()`
+(Auctionator's API raises errors on bad input).
 
 ## Known limits
 

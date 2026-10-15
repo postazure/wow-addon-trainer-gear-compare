@@ -154,6 +154,22 @@ C_TooltipInfo = {
     if noGuid[id] then return {} end
     return { guid = "Item-" .. id }
   end,
+  -- Type Spell is from the probe; the id being the recipe spell is not probed.
+  GetTrainerService = function(i)
+    local s = services[i]
+    if not s then return nil end
+    return { type = Enum.TooltipDataType.Spell, id = s.spell }
+  end,
+}
+-- Not probed: retail values.
+Enum = {
+  TooltipDataType = { Item = 0, Spell = 1 },
+  CraftingReagentType = { Modifying = 0, Basic = 1, Finishing = 2 },
+}
+-- Not probed: retail shape. recipes[spellID] = schematic.
+recipes = {}
+C_TradeSkillUI = {
+  GetRecipeSchematic = function(spellID, isRecraft) return recipes[spellID] end,
 }
 shiftDown = false
 alwaysCompare = false
@@ -251,7 +267,7 @@ function GetInventorySlotInfo(name) return SLOT_IDS[name] end
 function GetBuildInfo() return "1.60.1", "70374", "Oct 12 2026", 16001 end
 
 -- Trainer -----------------------------------------------------------------
--- services[i] = { name, type, link or nil, category, cost }
+-- services[i] = { name, type, link or nil, category, cost, spell }
 services = {}
 function GetNumTrainerServices() return #services end
 function GetTrainerServiceInfo(i)

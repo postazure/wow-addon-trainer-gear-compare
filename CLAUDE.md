@@ -78,9 +78,13 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
   line. The number is green or red; the stat name is white.
 - No "can't use" line: the item's own red text already says it.
 - **Prices, for any crafted item** (always on): cost to learn, auction house
-  price and age (Auctionator, if loaded), vendor price. No profit line:
-  reagents aren't known at the trainer. Disenchantry has no public API, so
-  it's skipped. No auction line for items that bind on pickup.
+  price and age, reagent cost, profit, vendor price. Auction, reagent and
+  profit lines need Auctionator. Reagents come from
+  `C_TradeSkillUI.GetRecipeSchematic`; each is priced like Auctionator does
+  (merchant price if known, else auction price). Profit = auction price x
+  number made x 0.95 (the AH cut) - reagent cost, shown only when every
+  price is known. No auction line or profit for items that bind on pickup.
+  Disenchantry has no public API, so it's skipped.
 - **No slash commands.** Everything a player does has UI in the trainer
   window. Debug is a saved setting:
   `/run TrainerCompareDB.debug = true` (or `false`), at once and saved.

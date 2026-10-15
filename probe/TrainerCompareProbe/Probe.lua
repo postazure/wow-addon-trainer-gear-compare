@@ -120,7 +120,7 @@ local HELPER_API = {
   "GetNumSkillLines", "GetSkillLineInfo", "C_Timer.After", "hooksecurefunc",
   "C_AddOns.IsAddOnLoaded", "IsAddOnLoaded", "TooltipDataProcessor.AddTooltipPostCall",
   "Item.CreateFromItemID", "GetCoinTextureString", "C_CurrencyInfo.GetCoinTextureString",
-  "GetMoneyString", "GetCoinText",
+  "GetMoneyString", "GetCoinText", "C_TradeSkillUI.GetRecipeSchematic",
 }
 
 local function reportNames(title, names)
@@ -272,6 +272,7 @@ end
 -- call goes through try().
 local AUCTIONATOR_FNS = {
   "GetAuctionPriceByItemLink", "GetAuctionAgeByItemLink", "IsAuctionDataExactByItemLink",
+  "GetAuctionPriceByItemID", "GetVendorPriceByItemID",
   "GetVendorPriceByItemLink", "GetDisenchantPriceByItemLink", "RegisterForDBUpdate",
 }
 
@@ -329,6 +330,39 @@ local function auctionatorLine(link)
     :format(call("GetAuctionPriceByItemLink"), call("GetAuctionAgeByItemLink"),
             call("IsAuctionDataExactByItemLink"), call("GetVendorPriceByItemLink"),
             call("GetDisenchantPriceByItemLink"))
+end
+
+-- What C_TradeSkillUI.GetRecipeSchematic says about a recipe spell: how many
+-- it makes and each reagent slot (type, count, item ids), plus reagent prices.
+local function schematicLine(spellID)
+  local fn = lookup("C_TradeSkillUI.GetRecipeSchematic")
+  if type(fn) ~= "function" then return "GetRecipeSchematic missing" end
+  if type(spellID) ~= "number" then return "no spell id" end
+  local r = try(fn, spellID, false)
+  if not r.ok then return "<" .. tostring(r.err) .. ">" end
+  local s = r[1]
+  if type(s) ~= "table" then return "returned " .. fmt(s) end
+  local slots = {}
+  local api = auctionatorAPI()
+  if type(s.reagentSlotSchematics) == "table" then
+    for i, slot in ipairs(s.reagentSlotSchematics) do
+      local ids = {}
+      if type(slot.reagents) == "table" then
+        for _, reagent in ipairs(slot.reagents) do
+          local id = reagent.itemID
+          local price = ""
+          if api and type(id) == "number" then
+            price = ("(ah=%s vendor=%s)"):format(show(try(api.GetAuctionPriceByItemID, ADDON_NAME, id)),
+              show(try(api.GetVendorPriceByItemID, ADDON_NAME, id)))
+          end
+          ids[#ids + 1] = fmt(id) .. price
+        end
+      end
+      slots[#slots + 1] = ("%d:type=%s x%s [%s]"):format(i, fmt(slot.reagentType), fmt(slot.quantityRequired),
+        table.concat(ids, ","))
+    end
+  end
+  return ("made=%s-%s slots: %s"):format(fmt(s.quantityMin), fmt(s.quantityMax), table.concat(slots, "; "))
 end
 
 ---------------------------------------------------------------------------
@@ -525,6 +559,7 @@ local function printDetail(c)
               table.concat(texts, " // ")))
   end
 
+  out("  spell id " .. fmt(c.spellID) .. ", GetRecipeSchematic -> " .. schematicLine(c.spellID))
   if c.itemID then
     out(("  => OUTPUT ITEM FOUND via %s: itemID %d"):format(c.via, c.itemID))
     itemDetails(c.itemID, c.name)
@@ -560,6 +595,7 @@ local function printCompact(c)
     local age = api and show(try(api.GetAuctionAgeByItemLink, ADDON_NAME, link)) or "-"
     prices = (" sell=%s ah=%s age=%s"):format(fmt(sell), ah, age)
   end
+  prices = prices .. " recipe: " .. schematicLine(c.spellID)
   out(("[%d] %s (%s) item=%s via=%s spell=%s equipLoc=%s%s")
     :format(c.index, fmt(c.name), fmt(c.kind), fmt(c.itemID), fmt(c.via), fmt(c.spellID), equipLoc, prices))
 end

@@ -236,6 +236,41 @@ declare const TooltipComparisonManager: {
 /** Hyperlink tooltip data carries an item GUID the native compare can use. Not probed. */
 declare const C_TooltipInfo: {
   GetHyperlink?: (this: void, link: string) => { guid?: string } | undefined;
+  /**
+   * Confirmed present; reports type Spell for trainer services. That the id
+   * is the recipe's spell id is from retail, not probed.
+   */
+  GetTrainerService?: (this: void, index: number) => { type?: number; id?: number } | undefined;
+} | undefined;
+
+/** Not probed. Retail enums, read at run time instead of hard-coding numbers. */
+declare const Enum: {
+  TooltipDataType?: { Spell?: number };
+  CraftingReagentType?: { Basic?: number };
+} | undefined;
+
+/** One reagent slot of a recipe. Retail shape, not probed. */
+interface ReagentSlotSchematic {
+  /** Items that fill the slot. Classic recipes have one. */
+  reagents?: { itemID?: number }[];
+  quantityRequired?: number;
+  reagentType?: number;
+}
+
+/** Retail shape, not probed. */
+interface RecipeSchematic {
+  /** How many items one craft makes (the low end). */
+  quantityMin?: number;
+  reagentSlotSchematics?: ReagentSlotSchematic[];
+}
+
+/**
+ * Not probed. Auctionator 341 loads its retail crafting code on Forever and
+ * calls GetRecipeSchematic there, so it likely exists. Whether it works for
+ * recipes the player hasn't learned is not known.
+ */
+declare const C_TradeSkillUI: {
+  GetRecipeSchematic?: (this: void, recipeSpellID: number, isRecraft: boolean) => RecipeSchematic | undefined;
 } | undefined;
 
 // ---------------------------------------------------------------------------
@@ -252,6 +287,9 @@ interface AuctionatorAPIv1 {
   GetAuctionPriceByItemLink?: (this: void, callerID: string, itemLink: string) => number | undefined;
   /** Days since the price was seen. Nil if never, or over 21 days ago. */
   GetAuctionAgeByItemLink?: (this: void, callerID: string, itemLink: string) => number | undefined;
+  GetAuctionPriceByItemID?: (this: void, callerID: string, itemID: number) => number | undefined;
+  /** What a merchant charges, from Auctionator's cache of merchants the player has seen. */
+  GetVendorPriceByItemID?: (this: void, callerID: string, itemID: number) => number | undefined;
 }
 /** Nil unless Auctionator is installed and loaded. */
 declare const Auctionator: { API?: { v1?: AuctionatorAPIv1 } } | undefined;
