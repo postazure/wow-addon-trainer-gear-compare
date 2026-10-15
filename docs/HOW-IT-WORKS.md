@@ -60,6 +60,11 @@ Only with Auctionator, and only for recipes that make an item.
   Gray "no auction price for the item yet" when Auctionator hasn't seen it.
   Never for items that bind on pickup.
 
+Money shows with coin icons: the client's own formatter if it has one
+(`GetCoinTextureString`, `C_CurrencyInfo.GetCoinTextureString` or
+`GetMoneyString`), else the icons drawn by Trainer Compare. In game, the
+first one was missing.
+
 Profit doesn't count the auction deposit or the cost to learn. There's no
 cost to learn line (the trainer window shows it), and no auction or vendor
 price line (the item tooltip shows those).

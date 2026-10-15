@@ -53,10 +53,22 @@ Auctionator = { API = { v1 = {
   GetAuctionPriceByItemLink = function(_, link) return ({ [2900] = 20000 })[tonumber(link:match("item:(%d+)"))] end,
   GetAuctionPriceByItemID = function(_, id) return ({ [COPPER_BAR] = 617 })[id] end,
 } } }
+local GOLD = "|TInterface\\MoneyFrame\\UI-GoldIcon:0:0:2:0|t"
+local SILVER = "|TInterface\\MoneyFrame\\UI-SilverIcon:0:0:2:0|t"
+local COPPER = "|TInterface\\MoneyFrame\\UI-CopperIcon:0:0:2:0|t"
 hover(7)
-check(GameTooltip.lines[1] == "item 2900" and tooltipHas("Reagents: 1g 23s 40c"),
-  "our lines go under the item; our money format: gold, silver, copper")
-check(tooltipHas("Profit: +66s 60c after AH cut (5%)"), "profit in our money format")
+check(GameTooltip.lines[1] == "item 2900" and tooltipHas("Reagents: 1" .. GOLD .. " 23" .. SILVER .. " 40" .. COPPER),
+  "our lines go under the item; no client helper: we draw the coin icons")
+check(tooltipHas("Profit: +66" .. SILVER .. " 60" .. COPPER .. " after AH cut (5%)"), "profit with coin icons")
+-- The client's own helpers, where retail keeps them. Not probed.
+C_CurrencyInfo = { GetCoinTextureString = function(c) return "currency:" .. c end }
+hover(7)
+check(tooltipHas("Reagents: currency:12340"), "uses C_CurrencyInfo.GetCoinTextureString if it's there")
+C_CurrencyInfo = nil
+GetMoneyString = function(c) return "moneystring:" .. c end
+hover(7)
+check(tooltipHas("Reagents: moneystring:12340"), "or GetMoneyString")
+GetMoneyString = nil
 Auctionator = nil
 GameTooltip:Hide()
 

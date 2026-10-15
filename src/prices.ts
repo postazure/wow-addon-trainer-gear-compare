@@ -22,20 +22,35 @@ const RED = "|cffff4040";
 const WHITE = (text: string): TooltipLine => ({ text, r: 1, g: 1, b: 1 });
 const GRAY = (text: string): TooltipLine => ({ text, r: 0.6, g: 0.6, b: 0.6 });
 
-/** Gold, silver and copper, like the rest of the UI. Our own format if the client has no helper. */
+type MoneyFormat = ((this: void, copper: number) => string) | undefined;
+
+/** One of the client's money formatters, if it exists and gives text. */
+function format(fn: MoneyFormat, copper: number): string | undefined {
+  if (fn === undefined) return undefined;
+  const text = safe("money", () => fn(copper));
+  return typeof text === "string" && text !== "" ? text : undefined;
+}
+
+/** A coin icon, the way the UI draws it in text. */
+function coin(metal: string): string {
+  return `|TInterface\\MoneyFrame\\UI-${metal}Icon:0:0:2:0|t`;
+}
+
+/**
+ * Gold, silver and copper with coin icons, like the rest of the UI. Tries
+ * the client's formatters (each checked on its own: a list with missing
+ * ones would stop a Lua loop early), then draws the icons itself.
+ */
 function money(copper: number): string {
   const c = Math.floor(copper);
-  const native = GetCoinTextureString;
-  if (native !== undefined) {
-    const text = safe("money", () => native(c));
-    if (typeof text === "string" && text !== "") return text;
-  }
+  const native = format(GetCoinTextureString, c) ?? format(C_CurrencyInfo?.GetCoinTextureString, c) ?? format(GetMoneyString, c);
+  if (native !== undefined) return native;
   const gold = Math.floor(c / 10000);
   const silver = Math.floor(c / 100) % 100;
   const parts: string[] = [];
-  if (gold > 0) parts.push(`${gold}|cffffd700g|r`);
-  if (silver > 0) parts.push(`${silver}|cffc7c7cfs|r`);
-  if (c % 100 > 0 || parts.length === 0) parts.push(`${c % 100}|cffeda55fc|r`);
+  if (gold > 0) parts.push(`${gold}${coin("Gold")}`);
+  if (silver > 0) parts.push(`${silver}${coin("Silver")}`);
+  if (c % 100 > 0 || parts.length === 0) parts.push(`${c % 100}${coin("Copper")}`);
   return parts.join(" ");
 }
 
