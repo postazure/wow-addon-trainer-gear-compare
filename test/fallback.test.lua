@@ -46,6 +46,7 @@ check(compareSlots() == "" and not ShoppingTooltip1.CompareHeader.shown, "hidden
 -- No recipe box: our lines go under the item --------------------------------
 hover(1)
 check(recipeBox() == nil and GameTooltip.link == items[2844].link, "the item still shows without a recipe box")
+check(TrainerCompareArrow == nil, "no recipe box, no arrow")
 check(GameTooltip.lines[1] == "item 2844" and #GameTooltip.lines == 1, "without Auctionator, nothing is added")
 -- Minimal Auctionator, for our own money format. 20 bars at 617 = 12340.
 -- Profit: floor(20000 * 0.95 - 12340) = 6660.

@@ -80,6 +80,8 @@ local function newRegion()
   function r:GetWidth() return self.width or 200 end
   function r:GetEffectiveScale() return self.scale or 1 end
   function r:SetSize() end
+  function r:SetAllPoints() self.allPoints = true end
+  function r:SetFrameStrata(s) self.strata = s end
   function r:SetAlpha(a) self.alpha = a end
   function r:GetAlpha() return self.alpha end
   function r:SetTexture(p) self.texture = p end

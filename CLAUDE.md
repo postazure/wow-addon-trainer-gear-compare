@@ -74,8 +74,9 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
   sell price and other addons' lines (Auctionator, Disenchantry) work as on
   any item. Blizzard's recipe tooltip moves to our own **recipe box**
   (`SetTrainerService` on our tooltip). Left to right: recipe list, recipe
-  box, item, equipped, tops lined up; the "Equipped" header sits above the
-  compare. Nothing may cover the recipe list.
+  box, a gold arrow (Blizzard's `ChatFrameExpandArrow` art, in a small gap),
+  item, equipped: `[] > [] []`. Tops lined up; the "Equipped" header sits
+  above the compare. Nothing may cover the recipe list.
   Recipes with no item keep Blizzard's tooltip untouched.
 - **Compare is always on** at the trainer: no Shift, whatever "Always
   compare items" says. If Blizzard starts its compare by itself, only move it.

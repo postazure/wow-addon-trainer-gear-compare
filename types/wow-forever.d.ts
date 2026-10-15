@@ -135,7 +135,14 @@ interface FontString extends Region {
   GetText(): string | undefined;
 }
 
+interface Texture extends Region {
+  SetTexture(path: string): void;
+  SetAllPoints(): void;
+}
+
 interface Frame extends Region {
+  CreateTexture(name?: string, layer?: string): Texture;
+  SetFrameStrata(strata: string): void;
   /** All regions (textures, font strings) of this frame. */
   GetRegions(): LuaMultiReturn<Region[]>;
   RegisterEvent(event: WowEvent): void;

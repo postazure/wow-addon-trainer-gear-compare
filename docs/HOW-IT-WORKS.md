@@ -35,8 +35,9 @@ Hovering a recipe that makes an item:
 2. Our **recipe box** (a tooltip of our own) shows Blizzard's normal recipe
    tooltip (`SetTrainerService`). Our only additions are reagent cost and
    profit.
-3. Left to right: recipe list, recipe box, item, equipped. Their tops line
-   up; the compare's "Equipped" header sits above it. Nothing covers the
+3. Left to right: recipe list, recipe box, a gold arrow, item, equipped.
+   The arrow (Blizzard's own `ChatFrameExpandArrow` art) sits in a small
+   gap and points from the recipe to what it makes. Their tops line up; the compare's "Equipped" header sits above it. Nothing covers the
    recipe list. Only when the screen has no room on the right does the
    compare go left of the recipe box.
 

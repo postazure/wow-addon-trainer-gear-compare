@@ -29,6 +29,7 @@ Forever**.
 the trainer's list:
 
 - the normal recipe tooltip
+- a gold arrow
 - the item it makes, as a normal item tooltip
 - for gear, your equipped item, marked **Equipped**, with the game's own
   item level and stat changes

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A gold arrow points from the recipe tooltip to the item it makes.
 - The compare header now says "Equipped". "Currently Equipped" didn't fit.
 - Hovering a recipe now shows the normal recipe tooltip and, beside it,
   the real item it makes, like any item tooltip.
