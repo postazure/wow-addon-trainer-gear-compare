@@ -105,7 +105,9 @@ it looks different from the current version.
 
 - [ ] [curseforge/description.md](curseforge/description.md) matches what
       the addon does now: the pitch at the top, "How it works", and "Good
-      to know". Paste it into the project description.
+      to know". Paste it into the project description with the Markdown
+      editor (not the default WYSIWYG one), then check the preview: headings,
+      the `---` rule, nested bullets, and no odd line breaks.
 - [ ] The one-line summary below is still true.
 - [ ] `README.md` feature list and `docs/HOW-IT-WORKS.md` match what
       the addon does.

@@ -2,10 +2,10 @@
 
 **Before you buy a recipe, see how its gear compares to what you wear.**
 
-In WoW Forever, professions matter all the way through leveling. Every
+In WoW Forever, crafted gear can help at every stage of leveling. Every
 trainer visit is a choice: which recipes make gear worth wearing? Trainer
 Compare shows the item level and stat changes right in the trainer window.
-You decide what's worth the gold.
+You decide what each recipe is worth to you.
 
 Hover a recipe that makes gear and hold **Shift**. See it next to what you
 have on.
@@ -26,11 +26,12 @@ Forever**.
 
 ## How it works
 
-**The compare.** Hover a recipe that makes gear, then hold **Shift** (or turn
-on *Always compare items* in the game's options). Your equipped item shows
-next to the recipe, marked **Currently Equipped**. It goes on the left when
-there's room, and on the right when there isn't. If nothing is equipped in
-that slot, there's nothing to compare against, so no compare shows.
+**The compare.** Hover a recipe that makes gear, then hold **Shift**. If your
+game is set to always compare items, it shows without Shift. Your equipped
+item shows next to the recipe, marked **Currently Equipped**. It goes on the
+left when there's room, and on the right when there isn't. If nothing is
+equipped in that slot, there's nothing to compare against, so no compare
+shows.
 
 **The tooltip lines.** Under the recipe you'll see:
 
