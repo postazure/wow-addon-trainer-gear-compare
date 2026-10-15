@@ -77,6 +77,10 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
   then the built-in "If you replace this item..." heading and one stat per
   line. The number is green or red; the stat name is white.
 - No "can't use" line: the item's own red text already says it.
+- **Prices, for any crafted item** (always on): cost to learn, auction house
+  price and age (Auctionator, if loaded), vendor price. No profit line:
+  reagents aren't known at the trainer. Disenchantry has no public API, so
+  it's skipped. No auction line for items that bind on pickup.
 - **No slash commands.** Everything a player does has UI in the trainer
   window. Debug is a saved setting:
   `/run TrainerCompareDB.debug = true` (or `false`), at once and saved.

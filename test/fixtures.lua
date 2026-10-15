@@ -54,6 +54,17 @@ ring = service("Copper Ring", addItem(2903, { name = "Copper Ring", ilvl = 8, mi
 shirt = service("Linen Shirt", addItem(2904, { name = "Linen Shirt", ilvl = 5, minLevel = 1,
   subType = "Miscellaneous", equipLoc = "INVTYPE_BODY", classID = ARMOR, subclassID = 0, stats = {} }))
 
+stone = service("Rough Sharpening Stone", addItem(2862, { name = "Rough Sharpening Stone", ilvl = 5,
+  minLevel = 1, subType = "Trade Goods", equipLoc = "", classID = 7, subclassID = 0, stats = {},
+  stack = 20, sellPrice = 2 }))
+
+-- Prices. Not probed: made-up costs and sell prices.
+services[1].cost = 50          -- Copper Mace
+services[12].cost = 100        -- Rough Sharpening Stone
+items[2844].sellPrice = 41     -- Copper Mace
+items[2900].sellPrice = 12345  -- Copper Maul
+items[2902].bind = 1           -- Iron Helm binds on pickup
+
 -- A category row, and a row whose label does not match its service.
 category = makeRow({ categoryName = "Maces" }, "Maces")
 rows[#rows + 1] = category

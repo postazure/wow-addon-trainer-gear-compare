@@ -68,6 +68,7 @@ toggleFilter() -- off
 -- Late item data ------------------------------------------------------------
 hover(4)
 check(tooltipHas("Loading item data..."), "tooltip says the item is loading")
+check(not tooltipHas("Cost to learn") and not tooltipHas("Vendor price"), "no prices while the item loads")
 items[2851].cached = true
 fire("GET_ITEM_INFO_RECEIVED", 2851, true)
 flush()
@@ -112,6 +113,47 @@ hover(10)
 check(tooltipHas("Item level 8 vs 5 (Finger)"), "ring tooltip compares against the weaker ring")
 hover(6)
 check(not tooltipHas("Item level"), "enchant tooltip unchanged")
+
+-- Prices --------------------------------------------------------------------------
+-- Auctionator, shaped like its source (not probed). Bad input raises, like the
+-- real one; that would show up as a hidden "failed" line at the end.
+local ahPrices = { [2844] = 1234, [2862] = 30, [2902] = 5000, [2903] = 777 }
+local ahAges = { [2844] = 2, [2862] = 0 }
+local function ahItem(caller, link)
+  if type(caller) ~= "string" or caller == "" then error("Invalid callerID. Use the name of your add-on.") end
+  if type(link) ~= "string" then error("Usage Auctionator.API.v1.GetAuctionPriceByItemLink(string, string)") end
+  return tonumber(link:match("item:(%d+)"))
+end
+Auctionator = { API = { v1 = {
+  GetAuctionPriceByItemLink = function(caller, link) return ahPrices[ahItem(caller, link)] end,
+  GetAuctionAgeByItemLink = function(caller, link) return ahAges[ahItem(caller, link)] end,
+} } }
+
+hover(1)
+local costLine = lineIndex("Cost to learn: native:50")
+check(costLine ~= nil and costLine > lineIndex("+2.2 Damage Per Second"), "gear: prices come after the stat changes")
+check(rawLine(costLine - 1) == " ", "a blank line before the prices")
+check(lineIndex("Auction house: native:1234, seen 2 days ago") == costLine + 1, "auction price and its age from Auctionator")
+check(lineIndex("Vendor price: native:41") == costLine + 2, "vendor price from the item")
+check(not tooltipHas("rofit"), "no profit claims")
+hover(12)
+check(not tooltipHas("Item level"), "non-gear: no item level line")
+check(rawLine(2) == " " and lineIndex("Cost to learn: native:100") == 3, "non-gear: prices right under the recipe")
+check(tooltipHas("Auction house: native:30 each, seen today"), "stackable items are priced each; age 0 is today")
+check(tooltipHas("Vendor price: native:2 each"), "vendor price each")
+hover(10)
+check(tooltipHas("Auction house: native:777") and not tooltipHas("seen"), "no age when Auctionator has none")
+hover(5)
+local noPrice = lineIndex("Auction house: no price yet")
+check(noPrice ~= nil, "Auctionator has no price yet")
+check(lineColor(noPrice)[1] == 0.6, "no price yet is gray")
+check(not tooltipHas("Vendor price"), "no vendor line when vendors pay nothing")
+check(not tooltipHas("Cost to learn"), "no learn cost when the trainer charges nothing")
+hover(9)
+check(not tooltipHas("Auction house"), "no auction line for items that bind on pickup")
+hover(7)
+check(tooltipHas("Vendor price: native:12345"), "money goes through the client's GetCoinTextureString")
+GameTooltip:Hide()
 
 -- Native compare ------------------------------------------------------------------
 -- Built-in trigger: Shift, or "always compare items".

@@ -29,7 +29,7 @@ function suite(steps) {
 try {
   suite({ test: "test/trainer.test.lua" });
   suite({
-    pre: [["Menu = nil; TooltipComparisonManager = nil", "no modern APIs"]],
+    pre: [["Menu = nil; TooltipComparisonManager = nil; GetTrainerServiceCost = nil; GetCoinTextureString = nil", "no modern APIs"]],
     test: "test/fallback.test.lua",
   });
 } catch (e) {

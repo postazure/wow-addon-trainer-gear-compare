@@ -1,5 +1,7 @@
 import { evaluate } from "./compare";
+import { lookupItem } from "./items";
 import { debug, safe } from "./log";
+import { priceLines } from "./prices";
 import { tooltipLines } from "./tooltip";
 import { field, isRegion, keysOf } from "./widgets";
 
@@ -172,13 +174,18 @@ function showCompare(tooltip: GameTooltip, index: number): void {
 }
 
 /**
- * Add our lines (item level vs equipped, stat changes) to the recipe
- * tooltip, then Show() it again so it resizes to fit them.
+ * Add our lines to the recipe tooltip: item level vs equipped and stat
+ * changes for gear, then prices for any item. Then Show() it again so it
+ * resizes to fit them.
  */
 function addTooltipLines(tooltip: GameTooltip, index: number): void {
   const link = GetTrainerServiceItemLink(index);
   if (link === undefined) return;
   const lines = tooltipLines(evaluate(link));
+  const look = lookupItem(link);
+  const prices = look.state === "ready" ? priceLines(index, link, look.item) : [];
+  if (lines.length > 0 && prices.length > 0) lines.push({ text: " ", r: 1, g: 1, b: 1 });
+  lines.push(...prices);
   if (lines.length === 0) return;
   tooltip.AddLine(" ");
   for (const line of lines) tooltip.AddLine(line.text, line.r, line.g, line.b, true);

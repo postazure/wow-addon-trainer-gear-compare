@@ -1,4 +1,5 @@
--- Fallback suite: a client with no Menu API and no native compare.
+-- Fallback suite: a client with no Menu API, no native compare, no
+-- GetTrainerServiceCost or GetCoinTextureString, and no Auctionator.
 -- run.mjs removes Menu and TooltipComparisonManager before fixtures.lua loads.
 
 -- Checkbox instead of the Settings dropdown ----------------------------------
@@ -40,6 +41,17 @@ check(compareSlots() == "", "no compare for a recipe with no item")
 GameTooltip:Hide()
 check(compareSlots() == "" and not ShoppingTooltip1.CompareHeader.shown, "hidden with the tooltip")
 alwaysCompare = false
+
+-- Prices without the client's helpers or Auctionator -------------------------
+hover(1)
+check(tooltipHas("Vendor price: 41c"), "vendor price in our own money format")
+check(not tooltipHas("Cost to learn"), "no learn cost without GetTrainerServiceCost")
+check(not tooltipHas("Auction house"), "no auction line without Auctionator")
+hover(7)
+check(tooltipHas("Vendor price: 1g 23s 45c"), "our money format: gold, silver, copper")
+hover(12)
+check(tooltipHas("Vendor price: 2c each"), "stackable items are priced each")
+GameTooltip:Hide()
 
 for _, l in ipairs(output) do
   check(not l:find("failed", 1, true), "no hidden failure: " .. l)

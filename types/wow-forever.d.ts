@@ -73,6 +73,15 @@ declare const GetCVarBool: ((name: string) => boolean) | undefined;
 declare function GetTrainerServiceInfo(index: number): LuaMultiReturn<[string | undefined, string | undefined, number | undefined, number | undefined, string | undefined, string | undefined]>;
 /** Link to the crafted item. Nil when the recipe makes no item. */
 declare function GetTrainerServiceItemLink(index: number): string | undefined;
+/**
+ * Not probed. Classic order: money cost in copper, then talent and
+ * profession costs. Forever may order values differently (it does for
+ * GetTrainerServiceInfo), so callers check the first value is a number.
+ */
+declare const GetTrainerServiceCost: ((this: void, index: number) => LuaMultiReturn<[unknown]>) | undefined;
+
+/** Not probed. Money as text with gold, silver and copper icons. */
+declare const GetCoinTextureString: ((this: void, copper: number) => string) | undefined;
 
 // ---------------------------------------------------------------------------
 // Items. Only C_Item exists; the old globals are gone. All confirmed.
@@ -81,13 +90,14 @@ declare function GetTrainerServiceItemLink(index: number): string | undefined;
 declare namespace C_Item {
   /**
    * Retail order: name, link, quality, itemLevel, minLevel, type, subType,
-   * stackCount, equipLoc, texture, sellPrice, classID, subclassID, ...
-   * All nil while the item is not cached.
+   * stackCount, equipLoc, texture, sellPrice, classID, subclassID,
+   * bindType (1 = binds when picked up), ... All nil while the item is not
+   * cached. Values past subclassID are not probed.
    */
   function GetItemInfo(item: string | number): LuaMultiReturn<[
     string | undefined, string | undefined, number | undefined, number | undefined, number | undefined,
     string | undefined, string | undefined, number | undefined, string | undefined, number | undefined,
-    number | undefined, number | undefined, number | undefined,
+    number | undefined, number | undefined, number | undefined, number | undefined,
   ]>;
   /** id, type, subType, equipLoc, icon, classID, subclassID. Works before the item is cached. */
   function GetItemInfoInstant(item: string | number): LuaMultiReturn<[
@@ -227,3 +237,21 @@ declare const TooltipComparisonManager: {
 declare const C_TooltipInfo: {
   GetHyperlink?: (this: void, link: string) => { guid?: string } | undefined;
 } | undefined;
+
+// ---------------------------------------------------------------------------
+// Other addons. Not probed: from reading their source.
+// ---------------------------------------------------------------------------
+
+/**
+ * Auctionator's public API (Source/API/v1 in Auctionator 341, which lists
+ * interface 16001). Prices are in copper, nil when unknown. Every function
+ * raises a Lua error on bad input, so calls go through safe().
+ */
+interface AuctionatorAPIv1 {
+  /** Last scanned auction price for one item. */
+  GetAuctionPriceByItemLink?: (this: void, callerID: string, itemLink: string) => number | undefined;
+  /** Days since the price was seen. Nil if never, or over 21 days ago. */
+  GetAuctionAgeByItemLink?: (this: void, callerID: string, itemLink: string) => number | undefined;
+}
+/** Nil unless Auctionator is installed and loaded. */
+declare const Auctionator: { API?: { v1?: AuctionatorAPIv1 } } | undefined;

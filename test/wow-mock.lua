@@ -193,7 +193,8 @@ function tooltipHas(text)
 end
 
 -- Items -------------------------------------------------------------------
--- itemID -> { name, ilvl, minLevel, subType, equipLoc, classID, subclassID, stats, cached }
+-- itemID -> { name, ilvl, minLevel, subType, equipLoc, classID, subclassID, stats, cached,
+--            stack, sellPrice, bind } (the last three are not probed)
 items = {}
 local function idOf(item)
   if type(item) == "number" then return item end
@@ -218,7 +219,8 @@ C_Item = {
   GetItemInfo = function(item)
     local d = items[idOf(item)]
     if not d or not d.cached then return nil end
-    return d.name, d.link, 1, d.ilvl, d.minLevel, "Type", d.subType, 1, d.equipLoc, 1, 1, d.classID, d.subclassID
+    return d.name, d.link, 1, d.ilvl, d.minLevel, "Type", d.subType, d.stack or 1, d.equipLoc, 1,
+      d.sellPrice or 0, d.classID, d.subclassID, d.bind or 0
   end,
   GetDetailedItemLevelInfo = function(item)
     local d = items[idOf(item)]
@@ -249,7 +251,7 @@ function GetInventorySlotInfo(name) return SLOT_IDS[name] end
 function GetBuildInfo() return "1.60.1", "70374", "Oct 12 2026", 16001 end
 
 -- Trainer -----------------------------------------------------------------
--- services[i] = { name, type, link or nil, category }
+-- services[i] = { name, type, link or nil, category, cost }
 services = {}
 function GetNumTrainerServices() return #services end
 function GetTrainerServiceInfo(i)
@@ -258,6 +260,10 @@ function GetTrainerServiceInfo(i)
   return s.name, s.type, 133476, 0, "", s.category  -- Forever order, from the probe
 end
 function GetTrainerServiceItemLink(i) return services[i] and services[i].link end
+-- Not probed: Classic order (money, talent, profession).
+function GetTrainerServiceCost(i) return services[i] and services[i].cost or 0, 0, 0 end
+-- Not probed. Marked so tests can tell it from our own formatting.
+function GetCoinTextureString(copper) return "native:" .. copper end
 
 local trainerLoaded = false
 addonVersion = "0.6.0"

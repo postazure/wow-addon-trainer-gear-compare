@@ -24,6 +24,31 @@ client API it's built on, see [PROBE-FINDINGS.md](PROBE-FINDINGS.md).
    - Anything while you wield a two-hander: the two-hander.
    - Shirts, tabards, bags, ammo and fishing poles: not compared.
 
+## Prices
+
+Every recipe that makes an item gets price lines in its tooltip, gear or
+not. Facts only, no profit:
+
+- **Cost to learn**, from `GetTrainerServiceCost`. Skipped when it's 0.
+- **Auction house**, from Auctionator's public API
+  (`Auctionator.API.v1.GetAuctionPriceByItemLink`), with how many days ago
+  it was seen (`GetAuctionAgeByItemLink`). Only when Auctionator is loaded.
+  "No price yet" in gray when Auctionator hasn't seen the item. No line for
+  items that bind on pickup: they can't be sold there.
+- **Vendor price**, from the item (`C_Item.GetItemInfo`). Skipped when
+  vendors pay nothing.
+- Stackable items are priced each.
+
+Why no profit: the trainer doesn't say what reagents a recipe needs before
+you learn it, so the cost to craft isn't known.
+
+Why no Disenchantry: its data is private to the addon (no public API).
+
+None of this is confirmed in game yet. `GetTrainerServiceCost`,
+`GetCoinTextureString` and the Auctionator calls come from Classic docs and
+Auctionator's source. All are feature-checked, and Auctionator's calls
+(which raise errors on bad input) run inside `safe()`.
+
 ## Known limits
 
 - **The filter fades rows. It doesn't remove them.** Removing rows means

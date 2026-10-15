@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Recipe tooltips show prices for any crafted item, not just gear: the
+  cost to learn and the vendor price, each item for stackable items.
+
 ## 0.6.0
 
 First public release, for WoW Forever 1.60.1.

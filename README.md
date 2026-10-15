@@ -11,6 +11,8 @@ claim anything is an "upgrade".
   line, under "If you replace this item, the following stat changes will
   occur:". The number is green or red; the stat name is white. Gear you
   can't use gets the same lines. The item's own red text already says why.
+- **Prices**: for any crafted item, the cost to learn and the vendor
+  price. Stackable items are priced each.
 - **"Only show usable gear"** in the trainer's Settings dropdown: fades gear
   you can't use (armor type, weapon skill, level, class). Non-gear recipes
   are never faded.
