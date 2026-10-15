@@ -128,6 +128,8 @@ Rules:
   returns. Diagnostics live in the probe, not the shipped addon.
 - WoW chat text can't be selected. Any diagnostic must end in a copy window
   (the probe's `/tcprobe show`) so the owner can paste the result.
+- Keep chat quiet. The probe records on its own but prints only in answer to
+  a `/tcprobe` command; the addon prints only with debug on.
 - Feature-detect everything that isn't confirmed. In `types/wow-forever.d.ts`,
   type unconfirmed APIs as possibly `undefined`, and note the source of each.
 - Keep `types/wow-forever.d.ts` to what the code uses. There are no

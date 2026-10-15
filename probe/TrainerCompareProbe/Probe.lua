@@ -5,6 +5,9 @@
 --
 -- Safe by design: it only calls read-only getters, wraps every call in pcall,
 -- and never buys, selects, expands, or changes filters on the trainer.
+--
+-- Quiet in chat: it records on its own (each trainer open), but only shows
+-- the result when asked (/tcprobe, /tcprobe show).
 
 local ADDON_NAME = ...
 local PREFIX = "|cff33ff99TCProbe|r "
@@ -21,10 +24,10 @@ local eventErrors = {}
 -- Output
 ---------------------------------------------------------------------------
 
+-- Record a line for the copy window. Never printed: chat stays quiet.
 local function out(text)
   text = tostring(text):gsub("\r?\n", " / ")
   lines[#lines + 1] = text
-  print(PREFIX .. text)
 end
 
 local function save()
@@ -729,19 +732,12 @@ end
 ---------------------------------------------------------------------------
 
 local events = CreateFrame("Frame")
-for _, e in ipairs({ "ADDON_LOADED", "TRAINER_SHOW", "TRAINER_CLOSED", "TRAINER_UPDATE", "GET_ITEM_INFO_RECEIVED" }) do
+for _, e in ipairs({ "TRAINER_SHOW", "TRAINER_CLOSED", "TRAINER_UPDATE", "GET_ITEM_INFO_RECEIVED" }) do
   if not pcall(events.RegisterEvent, events, e) then eventErrors[#eventErrors + 1] = e end
 end
 
 events:SetScript("OnEvent", function(_, event, ...)
-  if event == "ADDON_LOADED" then
-    local name = ...
-    if name == ADDON_NAME then
-      print(PREFIX .. "loaded. Open a profession trainer. /tcprobe for options.")
-    elseif name == "Blizzard_TrainerUI" then
-      print(PREFIX .. "Blizzard_TrainerUI just loaded.")
-    end
-  elseif event == "TRAINER_SHOW" then
+  if event == "TRAINER_SHOW" then
     trainerOpen = true
     updateCount = 0
     -- Give the trainer UI time to load and fill its list.
