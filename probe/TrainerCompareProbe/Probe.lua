@@ -119,7 +119,8 @@ local HELPER_API = {
   "GetSpellDescription", "C_Spell.GetSpellDescription", "IsPlayerSpell", "IsSpellKnown",
   "GetNumSkillLines", "GetSkillLineInfo", "C_Timer.After", "hooksecurefunc",
   "C_AddOns.IsAddOnLoaded", "IsAddOnLoaded", "TooltipDataProcessor.AddTooltipPostCall",
-  "Item.CreateFromItemID",
+  "Item.CreateFromItemID", "GetCoinTextureString", "C_CurrencyInfo.GetCoinTextureString",
+  "GetMoneyString", "GetCoinText",
 }
 
 local function reportNames(title, names)
@@ -263,6 +264,74 @@ local function reportOtherAddons()
 end
 
 ---------------------------------------------------------------------------
+-- Price addons
+---------------------------------------------------------------------------
+
+-- Auctionator's public API, from its source (Source/API/v1). Each function
+-- takes (callerID, itemLink) and raises a Lua error on bad input, so every
+-- call goes through try().
+local AUCTIONATOR_FNS = {
+  "GetAuctionPriceByItemLink", "GetAuctionAgeByItemLink", "IsAuctionDataExactByItemLink",
+  "GetVendorPriceByItemLink", "GetDisenchantPriceByItemLink", "RegisterForDBUpdate",
+}
+
+local function auctionatorAPI()
+  local api = lookup("Auctionator.API.v1")
+  if type(api) == "table" then return api end
+  return nil
+end
+
+local function addonState(name)
+  local isLoaded = lookup("C_AddOns.IsAddOnLoaded") or _G.IsAddOnLoaded
+  local getMeta = lookup("C_AddOns.GetAddOnMetadata") or _G.GetAddOnMetadata
+  local loaded = try(isLoaded, name)
+  local version = try(getMeta, name, "Version")
+  return ("%s loaded=%s version=%s"):format(name, show(loaded), show(version))
+end
+
+-- Money as the player would see it, with every formatter this client has.
+local function money(copper)
+  if type(copper) ~= "number" then return fmt(copper) end
+  local parts = { tostring(copper) .. "c" }
+  for _, name in ipairs({ "GetCoinTextureString", "C_CurrencyInfo.GetCoinTextureString", "GetMoneyString" }) do
+    local fn = lookup(name)
+    if type(fn) == "function" then parts[#parts + 1] = name .. "=" .. show(try(fn, copper)) end
+  end
+  return table.concat(parts, " ")
+end
+
+local function reportPriceAddons()
+  out(addonState("Auctionator"))
+  out(addonState("Disenchantry"))
+  local api = auctionatorAPI()
+  if not api then
+    out("Auctionator.API.v1: " .. (type(_G.Auctionator) == "table" and "missing (Auctionator table exists)" or "missing"))
+  else
+    local have, missing = {}, {}
+    for _, fn in ipairs(AUCTIONATOR_FNS) do
+      if type(api[fn]) == "function" then have[#have + 1] = fn else missing[#missing + 1] = fn end
+    end
+    out(("Auctionator.API.v1 present: %s; missing: %s")
+      :format(table.concat(have, ", "), #missing > 0 and table.concat(missing, ", ") or "none"))
+  end
+  out("Sample money 123456 -> " .. money(123456))
+end
+
+-- One line of Auctionator data for an item link. Read-only calls.
+local function auctionatorLine(link)
+  local api = auctionatorAPI()
+  if not api then return "no Auctionator API" end
+  if type(link) ~= "string" then return "no link" end
+  local function call(fn)
+    return show(try(api[fn], ADDON_NAME, link))
+  end
+  return ("ah=%s age=%s exact=%s vendor=%s de=%s")
+    :format(call("GetAuctionPriceByItemLink"), call("GetAuctionAgeByItemLink"),
+            call("IsAuctionDataExactByItemLink"), call("GetVendorPriceByItemLink"),
+            call("GetDisenchantPriceByItemLink"))
+end
+
+---------------------------------------------------------------------------
 -- Per-service inspection
 ---------------------------------------------------------------------------
 
@@ -396,6 +465,8 @@ local function itemDetails(id, label, isRetry)
     return
   end
   out("    GetItemInfo -> " .. show(info))
+  out("    sellPrice (GetItemInfo 11th) -> " .. money(info[11]))
+  out("    Auctionator: " .. auctionatorLine(info[2]))
 
   local getStats = lookup("C_Item.GetItemStats") or _G.GetItemStats
   local stats = try(getStats, info[2])
@@ -478,8 +549,19 @@ local function printCompact(c)
     local r = try(getInstant(), c.itemID)
     equipLoc = r.ok and fmt(r[4]) or "?"
   end
-  out(("[%d] %s (%s) item=%s via=%s spell=%s equipLoc=%s")
-    :format(c.index, fmt(c.name), fmt(c.kind), fmt(c.itemID), fmt(c.via), fmt(c.spellID), equipLoc))
+  local prices = ""
+  local link = c.itemLink.ok and c.itemLink[1] or nil
+  if type(link) == "string" then
+    local getInfo = lookup("C_Item.GetItemInfo") or _G.GetItemInfo
+    local info = try(getInfo, link)
+    local sell = info.ok and info[11] or nil
+    local api = auctionatorAPI()
+    local ah = api and show(try(api.GetAuctionPriceByItemLink, ADDON_NAME, link)) or "-"
+    local age = api and show(try(api.GetAuctionAgeByItemLink, ADDON_NAME, link)) or "-"
+    prices = (" sell=%s ah=%s age=%s"):format(fmt(sell), ah, age)
+  end
+  out(("[%d] %s (%s) item=%s via=%s spell=%s equipLoc=%s%s")
+    :format(c.index, fmt(c.name), fmt(c.kind), fmt(c.itemID), fmt(c.via), fmt(c.spellID), equipLoc, prices))
 end
 
 ---------------------------------------------------------------------------
@@ -502,6 +584,7 @@ local function run(mode)
     scanGlobals()
     reportFrame()
     reportOtherAddons()
+    reportPriceAddons()
   end
 
   out("IsTradeskillTrainer -> " .. show(try(_G.IsTradeskillTrainer)))
