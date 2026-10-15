@@ -55,7 +55,7 @@ With "Only show usable gear" on:
 - [ ] Hover an enchant or a non-gear recipe. No Trainer Compare lines.
 - [ ] Without "Always compare items", the compare shows only while you hold
       Shift.
-- [ ] The compare shows **"Currently Equipped"** and Blizzard's own stat
+- [ ] The compare shows **"Equipped"** and Blizzard's own stat
       summary, like a normal item compare.
 - [ ] Your equipped item is on the **left**. The recipe tooltip is on the
       right.

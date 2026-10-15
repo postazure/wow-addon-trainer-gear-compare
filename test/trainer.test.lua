@@ -187,7 +187,7 @@ fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
 check(ShoppingTooltip1.native == "Item-2844", "Shift starts Blizzard's own compare for the crafted item")
 local p = ShoppingTooltip1.point
 check(p[1] == "TOPRIGHT" and p[2] == GameTooltip and p[3] == "TOPLEFT", "equipped item on the left, recipe on the right")
-check(ShoppingTooltip1.CompareHeader.Label.text == "Currently Equipped", "empty native header gets its text")
+check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped", "empty native header gets its text")
 shiftDown = false
 local cleared = compareCleared
 fire("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
@@ -227,8 +227,8 @@ ShoppingTooltip1.CompareHeader.Label.text = nil
 noGuid[2844] = true
 hover(1)
 check(ShoppingTooltip1.native == nil and ShoppingTooltip1.slot == 16, "falls back to showing the equipped main hand")
-check(ShoppingTooltip1.CompareHeader.shown, "fallback shows the Currently Equipped header")
-check(ShoppingTooltip1.CompareHeader.Label.text == "Currently Equipped", "fallback header has its text")
+check(ShoppingTooltip1.CompareHeader.shown, "fallback shows the Equipped header")
+check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped", "fallback header has its text")
 
 -- No Label field: find the font string among the header's regions.
 GameTooltip:Hide()
@@ -242,7 +242,7 @@ function text:SetText(t) self.text = t end
 function text:GetText() return self.text end
 function header:GetRegions() return bg, text end
 hover(1)
-check(text.text == "Currently Equipped", "header text found through GetRegions")
+check(text.text == "Equipped", "header text found through GetRegions")
 header.Label = savedLabel
 header.GetRegions = nil
 GameTooltip:Hide()

@@ -50,7 +50,7 @@ all of it for a big change, and at least this for a small one)
 
 - [ ] A gear trainer (Blacksmithing, Leatherworking or Tailoring): hovering a
       recipe shows the compare with your equipped item on the **left**,
-      headed **Currently Equipped** (with visible text).
+      headed **Equipped** (with visible text).
 - [ ] The recipe tooltip shows "Item level X vs Y (slot)" and the stat
       changes, one per line, green or red numbers with white names.
 - [ ] Gear you can't use still shows the compare and the lines.
@@ -91,7 +91,7 @@ it looks different from the current version.
 
 | File | What it must show | Retake when |
 | --- | --- | --- |
-| `01-compare.png` | A gear recipe hovered at a trainer: the recipe tooltip on the right, the compare on the left with **Currently Equipped**, and our item level + stat lines. | The compare, its header, its side, or the tooltip lines change. |
+| `01-compare.png` | A gear recipe hovered at a trainer: the recipe tooltip on the right, the compare on the left with **Equipped**, and our item level + stat lines. | The compare, its header, its side, or the tooltip lines change. |
 | `02-stat-lines.png` | Close-up of the recipe tooltip's lines: "Item level X vs Y (slot)", the "If you replace this item..." heading, and a mix of green and red stat numbers. | Line wording, colors, or order change. |
 | `03-two-slots.png` | A ring or trinket recipe with both equipped rings or trinkets in the compare. | Two-slot or weapon rules change. |
 | `04-settings-menu.png` | The trainer's Settings dropdown open, showing **Only show usable gear**. | The menu entry's text or place changes. |

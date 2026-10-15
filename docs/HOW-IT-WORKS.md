@@ -80,7 +80,7 @@ unknown. All are feature-checked, and every call runs inside `safe()`
   Trainer Compare feeds the crafted item to `TooltipComparisonManager`
   itself, then moves the compare to the left. If that doesn't show
   anything, it fills `ShoppingTooltip1/2` with your equipped items and
-  shows their "Currently Equipped" header. With debug on, chat says which
+  shows their header, with the text "Equipped" when Blizzard left it empty. With debug on, chat says which
   one ran.
 - **No compare when the slot is empty.** There's nothing to show.
 - **Loading lines don't update by themselves.** If an item is still

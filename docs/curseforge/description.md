@@ -6,7 +6,7 @@ Made for **WoW Forever**.
 
 ## What it does
 
-**Blizzard's normal item compare, for trainer recipes.** Hover a recipe that makes gear and you get the same compare tooltip you see on any item: your equipped item on the left, marked **Currently Equipped**. Hold **Shift**, or turn on *Always compare items* in the game's options.
+**Blizzard's normal item compare, for trainer recipes.** Hover a recipe that makes gear and you get the same compare tooltip you see on any item: your equipped item on the left, marked **Equipped**. Hold **Shift**, or turn on *Always compare items* in the game's options.
 
 **Item level and stat changes on the recipe tooltip.** Under the recipe you'll see:
 

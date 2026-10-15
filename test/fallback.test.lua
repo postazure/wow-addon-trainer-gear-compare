@@ -21,8 +21,8 @@ check(TrainerCompareDB.onlyUsable == false and axe.button.alpha == 1, "checkbox 
 alwaysCompare = true
 hover(1)
 check(compareSlots() == "16", "shows the equipped main hand")
-check(ShoppingTooltip1.CompareHeader.shown, "shows the Currently Equipped header")
-check(ShoppingTooltip1.CompareHeader.Label.text == "Currently Equipped", "header has its text")
+check(ShoppingTooltip1.CompareHeader.shown, "shows the Equipped header")
+check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped", "header has its text")
 local p = ShoppingTooltip1.point
 check(p[1] == "TOPRIGHT" and p[2] == GameTooltip and p[3] == "TOPLEFT", "equipped item on the left")
 

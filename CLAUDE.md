@@ -72,7 +72,8 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
 - **Compare:** use Blizzard's native compare first
   (`TooltipComparisonManager`), fall back to filling `ShoppingTooltip1/2`.
   Equipped item on the **left**, recipe on the right. Show it for gear the
-  player can't use, too. The "Currently Equipped" header must have text.
+  player can't use, too. The header must have text: "Equipped" (the longer
+  "Currently Equipped" overflowed it in game).
 - **Tooltip lines are always on** (no setting): "Item level X vs Y (slot)",
   then the built-in "If you replace this item..." heading and one stat per
   line. The number is green or red; the stat name is white.

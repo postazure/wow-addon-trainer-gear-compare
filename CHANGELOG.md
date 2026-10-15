@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The compare header now says "Equipped". "Currently Equipped" didn't fit.
 - Recipe tooltips show prices for any crafted item, not just gear: the
   cost to learn and the vendor price, each item for stackable items.
 

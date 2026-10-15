@@ -63,11 +63,11 @@ function nativeCompare(tooltip: GameTooltip, link: string): boolean {
   return shoppingTooltips()[0]?.IsShown() ?? false;
 }
 
-/** "Currently Equipped", in the client's language. */
-function equippedText(): string {
-  const text = _G["CURRENTLY_EQUIPPED"];
-  return typeof text === "string" ? text : "Currently Equipped";
-}
+/**
+ * The header text we set when Blizzard leaves it empty. Short on purpose:
+ * "Currently Equipped" overflowed the header in game.
+ */
+const EQUIPPED_TEXT = "Equipped";
 
 /** The header's font string: a named field if Blizzard gave it one, else any font string in it. */
 function headerLabel(header: Region): FontString | undefined {
@@ -84,7 +84,7 @@ function headerLabel(header: Region): FontString | undefined {
 }
 
 /**
- * Show the compare tooltip's "Currently Equipped" header with its text.
+ * Show the compare tooltip's "Equipped" header with its text.
  * Blizzard fills the text in its own compare code, so set it if it's empty.
  * Text that is already there is never replaced.
  */
@@ -101,7 +101,7 @@ function showEquippedHeader(tip: GameTooltip): void {
     return;
   }
   const text = label.GetText();
-  if (text === undefined || text === "") label.SetText(equippedText());
+  if (text === undefined || text === "") label.SetText(EQUIPPED_TEXT);
 }
 
 /** Fallback: fill the compare tooltips with the equipped items ourselves. */
