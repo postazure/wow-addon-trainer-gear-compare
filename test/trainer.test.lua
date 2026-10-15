@@ -81,7 +81,9 @@ local arrow = TrainerCompareArrow
 check(gp[4] == 20, "a gap between the recipe box and the item")
 check(arrow.shown and arrow.strata == "TOOLTIP" and arrow.textures[1].texture == "Interface\\ChatFrame\\ChatFrameExpandArrow",
   "a gold arrow shows with the tooltips")
-check(arrow.point[2] == box and arrow.point[3] == "TOPRIGHT" and arrow.point[4] == 2, "the arrow sits in the gap, centered")
+local ap = arrow.point
+check(ap[1] == "LEFT" and ap[2] == box and ap[3] == "RIGHT" and ap[4] == 2 and ap[5] == 0,
+  "the arrow sits in the gap, centered, and vertically centered on the recipe box")
 check(not tooltipHas("Item level") and not tooltipHas("upgrade"), "no lines of ours besides reagents and profit")
 hover(4)
 check(GameTooltip.link == items[2851].link and box.shown, "an item still loading shows too")

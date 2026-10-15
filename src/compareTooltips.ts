@@ -267,7 +267,8 @@ function showRecipeBox(tooltip: GameTooltip, index: number, link: string, owner:
   const pointer = getArrow();
   if (pointer === undefined) return;
   pointer.ClearAllPoints();
-  pointer.SetPoint("TOPLEFT", box, "TOPRIGHT", (ARROW_GAP - ARROW_SIZE) / 2, -8);
+  /** Centered in the gap, and vertically on the recipe box. */
+  pointer.SetPoint("LEFT", box, "RIGHT", (ARROW_GAP - ARROW_SIZE) / 2, 0);
   pointer.Show();
 }
 
