@@ -49,8 +49,8 @@ Lua errors first: `/console scriptErrors 1`.
 all of it for a big change, and at least this for a small one)
 
 - [ ] A gear trainer (Blacksmithing, Leatherworking or Tailoring): hovering a
-      recipe shows, left to right, the recipe box, the item, and (with
-      Shift) your equipped item headed **Equipped** (with visible text).
+      recipe shows, left to right, the recipe tooltip, the item, and (no
+      Shift needed) your equipped item headed **Equipped** (visible text).
       Nothing covers the recipe list.
 - [ ] The recipe box is the normal recipe tooltip. With Auctionator, it
       ends with Reagents and Profit; nothing else is added.

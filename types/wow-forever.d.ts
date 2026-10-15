@@ -56,10 +56,6 @@ declare function UnitLevel(unit: string): number;
 declare function IsPlayerSpell(spellID: number): boolean;
 /** Not probed. */
 declare const CanDualWield: (() => boolean) | undefined;
-/** Not probed. Built-in compare uses the COMPAREITEMS modifier (Shift by default). */
-declare const IsModifiedClick: ((action: string) => boolean) | undefined;
-declare const IsShiftKeyDown: (() => boolean) | undefined;
-declare const GetCVarBool: ((name: string) => boolean) | undefined;
 
 // ---------------------------------------------------------------------------
 // Trainer. All confirmed.

@@ -106,7 +106,10 @@ local function makeTooltip(t)
     self.colors[#self.lines] = { r, g, b }
   end
   -- An item tooltip, the way Blizzard fills it.
-  function t:SetHyperlink(link) self.link = link; self.lines = { "item " .. link:match("item:(%d+)") }; self.colors = {} end
+  function t:SetHyperlink(link)
+    self.link = link; self.lines = { "item " .. link:match("item:(%d+)") }; self.colors = {}
+    if self == GameTooltip and blizzardAutoCompare then ShoppingTooltip1.shown, ShoppingTooltip1.native = true, "Blizzard" end
+  end
   function t:SetTrainerService(i) self.link = nil; self.lines = { "service " .. i } end
   function t:HookScript(name, fn)
     local prev = self.scripts[name]
@@ -194,10 +197,8 @@ recipes = {}
 C_TradeSkillUI = {
   GetRecipeSchematic = function(spellID, isRecraft) return recipes[spellID] end,
 }
-shiftDown = false
-alwaysCompare = false
-function IsModifiedClick(action) return action == "COMPAREITEMS" and shiftDown end
-function GetCVarBool(name) return name == "alwaysCompareItems" and alwaysCompare end
+-- Set to make Blizzard start its own compare when GameTooltip gets an item.
+blizzardAutoCompare = false
 -- Hover a trainer row the way Blizzard does: SetOwner, then SetTrainerService.
 function hover(index)
   GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT")

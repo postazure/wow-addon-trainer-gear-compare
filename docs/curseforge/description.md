@@ -6,7 +6,7 @@ Made for **WoW Forever**.
 
 ## What it does
 
-**The real item, for trainer recipes.** Hover a recipe and you see the normal recipe tooltip, then the item it makes, like any item tooltip. Hold **Shift**, or turn on *Always compare items* in the game's options, to see Blizzard's normal compare next to it, marked **Equipped**, with the item level and stat changes. Nothing covers the recipe list.
+**The real item, for trainer recipes.** Hover a recipe and you see the normal recipe tooltip, then the item it makes, like any item tooltip. Blizzard's normal compare shows next to it, no Shift needed, marked **Equipped**, with the item level and stat changes. Nothing covers the recipe list.
 
 **It knows how slots work.**
 

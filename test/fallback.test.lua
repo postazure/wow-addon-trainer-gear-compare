@@ -18,7 +18,6 @@ flush()
 check(TrainerCompareDB.onlyUsable == false and axe.button.alpha == 1, "checkbox turns it off; faded rows restored")
 
 -- Compare filled in by us ---------------------------------------------------------
-alwaysCompare = true
 hover(1)
 check(compareSlots() == "16", "shows the equipped main hand")
 check(ShoppingTooltip1.CompareHeader.shown, "shows the Equipped header")
@@ -43,7 +42,6 @@ check(compareSlots() == "", "no compare for a recipe with no item")
 
 GameTooltip:Hide()
 check(compareSlots() == "" and not ShoppingTooltip1.CompareHeader.shown, "hidden with the tooltip")
-alwaysCompare = false
 
 -- No recipe box: our lines go under the item --------------------------------
 hover(1)

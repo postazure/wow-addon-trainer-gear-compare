@@ -6,10 +6,9 @@ claim anything is an "upgrade".
 
 - **The real item**: hover a recipe and you see the normal recipe tooltip,
   then the item it makes, like any item tooltip. Nothing covers the list.
-- **Compare**: hold Shift (or turn on "Always compare items") to see
-  Blizzard's normal compare, right of the item, with its item level and
-  stat changes. Works for gear you can't use, too. The item's own red text
-  says why you can't.
+- **Compare**: always on, no Shift needed. Blizzard's normal compare,
+  right of the item, with its item level and stat changes. Works for gear
+  you can't use, too. The item's own red text says why you can't.
 - **"Only show usable gear"** in the trainer's Settings dropdown: fades gear
   you can't use (armor type, weapon skill, level, class). Non-gear recipes
   are never faded.

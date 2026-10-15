@@ -77,7 +77,8 @@ Lua 5.1 file by TypeScriptToLua (TSTL). Layout and details:
   box, item, equipped, tops lined up; the "Equipped" header sits above the
   compare. Nothing may cover the recipe list.
   Recipes with no item keep Blizzard's tooltip untouched.
-- **Compare:** if Blizzard starts its compare by itself, only move it.
+- **Compare is always on** at the trainer: no Shift, whatever "Always
+  compare items" says. If Blizzard starts its compare by itself, only move it.
   Otherwise start it (`TooltipComparisonManager`), and fall back to filling
   `ShoppingTooltip1/2`. Equipped goes **right of the item**; left of the
   recipe box only when the screen has no room. Show it for gear the player

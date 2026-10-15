@@ -51,8 +51,8 @@ With "Only show usable gear" on:
 - [ ] Hover an enchant. Blizzard's own tooltip, no recipe box.
 - [ ] Hover a non-gear recipe (a potion, a sharpening stone). The item
       tooltip shows, with Auctionator's and Blizzard's own lines if any.
-- [ ] Without "Always compare items", the compare shows only while you hold
-      Shift.
+- [ ] The compare shows without Shift, even with "Always compare items"
+      off. Pressing and releasing Shift doesn't make it go away.
 - [ ] The compare shows **"Equipped"** and Blizzard's own stat
       summary, like a normal item compare.
 - [ ] Left to right: recipe tooltip, item, equipped. Their tops line up,

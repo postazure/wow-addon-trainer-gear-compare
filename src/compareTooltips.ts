@@ -26,14 +26,6 @@ function shoppingTooltips(): GameTooltip[] {
   return tips;
 }
 
-/** Same trigger as the built-in compare: "always compare items", or the compare modifier (Shift). */
-function wantsCompare(): boolean {
-  if (typeof GetCVarBool === "function" && GetCVarBool("alwaysCompareItems")) return true;
-  if (typeof IsModifiedClick === "function") return IsModifiedClick("COMPAREITEMS");
-  if (typeof IsShiftKeyDown === "function") return IsShiftKeyDown();
-  return true;
-}
-
 /** Hide the compare tooltips, but only if we are the ones showing them. */
 function hideCompare(): void {
   const mode = compareShown;
@@ -165,14 +157,13 @@ function blizzardCompareShown(): boolean {
 }
 
 /**
- * Compare the recipe's item with what is equipped. Any gear, usable or not,
- * like the built-in compare; never for non-gear or an empty slot. With the
+ * Compare the recipe's item with what is equipped, always: no Shift needed.
+ * Any gear, usable or not; never for non-gear or an empty slot. With the
  * item in GameTooltip, Blizzard may start its compare by itself; then we
  * only move it. Otherwise we start Blizzard's, then fall back to our own.
  */
 function showCompare(tooltip: GameTooltip, index: number): void {
   hideCompare();
-  if (!wantsCompare()) return;
   if (blizzardCompareShown()) {
     fillHeaders();
     placeCompare(tooltip);
@@ -248,7 +239,7 @@ function showRecipeBox(tooltip: GameTooltip, index: number, link: string, owner:
   tooltip.SetPoint("TOPLEFT", box, "TOPRIGHT", 0, 0);
 }
 
-/** Shift pressed or released, or data arrived, while a recipe is hovered. */
+/** A modifier key changed, or data arrived, while a recipe is hovered: show the compare again if it went away. */
 export function refreshHover(): void {
   if (hoveredIndex !== undefined && GameTooltip.IsShown()) showCompare(GameTooltip, hoveredIndex);
 }

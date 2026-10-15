@@ -143,12 +143,9 @@ check(rawLine(lossLine):find("|cffff4040-|r", 1, true) ~= nil, "loss sign is red
 GameTooltip:Hide()
 
 -- Native compare ------------------------------------------------------------------
--- Built-in trigger: Shift, or "always compare items".
+-- Always on: no Shift, no "always compare items".
 hover(1)
-check(not ShoppingTooltip1.shown, "no compare without Shift")
-shiftDown = true
-fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
-check(ShoppingTooltip1.native == "Item-2844", "Shift starts Blizzard's own compare for the crafted item")
+check(ShoppingTooltip1.native == "Item-2844", "Blizzard's compare for the crafted item shows without Shift")
 local p = ShoppingTooltip1.point
 check(p[1] == "TOPLEFT" and p[2] == GameTooltip and p[3] == "TOPRIGHT", "equipped right of the item, clear of the recipe list")
 check(p[5] == 0, "compare top lines up with the item; its Equipped header sits above")
@@ -156,12 +153,13 @@ TooltipComparisonManager:AnchorShoppingTooltips() -- Blizzard places it again, o
 p = ShoppingTooltip1.point
 check(p[1] == "TOPLEFT" and p[2] == GameTooltip and p[3] == "TOPRIGHT", "moved back right when Blizzard places it")
 check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped", "empty native header gets its text")
-shiftDown = false
-local cleared = compareCleared
+-- Blizzard may hide its compare when Shift is released. Ours comes back a frame later.
+ShoppingTooltip1:Hide()
 fire("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
-check(not ShoppingTooltip1.shown and compareCleared == cleared + 1, "releasing Shift clears the native compare")
+check(not ShoppingTooltip1.shown, "waits a frame after a key change, so Blizzard goes first")
+flush()
+check(ShoppingTooltip1.native == "Item-2844", "then the compare comes back")
 
-alwaysCompare = true
 hover(2)
 check(ShoppingTooltip1.native == "Item-2845", "compare shows for gear you can't use, too")
 hover(9)
@@ -184,24 +182,21 @@ check(p[1] == "TOPRIGHT" and p[2] == recipeBox() and p[3] == "TOPLEFT", "flips l
 GameTooltip.right = nil
 
 -- Blizzard starts the compare by itself for the item: we only move it.
-alwaysCompare = false
+GameTooltip:Hide()
+blizzardAutoCompare = true
 hover(1)
-ShoppingTooltip1.shown, ShoppingTooltip1.native = true, "Blizzard"
-shiftDown = true
-fire("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
 p = ShoppingTooltip1.point
 check(ShoppingTooltip1.native == "Blizzard" and p[1] == "TOPLEFT" and p[2] == GameTooltip,
   "Blizzard's own compare is kept and moved right of the item")
-shiftDown = false
-fire("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
+GameTooltip:Hide()
 check(ShoppingTooltip1.native == "Blizzard", "and left for Blizzard to hide")
+blizzardAutoCompare = false
 ShoppingTooltip1:Hide()
 
 -- Native compare can't start (no GUID): fill the compare tooltips ourselves.
 -- Text Blizzard already set is left alone.
 GameTooltip:Hide()
 ShoppingTooltip1.CompareHeader.Label.text = "Equipped (set by Blizzard)"
-alwaysCompare = true
 hover(1)
 check(ShoppingTooltip1.CompareHeader.Label.text == "Equipped (set by Blizzard)", "never overwrites header text")
 ShoppingTooltip1.CompareHeader.Label.text = nil
@@ -234,7 +229,6 @@ noGuid[2844] = nil
 hover(1)
 GameTooltip:SetOwner(UIParent, "ANCHOR_RIGHT") -- moved to something else
 check(not ShoppingTooltip1.shown, "compare hidden when the tooltip gets a new owner")
-alwaysCompare = false
 
 -- Blizzard's own compare (a bag item, say) is never hidden by us.
 GameTooltip:Hide()
@@ -251,14 +245,12 @@ local goodMace = addItem(103, { name = "Good Mace", ilvl = 20, minLevel = 10, su
 equippedLinks[16] = goodMace
 fire("PLAYER_EQUIPMENT_CHANGED", 16, false)
 flush()
-alwaysCompare = true
 noGuid[2844], noGuid[2900] = true, true -- our filled-in compare, which records the slots
 hover(1)
 check(compareSlots() == "16", "1H mace compared against the equipped 2H")
 hover(7)
 check(compareSlots() == "16", "2H maul compared against the equipped 2H")
 noGuid[2844], noGuid[2900] = nil, nil
-alwaysCompare = false
 GameTooltip:Hide()
 
 equippedLinks[16] = wornMace
