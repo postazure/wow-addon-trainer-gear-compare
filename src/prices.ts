@@ -110,7 +110,7 @@ export function craftLines(index: number, link: string, item: ItemData): Tooltip
     lines.push(GRAY("Profit: no auction price for the item yet"));
   } else {
     const profit = Math.floor(sale * recipe.makes * AFTER_AH_CUT - cost.total);
-    lines.push(WHITE(`Profit: ${signedMoney(profit)} after the 5% auction house cut`));
+    lines.push(WHITE(`Profit: ${signedMoney(profit)} after AH cut (5%)`));
   }
   return lines;
 }

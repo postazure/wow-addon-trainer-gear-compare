@@ -56,7 +56,7 @@ Auctionator = { API = { v1 = {
 hover(7)
 check(GameTooltip.lines[1] == "item 2900" and tooltipHas("Reagents: 1g 23s 40c"),
   "our lines go under the item; our money format: gold, silver, copper")
-check(tooltipHas("Profit: +66s 60c after the 5% auction house cut"), "profit in our money format")
+check(tooltipHas("Profit: +66s 60c after AH cut (5%)"), "profit in our money format")
 Auctionator = nil
 GameTooltip:Hide()
 
