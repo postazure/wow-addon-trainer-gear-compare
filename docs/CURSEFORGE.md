@@ -93,9 +93,9 @@ it looks different from the current version.
 | File | What it must show | Retake when |
 | --- | --- | --- |
 | `01-compare.png` | A gear recipe hovered at a trainer: the recipe tooltip, a gold arrow, the item, and the compare with **Equipped**, left to right, tops lined up. | The layout, the compare, or its header change. |
+| `02-profit.png` | A recipe box with the **Reagents** cost and **Profit** lines at the bottom (needs Auctionator). | The cost or profit lines change. |
 | `03-two-slots.png` | A ring or trinket recipe with both equipped rings or trinkets in the compare. | Two-slot or weapon rules change. |
-| `04-settings-menu.png` | The trainer's Settings dropdown open, showing **Only show usable gear**. | The menu entry's text or place changes. |
-| `05-filter.png` | The recipe list with the filter on: some rows faded (gear you can't use), the rest normal. | Fading or the filter's rules change. |
+| `04-settings-menu.png` | The trainer's Settings dropdown open, showing **Only show usable gear** checked, and the recipe list behind it with some rows faded (gear you can't use), the rest normal. | The menu entry's text or place, fading, or the filter's rules change. |
 
 - [ ] Every screenshot in the table exists and matches this version.
 - [ ] The project's Images tab has the same set; remove old ones that no

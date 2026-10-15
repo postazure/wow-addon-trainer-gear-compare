@@ -4,6 +4,8 @@ Shows, in the profession trainer window, how each recipe's item compares to
 your equipped gear, and whether you can use it. Facts only: it doesn't
 claim anything is an "upgrade".
 
+![A recipe hovered at a trainer: recipe box, the item, and the equipped item](assets/screenshots/01-compare.png)
+
 - **The real item**: hover a recipe and you see the normal recipe tooltip,
   then the item it makes, like any item tooltip. Nothing covers the list.
 - **Compare**: always on, no Shift needed. Blizzard's normal compare,
